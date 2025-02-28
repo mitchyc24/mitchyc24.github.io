@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitchell Carroll - Resume</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --space-dark: #0a0e17;
+      --space-medium: #1a2333;
+      --space-light: #2c3e50;
+      --text-primary: #e0e6ed;
+      --text-secondary: #a3b1c6;
+      --accent-blue: #4a9ff5;
+      --accent-purple: #9b59b6;
+      --accent-teal: #1abc9c;
+      --accent-orange: #e67e22;
+      --card-shadow: rgba(0, 0, 0, 0.5);
+      --star-color: rgba(255, 255, 255, 0.8);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--space-dark);
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 100px 100px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background-color: var(--star-color);
+      border-radius: 50%;
+      animation: twinkle 4s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    /* Header */
+    header {
+      background-color: var(--space-medium);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 2px solid var(--accent-blue);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header-left h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .header-left p {
+      font-size: 1.2rem;
+      color: var(--accent-blue);
+      margin-bottom: 1rem;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .contact-info {
+      margin-bottom: 1rem;
+    }
+
+    .contact-info p {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .contact-info i {
+      color: var(--accent-blue);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .social-links a {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      transition: color 0.3s;
+    }
+
+    .social-links a:hover {
+      color: var(--accent-blue);
+    }
+
+    /* Main content */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: var(--accent-blue);
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 50px;
+      height: 2px;
+      background-color: var(--accent-purple);
+    }
+
+    /* Profile section */
+    .profile-content {
+      background-color: var(--space-medium);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+    }
+
+    /* Timeline section */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -2rem;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--accent-blue);
+      border: 2px solid var(--space-dark);
+      z-index: 1;
+    }
+
+    .timeline-content {
+      background-color: var(--space-medium);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .job-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-teal);
+    }
+
+    .job-company {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .timespan {
+      font-size: 0.9rem;
+      color: var(--accent-orange);
+      font-weight: 500;
+    }
+
+    .timeline-details ul {
+      list-style-type: none;
+      padding-left: 1rem;
+    }
+
+    .timeline-details li {
+      position: relative;
+      margin-bottom: 0.5rem;
+      padding-left: 1rem;
+    }
+
+    .timeline-details li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--accent-blue);
+    }
+
+    /* Education section */
+    .education-item {
+      background-color: var(--space-medium);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .education-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-purple), var(--accent-teal));
+    }
+
+    .degree-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-purple);
+      margin-bottom: 0.5rem;
+    }
+
+    .school {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .date {
+      font-size: 0.9rem;
+      color: var(--accent-orange);
+      margin-bottom: 1rem;
+    }
+
+    .education-list {
+      list-style-type: none;
+      padding-left: 1rem;
+    }
+
+    .education-list li {
+      position: relative;
+      margin-bottom: 0.5rem;
+      padding-left: 1rem;
+    }
+
+    .education-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--accent-purple);
+    }
+
+    /* Skills section */
+    .skills-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skills-column {
+      background-color: var(--space-medium);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+    }
+
+    .skills-title {
+      font-size: 1.3rem;
+      color: var(--accent-teal);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--accent-teal);
+      padding-bottom: 0.5rem;
+    }
+
+    .skills-list {
+      list-style-type: none;
+    }
+
+    .skills-list li {
+      position: relative;
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .skills-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent-teal);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header-right {
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+
+      .contact-info p {
+        justify-content: center;
+      }
+
+      .social-links {
+        justify-content: center;
+      }
+
+      .skills-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Orbit animation for decorative elements */
+    .orbit {
+      position: absolute;
+      border: 1px solid rgba(74, 159, 245, 0.2);
+      border-radius: 50%;
+      animation: rotate 20s linear infinite;
+    }
+
+    .orbit-1 {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      right: -150px;
+    }
+
+    .orbit-2 {
+      width: 200px;
+      height: 200px;
+      bottom: -100px;
+      left: -100px;
+      animation-duration: 15s;
+      animation-direction: reverse;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .planet {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--accent-blue), var(--accent-purple));
+    }
+
+    .planet-1 {
+      width: 20px;
+      height: 20px;
+      top: 0;
+      left: 50%;
+    }
+
+    .planet-2 {
+      width: 15px;
+      height: 15px;
+      top: 50%;
+      left: 0;
+      background: radial-gradient(circle at 30% 30%, var(--accent-teal), var(--accent-blue));
+    }
+  </style>
+</head>
+<body>
+  <!-- Stars background -->
+  <div class="stars" id="stars"></div>
+
+  <header>
+    <div class="orbit orbit-1">
+      <div class="planet planet-1"></div>
+    </div>
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Mitchell Carroll</h1>
+        <p>Full-stack Web Developer | Systems Engineer</p>
+      </div>
+      <div class="header-right">
+        <div class="contact-info">
+          <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
+          <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
+          <p><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+          <p><i class="fas fa-language"></i> Bilingual (English, French)</p>
+        </div>
+        <div class="social-links">
+          <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
+          <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section" id="profile">
+      <h2 class="section-title">Profile</h2>
+      <div class="profile-content">
+        <p>I am currently pursuing a Master's in Computer Science at Wilfrid Laurier University, building on a distinguished 13-year career as a Captain and Aerospace Engineer in the Canadian Armed Forces. With a Bachelor's degree in Computer Science and four years of professional programming experience, I bring a unique blend of systems engineering, quality assurance, and project management skills. I am dedicated to innovation and optimization, and I am well-equipped to lead and contribute to the development of practical and efficient software applications.</p>
+      </div>
+    </section>
+
+    <section class="section" id="experience">
+      <h2 class="section-title">Professional Experience</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <div class="job-title">Full-stack Web Developer</div>
+                <div class="job-company">DND - Ottawa, ON</div>
+              </div>
+              <div class="timespan">Feb 2022 – Sep 2024</div>
+            </div>
+            <div class="timeline-details">
+              <ul>
+                <li>Collaborated with stakeholders in developing and maintaining critical web projects, including an intranet DND website and an interactive web application hosted on AWS.</li>
+                <li>Proficient in full-stack development with technologies such as TypeScript, JavaScript, React, HTML, CSS, MongoDB and AWS services (Amplify, Gateway API, S3, Lambda, CloudFront, IAM).</li>
+                <li>Implemented government development platforms like WIM and SharePoint, contributing to efficient and secure web solutions.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <div class="job-title">System Engineer - Electronic Support Measures</div>
+                <div class="job-company">Canadian Armed Forces - Ottawa, ON</div>
+              </div>
+              <div class="timespan">July 2017 - July 2021</div>
+            </div>
+            <div class="timeline-details">
+              <ul>
+                <li>Served as a system engineer for the CP-140 Aurora and CH-148 Cyclone Electronic Support Measures and Radar Warning Receiver.</li>
+                <li>Reprogrammed avionics with up-to-date radar models, improving situational awareness and safety of military operations.</li>
+                <li>Coordinated with intelligence communities to improve best practices for information sharing.</li>
+                <li>Managed and utilized EWIR and SERF Manager/Strikeforce+ tools to ensure optimal deployment of electronic warfare capabilities and updates.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <div class="job-title">Quality Assurance Manager</div>
+                <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
+              </div>
+              <div class="timespan">July 2015 – July 2017</div>
+            </div>
+            <div class="timeline-details">
+              <ul>
+                <li>Managed an accredited Quality Management System in a large maintenance organization.</li>
+                <li>Became a leading authority for interpreting and applying ISO-based airworthiness standards.</li>
+                <li>Led and managed a small team of auditors to ensure quality control and assurance of maintenance practices.</li>
+                <li>Project lead for the transition to a web-based quality assurance management system, handling design, development, testing, deployment, and maintenance.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <div class="job-title">Aircraft Servicing Officer</div>
+                <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
+              </div>
+              <div class="timespan">July 2014 – July 2015</div>
+            </div>
+            <div class="timeline-details">
+              <ul>
+                <li>Led a large team of aircraft technicians for routine servicing and unscheduled maintenance coordination.</li>
+                <li>Developed and applied leadership, logistical, managerial, and communication skills.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div>
+                <div class="job-title">Programmer/Analyst</div>
+                <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
+              </div>
+              <div class="timespan">2013 – July 2014</div>
+            </div>
+            <div class="timeline-details">
+              <ul>
+                <li>Maintained a C/C++ codebase to facilitate aircraft mission data loading.</li>
+                <li>Acted as liaison between aircrew and software development teams to resolve technical issues with onboard systems.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="education">
+      <h2 class="section-title">Education</h2>
+      <div class="education-item">
+        <div class="degree-title">Master's in Computer Science</div>
+        <div class="school">Wilfrid Laurier University - Waterloo, ON</div>
+        <div class="date">Spring 2025</div>
+        <ul class="education-list">
+          <li>Data Analysis (CP 610)</li>
+          <li>Practical Algorithm Design (CP 600)</li>
+          <li>Applied Cryptography (CP 614)</li>
+          <li>Advanced Parallel Programming (CP 631)</li>
+          <li>Enterprise Computing (CP 630)</li>
+          <li>Android App Programming (CP 670)</li>
+          <li>Machine Learning (CP 640)</li>
+          <li>Seminar in Technology Entrepreneurship (CP 601)</li>
+        </ul>
+      </div>
+
+      <div class="education-item">
+        <div class="degree-title">Bachelor's in Computer Science</div>
+        <div class="school">Royal Military College of Canada - Kingston, ON</div>
+        <div class="date">2012</div>
+        <ul class="education-list">
+          <li>Developed strong competencies in academics, bilingual communication, leadership, and physical fitness—essential skills for tackling diverse challenges.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="skills">
+      <h2 class="section-title">Skills & Technologies</h2>
+      <div class="skills-container">
+        <div class="skills-column">
+          <h3 class="skills-title">Professional Skills</h3>
+          <ul class="skills-list">
+            <li>Full-stack Web Development</li>
+            <li>Electronic Warfare</li>
+            <li>Personnel Management</li>
+            <li>Operational Test & Evaluation</li>
+            <li>Bilingual Communications</li>
+            <li>Software Design and Programming</li>
+            <li>Accredited Quality Auditor (AF9000+)</li>
+            <li>Systems Engineering</li>
+            <li>Quality Assurance</li>
+            <li>Continuous Improvement</li>
+          </ul>
+        </div>
+        <div class="skills-column">
+          <h3 class="skills-title">Tools & Technologies</h3>
+          <ul class="skills-list">
+            <li>Microsoft Office</li>
+            <li>SharePoint</li>
+            <li>C/C++</li>
+            <li>Python</li>
+            <li>Pandas</li>
+            <li>Numpy</li>
+            <li>Scikit-Learn</li>
+            <li>HTML</li>
+            <li>CSS</li>
+            <li>Java</li>
+            <li>JavaScript</li>
+            <li>TypeScript</li>
+            <li>Git</li>
+            <li>GitHub</li>
+            <li>MongoDB</li>
+            <li>PostgreSQL</li>
+            <li>MySQL</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Create stars in the background
+    document.addEventListener('DOMContentLoaded', function() {
+      const starsContainer = document.getElementById('stars');
+      const starsCount = 200;
+      
+      for (let i = 0; i < starsCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // Random position
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        star.style.left = `${x}%`;
+        star.style.top = `${y}%`;
+        
+        // Random size
+        const size = Math.random() * 2 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Random twinkle delay
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        
+        starsContainer.appendChild(star);
+      }
+      
+      // Parallax effect for stars
+      document.addEventListener('mousemove', function(e) {
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        
+        starsContainer.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
