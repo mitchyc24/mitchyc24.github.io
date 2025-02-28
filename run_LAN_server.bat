@@ -1,5 +1,5 @@
 @echo off
-echo Starting local server for resume.html...
+echo Starting local portfolio server...
 
 :: Check if Python is installed
 python --version >nul 2>&1
@@ -31,38 +31,38 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
 set LOCAL_IP=%LOCAL_IP:~1%
 echo Your local IP address is: %LOCAL_IP%
 
-:: Create a temporary Python file to serve the HTML
-echo import uvicorn > serve_resume.py
-echo from fastapi import FastAPI, HTTPException >> serve_resume.py
-echo from fastapi.responses import HTMLResponse, FileResponse >> serve_resume.py
-echo from fastapi.staticfiles import StaticFiles >> serve_resume.py
-echo import os >> serve_resume.py
-echo. >> serve_resume.py
-echo app = FastAPI() >> serve_resume.py
-echo. >> serve_resume.py
-echo @app.get("/", response_class=HTMLResponse) >> serve_resume.py
-echo async def get_resume(): >> serve_resume.py
-echo     try: >> serve_resume.py
-echo         with open("resume.html", "r", encoding="utf-8") as file: >> serve_resume.py
-echo             content = file.read() >> serve_resume.py
-echo         return content >> serve_resume.py
-echo     except FileNotFoundError: >> serve_resume.py
-echo         raise HTTPException(status_code=404, detail="Resume file not found") >> serve_resume.py
-echo. >> serve_resume.py
-echo # Mount the current directory to serve any static files (CSS, JS, images) >> serve_resume.py
-echo app.mount("/", StaticFiles(directory="."), name="static") >> serve_resume.py
-echo. >> serve_resume.py
-echo if __name__ == "__main__": >> serve_resume.py
-echo     uvicorn.run("serve_resume:app", host="0.0.0.0", port=8000, reload=True) >> serve_resume.py
+:: Create a temporary Python file to serve the site
+echo import uvicorn > serve_portfolio.py
+echo from fastapi import FastAPI, HTTPException >> serve_portfolio.py
+echo from fastapi.responses import HTMLResponse, FileResponse >> serve_portfolio.py
+echo from fastapi.staticfiles import StaticFiles >> serve_portfolio.py
+echo import os >> serve_portfolio.py
+echo. >> serve_portfolio.py
+echo app = FastAPI() >> serve_portfolio.py
+echo. >> serve_portfolio.py
+echo @app.get("/", response_class=HTMLResponse) >> serve_portfolio.py
+echo async def get_portfolio(): >> serve_portfolio.py
+echo     try: >> serve_portfolio.py
+echo         with open("index.html", "r", encoding="utf-8") as file: >> serve_portfolio.py
+echo             content = file.read() >> serve_portfolio.py
+echo         return content >> serve_portfolio.py
+echo     except FileNotFoundError: >> serve_portfolio.py
+echo         raise HTTPException(status_code=404, detail="Portfolio page not found") >> serve_portfolio.py
+echo. >> serve_portfolio.py
+echo # Mount the current directory to serve any static files (CSS, JS, images) >> serve_portfolio.py
+echo app.mount("/", StaticFiles(directory="."), name="static") >> serve_portfolio.py
+echo. >> serve_portfolio.py
+echo if __name__ == "__main__": >> serve_portfolio.py
+echo     uvicorn.run("serve_portfolio:app", host="0.0.0.0", port=8000, reload=True) >> serve_portfolio.py
 
 :: Run the server
-echo Starting server on LAN at http://%LOCAL_IP%:8000
-echo Other devices on your network can access your resume at this address
+echo Starting portfolio site on LAN at http://%LOCAL_IP%:8000
+echo Other devices on your network can access your portfolio at this address
 echo Local access: http://127.0.0.1:8000
 echo Press Ctrl+C to stop the server
-python serve_resume.py
+python serve_portfolio.py
 
 :: Clean up the temporary file when done
-del serve_resume.py
+del serve_portfolio.py
 
 pause

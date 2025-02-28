@@ -307,6 +307,66 @@
       font-size: 1.2rem;
     }
 
+    /* Language toggle button */
+    .language-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 4rem;
+      /* Position it next to the theme toggle */
+      background-color: var(--space-light);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 2px 5px var(--card-shadow);
+    }
+
+    .language-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .language-toggle i {
+      font-size: 1.2rem;
+    }
+
+    /* Hide French content by default */
+    .fr {
+      display: none !important;
+    }
+
+    /* When French language is active */
+    .french-active .en {
+      display: none !important;
+    }
+
+    .french-active .fr {
+      display: block !important;
+    }
+
+    /* For elements that need to preserve their display property */
+    .french-active .fr.flex {
+      display: flex !important;
+    }
+
+    .french-active .fr.grid {
+      display: grid !important;
+    }
+
+    .french-active .fr.inline {
+      display: inline !important;
+    }
+
+    .french-active .fr.inline-block {
+      display: inline-block !important;
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
       .header-content {
@@ -347,6 +407,11 @@
     <i class="fas fa-moon"></i>
   </button>
 
+  <!-- Language toggle button -->
+  <button class="language-toggle" id="languageToggle">
+    <i class="fas fa-language"></i>
+  </button>
+
   <header>
     <div class="orbit orbit-1">
       <div class="planet planet-1"></div>
@@ -354,14 +419,17 @@
     <div class="header-content">
       <div class="header-left">
         <h1>Mitchell Carroll</h1>
-        <p>Full-stack Web Developer | Systems Engineer</p>
+        <p class="en">Full-stack Web Developer | Veteran</p>
+        <p class="fr">Développeur Web Full-stack | Vétéran</p>
       </div>
       <div class="header-right">
         <div class="contact-info">
           <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
           <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
-          <p><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
-          <p><i class="fas fa-language"></i> Bilingual (English, French)</p>
+          <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+          <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secret</p>
+          <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
+          <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
         </div>
         <div class="social-links">
           <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
@@ -373,16 +441,23 @@
 
   <main>
     <section class="welcome-section">
-      <h2 class="welcome-title">Welcome to My Portfolio</h2>
-      <p class="welcome-text">
+      <h2 class="welcome-title en">Welcome to My Portfolio</h2>
+      <h2 class="welcome-title fr">Bienvenue sur Mon Portfolio</h2>
+      <p class="welcome-text en">
         I'm a Full-stack Web Developer and Systems Engineer with a background in aerospace engineering and military
-        leadership.
-        Currently pursuing a Master's in Computer Science, I combine technical expertise with practical problem-solving
-        skills
-        to create efficient and innovative solutions.
+        leadership. Currently pursuing a Master's in Computer Science, I combine technical expertise with practical problem-solving
+        skills to create efficient and innovative solutions.
       </p>
-      <a href="resume.html" class="cta-button">
+      <p class="welcome-text fr">
+        Je suis un Développeur Web Full-stack avec une formation en sciences informatiques et
+        leadership militaire. Actuellement en cours d'une maîtrise en sciences informatiques, je combine de l'expertise technique et des compétences
+        pratiques de résolution de problèmes pour créer des solutions efficaces et innovantes.
+      </p>
+      <a href="resume.html" class="cta-button en">
         <i class="fas fa-file-alt"></i> View My Resume
+      </a>
+      <a href="resume.html" class="cta-button fr">
+        <i class="fas fa-file-alt"></i> Voir Mon CV
       </a>
     </section>
   </main>
@@ -446,6 +521,26 @@
           themeIcon.classList.remove('fa-sun');
           themeIcon.classList.add('fa-moon');
           localStorage.setItem('theme', 'dark');
+        }
+      });
+
+      // Language toggle functionality
+      const languageToggle = document.getElementById('languageToggle');
+
+      // Check if user has a saved language preference
+      const savedLanguage = localStorage.getItem('language');
+      if (savedLanguage === 'fr') {
+        document.body.classList.add('french-active');
+      }
+
+      languageToggle.addEventListener('click', function () {
+        document.body.classList.toggle('french-active');
+
+        // Save preference
+        if (document.body.classList.contains('french-active')) {
+          localStorage.setItem('language', 'fr');
+        } else {
+          localStorage.setItem('language', 'en');
         }
       });
     });

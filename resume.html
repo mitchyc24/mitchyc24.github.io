@@ -380,12 +380,15 @@
 
     .skills-list {
       list-style-type: none;
+      columns: auto 150px;
+      column-gap: 2rem;
     }
 
     .skills-list li {
       position: relative;
       margin-bottom: 0.5rem;
       padding-left: 1.5rem;
+      break-inside: avoid;
     }
 
     .skills-list li::before {
@@ -395,7 +398,6 @@
       color: var(--accent-teal);
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
       .header-content {
         flex-direction: column;
@@ -419,6 +421,10 @@
       .education-container,
       .skills-container {
         grid-template-columns: 1fr;
+      }
+
+      .skills-list {
+        columns: auto 120px;
       }
     }
 
@@ -504,10 +510,107 @@
     .theme-toggle i {
       font-size: 1.2rem;
     }
+
+    /* Language toggle button */
+    .language-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 4rem;
+      background-color: var(--space-light);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 2px 5px var(--card-shadow);
+    }
+
+    .language-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .language-toggle i {
+      font-size: 1.2rem;
+    }
+
+    /* Hide French content by default */
+    .fr {
+      display: none !important;
+    }
+
+    /* When French language is active */
+    .french-active .en {
+      display: none !important;
+    }
+
+    .french-active .fr {
+      display: block !important;
+    }
+
+    /* For elements that need to preserve their display property */
+    .french-active .fr.flex {
+      display: flex !important;
+    }
+
+    .french-active .fr.grid {
+      display: grid !important;
+    }
+
+    .french-active .fr.inline {
+      display: inline !important;
+    }
+
+    .french-active .fr.inline-block {
+      display: inline-block !important;
+    }
+
+    /* Loading indicator */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: var(--space-dark);
+      z-index: 100;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid var(--space-medium);
+      border-top: 5px solid var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
 <body>
+  <!-- Loading indicator -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
   <!-- Stars background -->
   <div class="stars" id="stars"></div>
 
@@ -516,233 +619,27 @@
     <i class="fas fa-moon"></i>
   </button>
 
+  <!-- Language toggle button -->
+  <button class="language-toggle" id="languageToggle">
+    <i class="fas fa-language"></i>
+  </button>
+
   <header>
     <div class="orbit orbit-1">
       <div class="planet planet-1"></div>
     </div>
-    <div class="header-content">
-      <div class="header-left">
-        <h1>Mitchell Carroll</h1>
-        <p>Full-stack Web Developer | Systems Engineer</p>
-      </div>
-      <div class="header-right">
-        <div class="contact-info">
-          <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
-          <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
-          <p><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
-          <p><i class="fas fa-language"></i> Bilingual (English, French)</p>
-        </div>
-        <div class="social-links">
-          <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
-          <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
-        </div>
-      </div>
+    <div class="header-content" id="header-content">
+      <!-- Header content will be loaded from JSON -->
     </div>
   </header>
 
-  <main>
-    <section class="section" id="profile">
-      <h2 class="section-title">Profile</h2>
-      <div class="profile-content">
-        <p>I am currently pursuing a Master's in Computer Science at Wilfrid Laurier University, building on a
-          distinguished 13-year career as a Captain and Aerospace Engineer in the Canadian Armed Forces. With a
-          Bachelor's degree in Computer Science and four years of professional programming experience, I bring a unique
-          blend of systems engineering, quality assurance, and project management skills. I am dedicated to innovation
-          and optimization, and I am well-equipped to lead and contribute to the development of practical and efficient
-          software applications.</p>
-      </div>
-    </section>
-
-    <section class="section" id="experience">
-      <h2 class="section-title">Professional Experience</h2>
-      <div class="timeline">
-        <div class="timeline-container">
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div>
-                  <div class="job-title">Full-stack Web Developer</div>
-                  <div class="job-company">DND - Ottawa, ON</div>
-                </div>
-                <div class="timespan">Feb 2022 – Sep 2024</div>
-              </div>
-              <div class="timeline-details">
-                <ul>
-                  <li>Collaborated with stakeholders in developing and maintaining critical web projects, including an
-                    intranet DND website and an interactive web application hosted on AWS.</li>
-                  <li>Proficient in full-stack development with technologies such as TypeScript, JavaScript, React, HTML,
-                    CSS, MongoDB and AWS services (Amplify, Gateway API, S3, Lambda, CloudFront, IAM).</li>
-                  <li>Implemented government development platforms like WIM and SharePoint, contributing to efficient and
-                    secure web solutions.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div>
-                  <div class="job-title">System Engineer - Electronic Support Measures</div>
-                  <div class="job-company">Canadian Armed Forces - Ottawa, ON</div>
-                </div>
-                <div class="timespan">July 2017 - July 2021</div>
-              </div>
-              <div class="timeline-details">
-                <ul>
-                  <li>Served as a system engineer for the CP-140 Aurora and CH-148 Cyclone Electronic Support Measures and
-                    Radar Warning Receiver.</li>
-                  <li>Reprogrammed avionics with up-to-date radar models, improving situational awareness and safety of
-                    military operations.</li>
-                  <li>Coordinated with intelligence communities to improve best practices for information sharing.</li>
-                  <li>Managed and utilized EWIR and SERF Manager/Strikeforce+ tools to ensure optimal deployment of
-                    electronic warfare capabilities and updates.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div>
-                  <div class="job-title">Quality Assurance Manager</div>
-                  <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
-                </div>
-                <div class="timespan">July 2015 – July 2017</div>
-              </div>
-              <div class="timeline-details">
-                <ul>
-                  <li>Managed an accredited Quality Management System in a large maintenance organization.</li>
-                  <li>Became a leading authority for interpreting and applying ISO-based airworthiness standards.</li>
-                  <li>Led and managed a small team of auditors to ensure quality control and assurance of maintenance
-                    practices.</li>
-                  <li>Project lead for the transition to a web-based quality assurance management system, handling design,
-                    development, testing, deployment, and maintenance.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div>
-                  <div class="job-title">Aircraft Servicing Officer</div>
-                  <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
-                </div>
-                <div class="timespan">July 2014 – July 2015</div>
-              </div>
-              <div class="timeline-details">
-                <ul>
-                  <li>Led a large team of aircraft technicians for routine servicing and unscheduled maintenance
-                    coordination.</li>
-                  <li>Developed and applied leadership, logistical, managerial, and communication skills.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div>
-                  <div class="job-title">Programmer/Analyst</div>
-                  <div class="job-company">Canadian Armed Forces - Greenwood, NS</div>
-                </div>
-                <div class="timespan">2013 – July 2014</div>
-              </div>
-              <div class="timeline-details">
-                <ul>
-                  <li>Maintained a C/C++ codebase to facilitate aircraft mission data loading.</li>
-                  <li>Acted as liaison between aircrew and software development teams to resolve technical issues with
-                    onboard systems.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="education">
-      <h2 class="section-title">Education</h2>
-      <div class="education-container">
-        <div class="education-item">
-          <div class="degree-title">Master's in Computer Science</div>
-          <div class="school">Wilfrid Laurier University - Waterloo, ON</div>
-          <div class="date">Spring 2025</div>
-          <ul class="education-list">
-            <li>Data Analysis (CP 610)</li>
-            <li>Practical Algorithm Design (CP 600)</li>
-            <li>Applied Cryptography (CP 614)</li>
-            <li>Advanced Parallel Programming (CP 631)</li>
-            <li>Enterprise Computing (CP 630)</li>
-            <li>Android App Programming (CP 670)</li>
-            <li>Machine Learning (CP 640)</li>
-            <li>Seminar in Technology Entrepreneurship (CP 601)</li>
-          </ul>
-        </div>
-
-        <div class="education-item">
-          <div class="degree-title">Bachelor's in Computer Science</div>
-          <div class="school">Royal Military College of Canada - Kingston, ON</div>
-          <div class="date">2012</div>
-          <ul class="education-list">
-            <li>Developed strong competencies in academics, bilingual communication, leadership, and physical
-              fitness—essential skills for tackling diverse challenges.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="skills">
-      <h2 class="section-title">Skills & Technologies</h2>
-      <div class="skills-container">
-        <div class="skills-column">
-          <h3 class="skills-title">Professional Skills</h3>
-          <ul class="skills-list">
-            <li>Full-stack Web Development</li>
-            <li>Electronic Warfare</li>
-            <li>Personnel Management</li>
-            <li>Operational Test & Evaluation</li>
-            <li>Bilingual Communications</li>
-            <li>Software Design and Programming</li>
-            <li>Accredited Quality Auditor (AF9000+)</li>
-            <li>Systems Engineering</li>
-            <li>Quality Assurance</li>
-            <li>Continuous Improvement</li>
-          </ul>
-        </div>
-        <div class="skills-column">
-          <h3 class="skills-title">Tools & Technologies</h3>
-          <ul class="skills-list">
-            <li>Microsoft Office</li>
-            <li>SharePoint</li>
-            <li>C/C++</li>
-            <li>Python</li>
-            <li>Pandas</li>
-            <li>Numpy</li>
-            <li>Scikit-Learn</li>
-            <li>HTML</li>
-            <li>CSS</li>
-            <li>Java</li>
-            <li>JavaScript</li>
-            <li>TypeScript</li>
-            <li>Git</li>
-            <li>GitHub</li>
-            <li>MongoDB</li>
-            <li>PostgreSQL</li>
-            <li>MySQL</li>
-          </ul>
-        </div>
-      </div>
-    </section>
+  <main id="main-content">
+    <!-- Main content will be loaded from JSON -->
   </main>
 
   <script>
-    // Create stars in the background
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+      // Create stars in the background
       const starsContainer = document.getElementById('stars');
       const starsCount = 200;
 
@@ -801,6 +698,162 @@
           localStorage.setItem('theme', 'dark');
         }
       });
+
+      // Language toggle functionality
+      const languageToggle = document.getElementById('languageToggle');
+
+      // Check if user has a saved language preference
+      const savedLanguage = localStorage.getItem('language');
+      if (savedLanguage === 'fr') {
+        document.body.classList.add('french-active');
+      }
+
+      languageToggle.addEventListener('click', function () {
+        document.body.classList.toggle('french-active');
+
+        // Save preference
+        if (document.body.classList.contains('french-active')) {
+          localStorage.setItem('language', 'fr');
+        } else {
+          localStorage.setItem('language', 'en');
+        }
+      });
+
+      // Load the JSON data
+      try {
+        const response = await fetch('resume-data.json');
+        const data = await response.json();
+
+        // Render header content
+        const headerContent = document.getElementById('header-content');
+        headerContent.innerHTML = `
+          <div class="header-left">
+            <h1>${data.header.name}</h1>
+            <p class="en">${data.header.title.en}</p>
+            <p class="fr">${data.header.title.fr}</p>
+          </div>
+          <div class="header-right">
+            <div class="contact-info">
+              <p><i class="fas fa-envelope"></i> ${data.header.contact.email}</p>
+              <p><i class="fas fa-map-marker-alt"></i> ${data.header.contact.location}</p>
+              <p class="en"><i class="fas fa-shield-alt"></i> ${data.header.contact.security.en}</p>
+              <p class="fr"><i class="fas fa-shield-alt"></i> ${data.header.contact.security.fr}</p>
+              <p class="en"><i class="fas fa-language"></i> ${data.header.contact.language.en}</p>
+              <p class="fr"><i class="fas fa-language"></i> ${data.header.contact.language.fr}</p>
+            </div>
+            <div class="social-links">
+              <a href="${data.header.social.github}" target="_blank"><i class="fab fa-github"></i></a>
+              <a href="${data.header.social.linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>
+            </div>
+          </div>
+        `;
+
+        // Render main content
+        const mainContent = document.getElementById('main-content');
+
+        // Profile Section
+        mainContent.innerHTML = `
+          <section class="section" id="profile">
+            <h2 class="section-title en">${data.sections.profile.title.en}</h2>
+            <h2 class="section-title fr">${data.sections.profile.title.fr}</h2>
+            <div class="profile-content">
+              <p class="en">${data.sections.profile.content.en}</p>
+              <p class="fr">${data.sections.profile.content.fr}</p>
+            </div>
+          </section>
+        `;
+
+        // Experience Section
+        mainContent.innerHTML += `
+          <section class="section" id="experience">
+            <h2 class="section-title en">${data.sections.experience.title.en}</h2>
+            <h2 class="section-title fr">${data.sections.experience.title.fr}</h2>
+            <div class="timeline-container">
+              ${data.sections.experience.jobs.map(job => `
+                <div class="timeline-item">
+                  <div class="timeline-content">
+                    <div class="timeline-header">
+                      <div>
+                        <div class="job-title en">${job.title.en}</div>
+                        <div class="job-title fr">${job.title.fr}</div>
+                        <div class="job-company en">${job.company.en || job.company}</div>
+                        <div class="job-company fr">${job.company.fr || job.company}</div>
+                      </div>
+                      <div class="timespan">${job.period}</div>
+                    </div>
+                    <div class="timeline-details">
+                      <ul class="en">
+                        ${job.responsibilities.en.map(resp => `<li>${resp}</li>`).join('')}
+                      </ul>
+                      <ul class="fr">
+                        ${job.responsibilities.fr.map(resp => `<li>${resp}</li>`).join('')}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+
+        // Education Section
+        mainContent.innerHTML += `
+          <section class="section" id="education">
+            <h2 class="section-title en">${data.sections.education.title.en}</h2>
+            <h2 class="section-title fr">${data.sections.education.title.fr}</h2>
+            <div class="education-container">
+              ${data.sections.education.degrees.map(degree => `
+                <div class="education-item">
+                  <div class="degree-title en">${degree.title.en}</div>
+                  <div class="degree-title fr">${degree.title.fr}</div>
+                  <div class="school en">${degree.school.en}</div>
+                  <div class="school fr">${degree.school.fr}</div>
+                  <div class="date en">${degree.date.en}</div>
+                  <div class="date fr">${degree.date.fr}</div>
+                  <ul class="education-list en">
+                    ${degree.details.en.map(detail => `<li>${detail}</li>`).join('')}
+                  </ul>
+                  <ul class="education-list fr">
+                    ${degree.details.fr.map(detail => `<li>${detail}</li>`).join('')}
+                  </ul>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+
+        // Skills Section
+        mainContent.innerHTML += `
+          <section class="section" id="skills">
+            <h2 class="section-title en">${data.sections.skills.title.en}</h2>
+            <h2 class="section-title fr">${data.sections.skills.title.fr}</h2>
+            <div class="skills-container">
+              ${data.sections.skills.categories.map(category => `
+                <div class="skills-column">
+                  <h3 class="skills-title en">${category.title.en}</h3>
+                  <h3 class="skills-title fr">${category.title.fr}</h3>
+                  <ul class="skills-list">
+                    ${Array.isArray(category.items)
+            ? category.items.map(item => `<li>${item}</li>`).join('')
+            : `
+                        ${category.items.en.map(item => `<li class="en">${item}</li>`).join('')}
+                        ${category.items.fr.map(item => `<li class="fr">${item}</li>`).join('')}
+                      `
+          }
+                  </ul>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        `;
+
+        // Hide loading indicator
+        document.getElementById('loading').style.display = 'none';
+
+      } catch (error) {
+        console.error('Error loading resume data:', error);
+        document.getElementById('loading').innerHTML = '<p>Error loading resume data. Please try again later.</p>';
+      }
     });
   </script>
 </body>
