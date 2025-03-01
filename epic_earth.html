@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPIC Earth - NASA DSCOVR Imagery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --space-dark: #0a0e17;
+            --space-medium: #1a2333;
+            --space-light: #2c3e50;
+            --text-primary: #e0e6ed;
+            --text-secondary: #a3b1c6;
+            --accent-blue: #4a9ff5;
+            --accent-purple: #9b59b6;
+            --accent-teal: #1abc9c;
+            --accent-orange: #e67e22;
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --star-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Light theme variables */
+        .light-theme {
+            --space-dark: #f5f7fa;
+            --space-medium: #e4e9f0;
+            --space-light: #d0d7e1;
+            --text-primary: #2c3e50;
+            --text-secondary: #546778;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --star-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--space-dark);
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100px 100px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Navigation and Header */
+        nav {
+            background-color: var(--space-medium);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .header-left p {
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            margin-bottom: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-links a.active {
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background-color: var(--space-light);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px var(--card-shadow);
+            margin-left: 1rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+        }
+
+        /* Language toggle button */
+        .language-toggle {
+            background-color: var(--space-light);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px var(--card-shadow);
+            margin-left: 1rem;
+        }
+
+        .language-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .language-toggle i {
+            font-size: 1.2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Main content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .epic-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .epic-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .epic-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .epic-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+            gap: 1rem;
+        }
+
+        .epic-controls input,
+        .epic-controls select {
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--space-light);
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-right: 1rem;
+        }
+
+        .epic-controls button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-blue);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .epic-controls button:hover {
+            background-color: #3a8fd8;
+            transform: translateY(-2px);
+        }
+
+        .epic-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .epic-image-card {
+            background-color: var(--space-medium);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .epic-image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .epic-image-container {
+            position: relative;
+            padding-top: 100%;
+            /* 1:1 Aspect Ratio */
+            overflow: hidden;
+        }
+
+        .epic-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .epic-image-card:hover .epic-image {
+            transform: scale(1.05);
+        }
+
+        .epic-image-info {
+            padding: 1rem;
+        }
+
+        .epic-image-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .epic-image-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .epic-full-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .full-image {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 5px;
+        }
+
+        .image-caption {
+            margin-top: 1rem;
+            color: white;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .close-full-view {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--space-light);
+            border-top: 5px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            text-align: center;
+            color: #e74c3c;
+            padding: 1rem;
+            background-color: var(--space-medium);
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* Hide French content by default */
+        .fr {
+            display: none !important;
+        }
+
+        /* When French language is active */
+        .french-active .en {
+            display: none !important;
+        }
+
+        .french-active .fr {
+            display: block !important;
+        }
+
+        /* For elements that need to preserve their display property */
+        .french-active .fr.flex {
+            display: flex !important;
+        }
+
+        .french-active .fr.grid {
+            display: grid !important;
+        }
+
+        .french-active .fr.inline {
+            display: inline !important;
+        }
+
+        .french-active .fr.inline-block {
+            display: inline-block !important;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .nav-buttons {
+                margin-top: 0.5rem;
+            }
+
+            .epic-header {
+                padding: 2rem 1rem;
+            }
+
+            .epic-title {
+                font-size: 2rem;
+            }
+
+            .epic-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .epic-gallery {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                font-size: 0.8rem;
+                gap: 0.5rem;
+            }
+
+            .nav-links a {
+                padding: 0.3rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Stars background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Navigation and Header -->
+    <nav>
+        <div class="nav-container">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Mitchell Carroll</h1>
+                    <p class="en">Full-stack Web Developer | Systems Engineer</p>
+                    <p class="fr">Développeur Web Full-stack | Ingénieur Systèmes</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="en">Home</a>
+                <a href="index.html" class="fr">Accueil</a>
+                <a href="resume.html" class="en">Resume</a>
+                <a href="resume.html" class="fr">CV</a>
+                <a href="epic_earth.html" class="en active">EPIC Earth</a>
+                <a href="epic_earth.html" class="fr active">Terre EPIC</a>
+                <a href="mars_weather.html" class="en">Mars Weather</a>
+                <a href="mars_weather.html" class="fr">Météo Mars</a>
+            </div>
+            <div class="nav-buttons">
+                <!-- Language toggle button -->
+                <button class="language-toggle" id="languageToggle">
+                    <i class="fas fa-language"></i>
+                </button>
+                <!-- Theme toggle button -->
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="epic-header">
+            <h1 class="epic-title en">EPIC Earth Viewer</h1>
+            <h1 class="epic-title fr">Visualiseur de la Terre EPIC</h1>
+            <p class="epic-subtitle en">
+                Explore full-color images of Earth taken by NASA's DSCOVR satellite from a million miles away.
+            </p>
+            <p class="epic-subtitle fr">
+                Explorez des images en couleur de la Terre prises par le satellite DSCOVR de la NASA à un million de
+                miles de distance.
+            </p>
+        </div>
+
+        <div class="epic-controls">
+            <input type="date" id="date-input" aria-label="Select date">
+            <select id="view-type" aria-label="Select view type">
+                <option value="natural" class="en">Natural Color</option>
+                <option value="natural" class="fr">Couleur Naturelle</option>
+                <option value="enhanced" class="en">Enhanced Color</option>
+                <option value="enhanced" class="fr">Couleur Améliorée</option>
+            </select>
+            <button id="load-images" class="en">Load Images</button>
+            <button id="load-images" class="fr">Charger les Images</button>
+        </div>
+
+        <div id="loading" class="loading-indicator" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <div id="epic-gallery" class="epic-gallery"></div>
+
+        <div id="epic-full-view" class="epic-full-view">
+            <button id="close-full-view" class="close-full-view">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="full-image" class="full-image" src="" alt="Full size Earth image">
+            <div id="image-caption" class="image-caption"></div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Create stars in the background
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+
+                // Random size
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                // Random twinkle delay
+                star.style.animationDelay = `${Math.random() * 4}s`;
+
+                starsContainer.appendChild(star);
+            }
+
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+
+            // Check if user has a saved preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+
+            themeToggle.addEventListener('click', function () {
+                document.body.classList.toggle('light-theme');
+
+                // Update icon
+                if (document.body.classList.contains('light-theme')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            // Language toggle functionality
+            const languageToggle = document.getElementById('languageToggle');
+
+            // Check if user has a saved language preference
+            const savedLanguage = localStorage.getItem('language');
+            if (savedLanguage === 'fr') {
+                document.body.classList.add('french-active');
+            }
+
+            languageToggle.addEventListener('click', function () {
+                document.body.classList.toggle('french-active');
+
+                // Save preference
+                if (document.body.classList.contains('french-active')) {
+                    localStorage.setItem('language', 'fr');
+                } else {
+                    localStorage.setItem('language', 'en');
+                }
+            });
+
+            // EPIC API functionality
+            const dateInput = document.getElementById('date-input');
+            const viewType = document.getElementById('view-type');
+            const loadButton = document.getElementById('load-images');
+            const epicGallery = document.getElementById('epic-gallery');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+            const fullView = document.getElementById('epic-full-view');
+            const fullImage = document.getElementById('full-image');
+            const imageCaption = document.getElementById('image-caption');
+            const closeFullView = document.getElementById('close-full-view');
+
+            // Set default date to today
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            dateInput.value = yesterday.toISOString().split('T')[0];
+
+            // Load images when button is clicked
+            loadButton.addEventListener('click', fetchEpicImages);
+
+            // Close full view when close button is clicked
+            closeFullView.addEventListener('click', function () {
+                fullView.style.display = 'none';
+            });
+
+            // Function to fetch EPIC images
+            async function fetchEpicImages() {
+                const date = dateInput.value;
+                const type = viewType.value;
+                const apiKey = 'aaYc1pQfw8aEKCWNzMQl105xGBzwbBpEJhr7fhGH'; // Replace with your NASA API key
+
+                // Show loading indicator
+                loading.style.display = 'flex';
+                errorMessage.style.display = 'none';
+                epicGallery.innerHTML = '';
+
+                try {
+                    const response = await fetch(`https://api.nasa.gov/EPIC/api/${type}/date/${date}?api_key=${apiKey}`);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (data.length === 0) {
+                        errorMessage.innerHTML = `
+                            <span class="en">No images available for the selected date. Try another date.</span>
+                            <span class="fr">Aucune image disponible pour la date sélectionnée. Essayez une autre date.</span>
+                        `;
+                        errorMessage.style.display = 'block';
+                    } else {
+                        displayImages(data, type, date);
+                    }
+                } catch (error) {
+                    console.error('Error fetching EPIC images:', error);
+                    errorMessage.innerHTML = `
+                        <span class="en">I'm having NASA API issues. Sorry.</span>
+                        <span class="fr">J'ai des problèmes avec l'API de la NASA. Désolé.</span>
+                    `;
+                    errorMessage.style.display = 'block';
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            // Function to display images
+            function displayImages(images, type, date) {
+                const dateFormatted = date.replace(/-/g, '/');
+
+                images.forEach(image => {
+                    const imageDate = image.date.split(' ')[0];
+                    const imageTime = image.date.split(' ')[1];
+                    const imageName = image.image;
+
+                    const imageUrl = `https://api.nasa.gov/EPIC/archive/${type}/${imageDate.replace(/-/g, '/')}/${imageName}.png?api_key=aaYc1pQfw8aEKCWNzMQl105xGBzwbBpEJhr7fhGH`;
+
+                    const card = document.createElement('div');
+                    card.className = 'epic-image-card';
+
+                    card.innerHTML = `
+                        <div class="epic-image-container">
+                            <img src="${imageUrl}" alt="Earth from space" class="epic-image">
+                        </div>
+                        <div class="epic-image-info">
+                            <h3 class="epic-image-title en">Earth from Space</h3>
+                            <h3 class="epic-image-title fr">La Terre de l'Espace</h3>
+                            <p class="epic-image-date">${imageDate} ${imageTime}</p>
+                        </div>
+                    `;
+
+                    // Add click event to show full image
+                    card.addEventListener('click', function () {
+                        fullImage.src = imageUrl;
+                        imageCaption.innerHTML = `
+                            <p class="en">Date: ${imageDate} Time: ${imageTime}</p>
+                            <p class="fr">Date: ${imageDate} Heure: ${imageTime}</p>
+                            <p class="en">Captured by NASA's DSCOVR satellite from Lagrange point L1, about 1 million miles from Earth.</p>
+                            <p class="fr">Capturé par le satellite DSCOVR de la NASA depuis le point de Lagrange L1, à environ 1 million de miles de la Terre.</p>
+                        `;
+                        fullView.style.display = 'flex';
+                    });
+
+                    epicGallery.appendChild(card);
+                });
+            }
+
+            // Load images on page load
+            fetchEpicImages();
+        });
+    </script>
+</body>
+
+</html>

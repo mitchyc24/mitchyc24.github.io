@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mars Weather - InSight Lander Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --space-dark: #0a0e17;
+            --space-medium: #1a2333;
+            --space-light: #2c3e50;
+            --text-primary: #e0e6ed;
+            --text-secondary: #a3b1c6;
+            --accent-blue: #4a9ff5;
+            --accent-purple: #9b59b6;
+            --accent-teal: #1abc9c;
+            --accent-orange: #e67e22;
+            --accent-red: #c0392b;
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --star-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Light theme variables */
+        .light-theme {
+            --space-dark: #f5f7fa;
+            --space-medium: #e4e9f0;
+            --space-light: #d0d7e1;
+            --text-primary: #2c3e50;
+            --text-secondary: #546778;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --star-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--space-dark);
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100px 100px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* Navigation and Header */
+        nav {
+            background-color: var(--space-medium);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid var(--accent-red);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .header-left p {
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            margin-bottom: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-links a.active {
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            background-color: var(--space-light);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px var(--card-shadow);
+            margin-left: 1rem;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+        }
+
+        /* Language toggle button */
+        .language-toggle {
+            background-color: var(--space-light);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px var(--card-shadow);
+            margin-left: 1rem;
+        }
+
+        .language-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .language-toggle i {
+            font-size: 1.2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Main content */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Mars Weather Header */
+        .mars-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .mars-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-red);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .mars-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Loading indicator */
+        #loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent-red);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error message */
+        #error-message {
+            text-align: center;
+            color: var(--accent-red);
+            font-size: 1.2rem;
+            padding: 2rem;
+            background-color: var(--space-medium);
+            border-radius: 10px;
+            margin: 2rem auto;
+            max-width: 800px;
+            display: none;
+        }
+
+        /* Mars Weather Cards */
+        .mars-weather-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .mars-weather-card {
+            background-color: var(--space-medium);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px var(--card-shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .mars-weather-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px var(--card-shadow);
+        }
+
+        .mars-weather-header {
+            background-color: var(--space-light);
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--accent-red);
+        }
+
+        .sol-number {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--accent-red);
+        }
+
+        .earth-date {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .mars-weather-body {
+            padding: 1.5rem;
+        }
+
+        .weather-data-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .weather-data-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .weather-data-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .weather-data-range {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .season-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: var(--accent-purple);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Wind direction compass */
+        .wind-direction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .compass {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .compass-arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            transform-origin: center;
+        }
+
+        .compass-arrow::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: -5px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 30px solid var(--accent-red);
+        }
+
+        .compass-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .compass-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .compass-label.north {
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .compass-label.east {
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+        }
+
+        .compass-label.south {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .compass-label.west {
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
+        }
+
+        /* Info section */
+        .info-section {
+            background-color: var(--space-medium);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-top: 3rem;
+            box-shadow: 0 10px 20px var(--card-shadow);
+        }
+
+        .info-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+        }
+
+        .info-text {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Hide French content by default */
+        .fr {
+            display: none !important;
+        }
+
+        /* When French language is active */
+        .french-active .en {
+            display: none !important;
+        }
+
+        .french-active .fr {
+            display: block !important;
+        }
+
+        /* For elements that need to preserve their display property */
+        .french-active .fr.flex {
+            display: flex !important;
+        }
+
+        .french-active .fr.grid {
+            display: grid !important;
+        }
+
+        .french-active .fr.inline {
+            display: inline !important;
+        }
+
+        .french-active .fr.inline-block {
+            display: inline-block !important;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                width: 100%;
+            }
+
+            .nav-links {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .nav-buttons {
+                margin-top: 0.5rem;
+            }
+
+            .mars-title {
+                font-size: 2rem;
+            }
+
+            .mars-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .mars-weather-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                font-size: 0.8rem;
+                gap: 0.5rem;
+            }
+
+            .nav-links a {
+                padding: 0.3rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Stars background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Navigation and Header -->
+    <nav>
+        <div class="nav-container">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Mitchell Carroll</h1>
+                    <p class="en">Full-stack Web Developer | Systems Engineer</p>
+                    <p class="fr">Développeur Web Full-stack | Ingénieur Systèmes</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="en">Home</a>
+                <a href="index.html" class="fr">Accueil</a>
+                <a href="resume.html" class="en">Resume</a>
+                <a href="resume.html" class="fr">CV</a>
+                <a href="epic_earth.html" class="en">EPIC Earth</a>
+                <a href="epic_earth.html" class="fr">Terre EPIC</a>
+                <a href="mars_weather.html" class="en active">Mars Weather</a>
+                <a href="mars_weather.html" class="fr active">Météo Mars</a>
+            </div>
+            <div class="nav-buttons">
+                <!-- Language toggle button -->
+                <button class="language-toggle" id="languageToggle">
+                    <i class="fas fa-language"></i>
+                </button>
+                <!-- Theme toggle button -->
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="mars-header">
+            <h1 class="mars-title en">Mars Weather</h1>
+            <h1 class="mars-title fr">Météo de Mars</h1>
+            <p class="mars-subtitle en">Latest weather data from NASA's InSight lander at Elysium Planitia</p>
+            <p class="mars-subtitle fr">Dernières données météorologiques de l'atterrisseur InSight de la NASA à Elysium
+                Planitia</p>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Error message -->
+        <div id="error-message"></div>
+
+        <!-- Mars Weather Cards Container -->
+        <div class="mars-weather-container" id="mars-weather-container"></div>
+
+        <!-- Info Section -->
+        <section class="info-section">
+            <h2 class="info-title en">About InSight's Weather Service</h2>
+            <h2 class="info-title fr">À propos du service météorologique d'InSight</h2>
+            <p class="info-text en">
+                NASA's InSight Mars lander takes continuous weather measurements (temperature, wind, pressure) on the
+                surface of Mars at Elysium Planitia, a flat, smooth plain near Mars' equator. This page displays the
+                latest available data from the InSight lander.
+            </p>
+            <p class="info-text fr">
+                L'atterrisseur InSight de la NASA prend des mesures météorologiques continues (température, vent,
+                pression) à la surface de Mars à Elysium Planitia, une plaine plate et lisse près de l'équateur de Mars.
+                Cette page affiche les dernières données disponibles de l'atterrisseur InSight.
+            </p>
+            <p class="info-text en">
+                Please note that there are sometimes problems with the sensors on Mars that result in missing data. If
+                you see gaps in the data, it may be due to sensor issues or data transmission limitations.
+            </p>
+            <p class="info-text fr">
+                Veuillez noter qu'il y a parfois des problèmes avec les capteurs sur Mars qui entraînent des données
+                manquantes. Si vous voyez des lacunes dans les données, cela peut être dû à des problèmes de capteurs ou
+                à des limitations de transmission de données.
+            </p>
+            <p class="info-text en">
+                Data is provided by NASA's Jet Propulsion Laboratory and Cornell University through the InSight Mars
+                Weather Service API.
+            </p>
+            <p class="info-text fr">
+                Les données sont fournies par le Jet Propulsion Laboratory de la NASA et l'Université Cornell via l'API
+                du service météorologique InSight Mars.
+            </p>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Create stars in the background
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 200;
+
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+
+                // Random size
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+
+                // Random twinkle delay
+                star.style.animationDelay = `${Math.random() * 4}s`;
+
+                starsContainer.appendChild(star);
+            }
+
+            // Parallax effect for stars
+            document.addEventListener('mousemove', function (e) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+
+                starsContainer.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+            });
+
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+
+            // Check if user has a saved preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+
+            themeToggle.addEventListener('click', function () {
+                document.body.classList.toggle('light-theme');
+
+                // Update icon
+                if (document.body.classList.contains('light-theme')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            // Language toggle functionality
+            const languageToggle = document.getElementById('languageToggle');
+
+            // Check if user has a saved language preference
+            const savedLanguage = localStorage.getItem('language');
+            if (savedLanguage === 'fr') {
+                document.body.classList.add('french-active');
+            }
+
+            languageToggle.addEventListener('click', function () {
+                document.body.classList.toggle('french-active');
+
+                // Save preference
+                if (document.body.classList.contains('french-active')) {
+                    localStorage.setItem('language', 'fr');
+                } else {
+                    localStorage.setItem('language', 'en');
+                }
+            });
+
+            // Mars Weather API functionality
+            const marsWeatherContainer = document.getElementById('mars-weather-container');
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+
+            // Function to fetch Mars weather data
+            async function fetchMarsWeather() {
+                const apiKey = 'aaYc1pQfw8aEKCWNzMQl105xGBzwbBpEJhr7fhGH'; // Replace with your NASA API key
+                const apiUrl = `https://api.nasa.gov/insight_weather/?api_key=${apiKey}&feedtype=json&ver=1.0`;
+
+                // Show loading indicator
+                loading.style.display = 'flex';
+                errorMessage.style.display = 'none';
+                marsWeatherContainer.innerHTML = '';
+
+                try {
+                    const response = await fetch(apiUrl);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    if (!data.sol_keys || data.sol_keys.length === 0) {
+                        errorMessage.innerHTML = `
+                            <p class="en">No weather data available at this time. The InSight lander may be experiencing issues or data transmission limitations.</p>
+                            <p class="fr">Aucune donnée météorologique disponible pour le moment. L'atterrisseur InSight peut rencontrer des problèmes ou des limitations de transmission de données.</p>
+                        `;
+                        errorMessage.style.display = 'block';
+                    } else {
+                        displayMarsWeather(data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching Mars weather data:', error);
+                    errorMessage.innerHTML = `
+                        <p class="en">I'm having NASA API issues. Sorry.</p>
+                        <p class="fr">J'ai des problèmes avec l'API NASA. Désolé.</p>
+                    `;
+                    errorMessage.style.display = 'block';
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            // Function to display Mars weather data
+            function displayMarsWeather(data) {
+                const solKeys = data.sol_keys;
+
+                // Sort sol keys in descending order (newest first)
+                solKeys.sort((a, b) => parseInt(b) - parseInt(a));
+
+                solKeys.forEach(sol => {
+                    const solData = data[sol];
+
+                    // Format date
+                    const earthDate = new Date(solData.First_UTC);
+                    const formattedDate = earthDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    // Create weather card
+                    const card = document.createElement('div');
+                    card.className = 'mars-weather-card';
+
+                    // Season badge
+                    let seasonEn = solData.Season;
+                    let seasonFr = '';
+
+                    switch (solData.Season) {
+                        case 'winter':
+                            seasonFr = 'Hiver';
+                            break;
+                        case 'spring':
+                            seasonFr = 'Printemps';
+                            break;
+                        case 'summer':
+                            seasonFr = 'Été';
+                            break;
+                        case 'fall':
+                            seasonFr = 'Automne';
+                            break;
+                        default:
+                            seasonFr = solData.Season;
+                    }
+
+                    // Build card HTML
+                    let cardHTML = `
+                        <div class="season-badge en">${seasonEn}</div>
+                        <div class="season-badge fr">${seasonFr}</div>
+                        <div class="mars-weather-header">
+                            <div class="sol-number en">Sol ${sol}</div>
+                            <div class="sol-number fr">Sol ${sol}</div>
+                            <div class="earth-date en">${formattedDate}</div>
+                            <div class="earth-date fr">${earthDate.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</div>
+                        </div>
+                        <div class="mars-weather-body">
+                    `;
+
+                    // Temperature data
+                    if (solData.AT) {
+                        const tempC = solData.AT.av;
+                        const tempF = (tempC * 9 / 5) + 32;
+                        const minTempC = solData.AT.mn;
+                        const maxTempC = solData.AT.mx;
+                        const minTempF = (minTempC * 9 / 5) + 32;
+                        const maxTempF = (maxTempC * 9 / 5) + 32;
+
+                        cardHTML += `
+                            <div class="weather-data-item">
+                                <div class="weather-data-label en">Temperature</div>
+                                <div class="weather-data-label fr">Température</div>
+                                <div class="weather-data-value en">${tempF.toFixed(1)}°F (${tempC.toFixed(1)}°C)</div>
+                                <div class="weather-data-value fr">${tempC.toFixed(1)}°C (${tempF.toFixed(1)}°F)</div>
+                                <div class="weather-data-range en">Min: ${minTempF.toFixed(1)}°F | Max: ${maxTempF.toFixed(1)}°F</div>
+                                <div class="weather-data-range fr">Min: ${minTempC.toFixed(1)}°C | Max: ${maxTempC.toFixed(1)}°C</div>
+                            </div>
+                        `;
+                    }
+
+                    // Pressure data
+                    if (solData.PRE) {
+                        const pressure = solData.PRE.av;
+                        const minPressure = solData.PRE.mn;
+                        const maxPressure = solData.PRE.mx;
+
+                        cardHTML += `
+                            <div class="weather-data-item">
+                                <div class="weather-data-label en">Pressure</div>
+                                <div class="weather-data-label fr">Pression</div>
+                                <div class="weather-data-value">${pressure.toFixed(1)} Pa</div>
+                                <div class="weather-data-range en">Min: ${minPressure.toFixed(1)} Pa | Max: ${maxPressure.toFixed(1)} Pa</div>
+                                <div class="weather-data-range fr">Min: ${minPressure.toFixed(1)} Pa | Max: ${maxPressure.toFixed(1)} Pa</div>
+                            </div>
+                        `;
+                    }
+
+                    // Wind data
+                    if (solData.HWS) {
+                        const windSpeed = solData.HWS.av;
+                        const minWindSpeed = solData.HWS.mn;
+                        const maxWindSpeed = solData.HWS.mx;
+
+                        cardHTML += `
+                            <div class="weather-data-item">
+                                <div class="weather-data-label en">Wind Speed</div>
+                                <div class="weather-data-label fr">Vitesse du Vent</div>
+                                <div class="weather-data-value">${windSpeed.toFixed(1)} m/s</div>
+                                <div class="weather-data-range en">Min: ${minWindSpeed.toFixed(1)} m/s | Max: ${maxWindSpeed.toFixed(1)} m/s</div>
+                                <div class="weather-data-range fr">Min: ${minWindSpeed.toFixed(1)} m/s | Max: ${maxWindSpeed.toFixed(1)} m/s</div>
+                            </div>
+                        `;
+                    }
+
+                    // Wind direction
+                    if (solData.WD && solData.WD.most_common) {
+                        const windDirection = solData.WD.most_common.compass_point;
+                        const windDegrees = solData.WD.most_common.compass_degrees;
+
+                        cardHTML += `
+                            <div class="weather-data-item">
+                                <div class="weather-data-label en">Wind Direction</div>
+                                <div class="weather-data-label fr">Direction du Vent</div>
+                                <div class="weather-data-value">${windDirection} (${windDegrees}°)</div>
+                                <div class="wind-direction">
+                                    <div class="compass">
+                                        <div class="compass-arrow" style="transform: rotate(${windDegrees}deg)"></div>
+                                        <div class="compass-face">N</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    cardHTML += `
+                        </div>
+                    `;
+
+                    card.innerHTML = cardHTML;
+                    marsWeatherContainer.appendChild(card);
+                });
+            }
+
+            // Load Mars weather data on page load
+            fetchMarsWeather();
+        });
+    </script>
+</body>
+
+</html>

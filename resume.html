@@ -68,14 +68,14 @@
       height: 2px;
       background-color: var(--star-color);
       border-radius: 50%;
-      animation: twinkle 4s infinite;
+      animation: twinkle 4s infinite ease-in-out;
     }
 
     @keyframes twinkle {
 
       0%,
       100% {
-        opacity: 0.2;
+        opacity: 0.5;
       }
 
       50% {
@@ -83,21 +83,29 @@
       }
     }
 
-    /* Header */
-    header {
+    /* Navigation and Header */
+    nav {
       background-color: var(--space-medium);
-      padding: 2rem;
-      position: relative;
-      overflow: hidden;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       border-bottom: 2px solid var(--accent-blue);
     }
 
-    .header-content {
+    .nav-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
       max-width: 1200px;
       margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
       position: relative;
       z-index: 2;
     }
@@ -112,155 +120,212 @@
     .header-left p {
       font-size: 1.2rem;
       color: var(--accent-blue);
-      margin-bottom: 1rem;
+      margin-bottom: 0;
     }
 
-    .header-right {
-      text-align: right;
+    .nav-links {
+      display: flex;
+      gap: 2rem;
     }
 
-    .contact-info {
-      margin-bottom: 1rem;
+    .nav-links a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
     }
 
-    .contact-info p {
-      margin-bottom: 0.5rem;
+    .nav-links a:hover {
+      color: var(--accent-blue);
+    }
+
+    .nav-links a.active {
+      color: var(--accent-blue);
+      border-bottom: 2px solid var(--accent-blue);
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      background-color: var(--space-light);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      gap: 0.5rem;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 2px 5px var(--card-shadow);
+      margin-left: 1rem;
     }
 
-    .contact-info i {
-      color: var(--accent-blue);
+    .theme-toggle:hover {
+      transform: scale(1.1);
     }
 
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
+    .theme-toggle i {
+      font-size: 1.2rem;
     }
 
-    .social-links a {
+    /* Language toggle button */
+    .language-toggle {
+      background-color: var(--space-light);
       color: var(--text-primary);
-      font-size: 1.5rem;
-      transition: color 0.3s;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 2px 5px var(--card-shadow);
     }
 
-    .social-links a:hover {
-      color: var(--accent-blue);
+    .language-toggle:hover {
+      transform: scale(1.1);
     }
 
-    /* Main content */
+    .language-toggle i {
+      font-size: 1.2rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Responsive design for navbar */
+    @media (max-width: 768px) {
+      .nav-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 0.9rem;
+      }
+
+      .nav-buttons {
+        margin-top: 0.5rem;
+      }
+
+      .resume-header {
+        padding: 2rem 1rem;
+      }
+
+      .resume-title {
+        font-size: 2rem;
+      }
+
+      .resume-subtitle {
+        font-size: 1.2rem;
+      }
+
+      .experience-container,
+      .education-container,
+      .skills-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links {
+        font-size: 0.8rem;
+        gap: 0.5rem;
+      }
+
+      .nav-links a {
+        padding: 0.3rem 0.5rem;
+      }
+    }
+
+    /* Main content styles */
     main {
       max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
+      margin: 2rem auto;
+      padding: 0 2rem;
     }
 
     .section {
-      margin-bottom: 3rem;
-      position: relative;
-    }
-
-    .section-title {
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      color: var(--accent-blue);
-      border-bottom: 2px solid var(--accent-blue);
-      padding-bottom: 0.5rem;
-      position: relative;
-    }
-
-    .section-title::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 50px;
-      height: 2px;
-      background-color: var(--accent-purple);
-    }
-
-    /* Profile section */
-    .profile-content {
       background-color: var(--space-medium);
-      padding: 1.5rem;
       border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
       box-shadow: 0 4px 12px var(--card-shadow);
       position: relative;
       overflow: hidden;
     }
 
-    .profile-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+    .section-title {
+      font-size: 2rem;
+      color: var(--accent-blue);
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 0.5rem;
     }
 
-    /* Timeline section */
-    .timeline {
-      position: relative;
-      padding-left: 2rem;
+    /* Profile section */
+    .profile-content {
+      font-size: 1.1rem;
+      line-height: 1.8;
     }
 
-    .timeline::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 2px;
-      height: 100%;
-      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
-    }
-
-    /* Two-column layout for timeline */
+    /* Experience section */
     .timeline-container {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
+      grid-template-columns: 1fr;
+      gap: 2rem;
     }
 
     .timeline-item {
+      background-color: var(--space-light);
+      border-radius: 8px;
+      padding: 1.5rem;
       position: relative;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
+      box-shadow: 0 4px 8px var(--card-shadow);
     }
 
     .timeline-item::before {
       content: '';
       position: absolute;
       top: 0;
-      left: -2rem;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background-color: var(--accent-blue);
-      border: 2px solid var(--space-dark);
-      z-index: 1;
-    }
-
-    .timeline-content {
-      background-color: var(--space-medium);
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px var(--card-shadow);
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-teal));
     }
 
     .timeline-header {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
       margin-bottom: 1rem;
     }
 
     .job-title {
       font-size: 1.3rem;
       font-weight: 600;
-      color: var(--accent-teal);
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
     }
 
     .job-company {
@@ -271,22 +336,22 @@
     .timespan {
       font-size: 0.9rem;
       color: var(--accent-orange);
-      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 1rem;
     }
 
     .timeline-details ul {
       list-style-type: none;
-      padding-left: 1rem;
     }
 
     .timeline-details li {
       position: relative;
       margin-bottom: 0.5rem;
-      padding-left: 1rem;
+      padding-left: 1.5rem;
     }
 
     .timeline-details li::before {
-      content: '•';
+      content: '→';
       position: absolute;
       left: 0;
       color: var(--accent-blue);
@@ -295,18 +360,16 @@
     /* Education section */
     .education-container {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
     }
 
     .education-item {
-      background-color: var(--space-medium);
-      padding: 1.5rem;
+      background-color: var(--space-light);
       border-radius: 8px;
-      box-shadow: 0 4px 12px var(--card-shadow);
-      margin-bottom: 1.5rem;
+      padding: 1.5rem;
       position: relative;
-      overflow: hidden;
+      box-shadow: 0 4px 8px var(--card-shadow);
     }
 
     .education-item::before {
@@ -364,7 +427,7 @@
     }
 
     .skills-column {
-      background-color: var(--space-medium);
+      background-color: var(--space-light);
       padding: 1.5rem;
       border-radius: 8px;
       box-shadow: 0 4px 12px var(--card-shadow);
@@ -399,23 +462,6 @@
     }
 
     @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .header-right {
-        text-align: center;
-        margin-top: 1.5rem;
-      }
-
-      .contact-info p {
-        justify-content: center;
-      }
-
-      .social-links {
-        justify-content: center;
-      }
 
       .timeline-container,
       .education-container,
@@ -481,62 +527,6 @@
       top: 50%;
       left: 0;
       background: radial-gradient(circle at 30% 30%, var(--accent-teal), var(--accent-blue));
-    }
-
-    /* Theme toggle button */
-    .theme-toggle {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background-color: var(--space-light);
-      color: var(--text-primary);
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 10;
-      box-shadow: 0 2px 5px var(--card-shadow);
-    }
-
-    .theme-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    .theme-toggle i {
-      font-size: 1.2rem;
-    }
-
-    /* Language toggle button */
-    .language-toggle {
-      position: absolute;
-      top: 1rem;
-      right: 4rem;
-      background-color: var(--space-light);
-      color: var(--text-primary);
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 10;
-      box-shadow: 0 2px 5px var(--card-shadow);
-    }
-
-    .language-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    .language-toggle i {
-      font-size: 1.2rem;
     }
 
     /* Hide French content by default */
@@ -614,24 +604,38 @@
   <!-- Stars background -->
   <div class="stars" id="stars"></div>
 
-  <!-- Theme toggle button -->
-  <button class="theme-toggle" id="themeToggle">
-    <i class="fas fa-moon"></i>
-  </button>
-
-  <!-- Language toggle button -->
-  <button class="language-toggle" id="languageToggle">
-    <i class="fas fa-language"></i>
-  </button>
-
-  <header>
-    <div class="orbit orbit-1">
-      <div class="planet planet-1"></div>
+  <!-- Navigation and Header -->
+  <nav>
+    <div class="nav-container">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>Mitchell Carroll</h1>
+          <p class="en">Full-stack Web Developer | Systems Engineer</p>
+          <p class="fr">Développeur Web Full-stack | Ingénieur Systèmes</p>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="index.html" class="en">Home</a>
+        <a href="index.html" class="fr">Accueil</a>
+        <a href="resume.html" class="en active">Resume</a>
+        <a href="resume.html" class="fr active">CV</a>
+        <a href="epic_earth.html" class="en">EPIC Earth</a>
+        <a href="epic_earth.html" class="fr">Terre EPIC</a>
+        <a href="mars_weather.html" class="en">Mars Weather</a>
+        <a href="mars_weather.html" class="fr">Météo Mars</a>
+      </div>
+      <div class="nav-buttons">
+        <!-- Language toggle button -->
+        <button class="language-toggle" id="languageToggle">
+          <i class="fas fa-language"></i>
+        </button>
+        <!-- Theme toggle button -->
+        <button class="theme-toggle" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
     </div>
-    <div class="header-content" id="header-content">
-      <!-- Header content will be loaded from JSON -->
-    </div>
-  </header>
+  </nav>
 
   <main id="main-content">
     <!-- Main content will be loaded from JSON -->
@@ -724,30 +728,6 @@
         const response = await fetch('resume-data.json');
         const data = await response.json();
 
-        // Render header content
-        const headerContent = document.getElementById('header-content');
-        headerContent.innerHTML = `
-          <div class="header-left">
-            <h1>${data.header.name}</h1>
-            <p class="en">${data.header.title.en}</p>
-            <p class="fr">${data.header.title.fr}</p>
-          </div>
-          <div class="header-right">
-            <div class="contact-info">
-              <p><i class="fas fa-envelope"></i> ${data.header.contact.email}</p>
-              <p><i class="fas fa-map-marker-alt"></i> ${data.header.contact.location}</p>
-              <p class="en"><i class="fas fa-shield-alt"></i> ${data.header.contact.security.en}</p>
-              <p class="fr"><i class="fas fa-shield-alt"></i> ${data.header.contact.security.fr}</p>
-              <p class="en"><i class="fas fa-language"></i> ${data.header.contact.language.en}</p>
-              <p class="fr"><i class="fas fa-language"></i> ${data.header.contact.language.fr}</p>
-            </div>
-            <div class="social-links">
-              <a href="${data.header.social.github}" target="_blank"><i class="fab fa-github"></i></a>
-              <a href="${data.header.social.linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>
-            </div>
-          </div>
-        `;
-
         // Render main content
         const mainContent = document.getElementById('main-content');
 
@@ -828,21 +808,29 @@
             <h2 class="section-title en">${data.sections.skills.title.en}</h2>
             <h2 class="section-title fr">${data.sections.skills.title.fr}</h2>
             <div class="skills-container">
-              ${data.sections.skills.categories.map(category => `
-                <div class="skills-column">
-                  <h3 class="skills-title en">${category.title.en}</h3>
-                  <h3 class="skills-title fr">${category.title.fr}</h3>
-                  <ul class="skills-list">
-                    ${Array.isArray(category.items)
-            ? category.items.map(item => `<li>${item}</li>`).join('')
-            : `
-                        ${category.items.en.map(item => `<li class="en">${item}</li>`).join('')}
-                        ${category.items.fr.map(item => `<li class="fr">${item}</li>`).join('')}
-                      `
-          }
-                  </ul>
-                </div>
-              `).join('')}
+              ${data.sections.skills.categories.map(category => {
+          // Handle both string arrays and object with en/fr arrays
+          const hasTranslations = category.items && typeof category.items === 'object' && category.items.en;
+
+          return `
+                  <div class="skills-column">
+                    <h3 class="skills-title en">${category.title.en}</h3>
+                    <h3 class="skills-title fr">${category.title.fr}</h3>
+                    ${hasTranslations ? `
+                      <ul class="skills-list en">
+                        ${category.items.en.map(skill => `<li>${skill}</li>`).join('')}
+                      </ul>
+                      <ul class="skills-list fr">
+                        ${category.items.fr.map(skill => `<li>${skill}</li>`).join('')}
+                      </ul>
+                    ` : `
+                      <ul class="skills-list">
+                        ${category.items.map(skill => `<li>${skill}</li>`).join('')}
+                      </ul>
+                    `}
+                  </div>
+                `;
+        }).join('')}
             </div>
           </section>
         `;
