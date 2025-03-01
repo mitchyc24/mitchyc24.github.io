@@ -592,6 +592,80 @@
         transform: rotate(360deg);
       }
     }
+
+    /* Contact card styles */
+    .contact-card {
+      background-color: var(--space-light);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 8px var(--card-shadow);
+      margin-bottom: 1rem;
+    }
+
+    /* Contact info */
+    .contact-info {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .contact-info p {
+      display: flex;
+      align-items: center;
+      color: var(--text-secondary);
+    }
+
+    .contact-info i {
+      margin-right: 0.5rem;
+      color: var(--accent-blue);
+    }
+
+    /* Social links */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--space-medium);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      transform: translateY(-3px);
+      background-color: var(--accent-blue);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .social-links i {
+      font-size: 1.5rem;
+    }
+
+    /* Top sections container for side-by-side layout */
+    .top-sections-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Make it responsive */
+    @media (max-width: 768px) {
+      .top-sections-container {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -731,16 +805,41 @@
         // Render main content
         const mainContent = document.getElementById('main-content');
 
-        // Profile Section
+        // Profile and Contact Info Section (side by side)
         mainContent.innerHTML = `
-          <section class="section" id="profile">
-            <h2 class="section-title en">${data.sections.profile.title.en}</h2>
-            <h2 class="section-title fr">${data.sections.profile.title.fr}</h2>
-            <div class="profile-content">
-              <p class="en">${data.sections.profile.content.en}</p>
-              <p class="fr">${data.sections.profile.content.fr}</p>
-            </div>
-          </section>
+          <div class="top-sections-container">
+            <section class="section" id="profile">
+              <h2 class="section-title en">${data.sections.profile.title.en}</h2>
+              <h2 class="section-title fr">${data.sections.profile.title.fr}</h2>
+              <div class="profile-content">
+                <p class="en">${data.sections.profile.content.en}</p>
+                <p class="fr">${data.sections.profile.content.fr}</p>
+              </div>
+            </section>
+            
+            <section class="section" id="contact">
+              <h2 class="section-title en">Contact Information</h2>
+              <h2 class="section-title fr">Coordonnées</h2>
+              
+              <div class="contact-card">
+                <!-- Contact info -->
+                <div class="contact-info">
+                  <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
+                  <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
+                  <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+                  <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
+                  <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
+                  <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
+                </div>
+                
+                <!-- Social links -->
+                <div class="social-links">
+                  <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
+                  <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+              </div>
+            </section>
+          </div>
         `;
 
         // Experience Section

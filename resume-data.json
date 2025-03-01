@@ -29,8 +29,9 @@
                 "fr": "Profil"
             },
             "content": {
-                "en": "I am currently pursuing a Master's in Computer Science at Wilfrid Laurier University, building on a distinguished 13-year career as a Captain and Aerospace Engineer in the Canadian Armed Forces. With a Bachelor's degree in Computer Science and four years of professional programming experience, I bring a unique blend of systems engineering, quality assurance, and project management skills. I am dedicated to innovation and optimization, and I am well-equipped to lead and contribute to the development of practical and efficient software applications.",
-                "fr": "Je poursuis actuellement une maîtrise en informatique à l'Université Wilfrid Laurier, m'appuyant sur une carrière distinguée de 13 ans en tant que Capitaine et Ingénieur Aérospatial dans les Forces armées canadiennes. Avec un baccalauréat en informatique et quatre ans d'expérience professionnelle en programmation, j'apporte une combinaison unique de compétences en ingénierie des systèmes, assurance qualité et gestion de projet. Je suis dévoué à l'innovation et à l'optimisation, et je suis bien équipé pour diriger et contribuer au développement d'applications logicielles pratiques et efficientes."
+                "en": "I am currently pursuing a Master's in Computer Science at Wilfrid Laurier University, building on a distinguished 13-year career as an officer and Aerospace Engineer in the Canadian Armed Forces. With a Bachelor's degree in Computer Science and four years of professional programming experience, I bring a unique blend of systems engineering, quality assurance, and project management skills. I am dedicated to innovation and optimization, and I am well-equipped to lead and contribute to the development of practical and efficient software applications.",
+                
+                "fr": "Je poursuis actuellement une maîtrise en informatique à l'Université Wilfrid Laurier, m'appuyant sur une carrière distinguée de 13 ans en tant qu'officier et Ingénieur Aérospatial dans les Forces armées canadiennes. Avec un baccalauréat en informatique et quatre ans d'expérience professionnelle en programmation, j'apporte une combinaison unique de compétences en ingénierie des systèmes, assurance qualité et gestion de projet. Je suis dévoué à l'innovation et à l'optimisation, et je suis bien équipé pour diriger et contribuer au développement d'applications logicielles pratiques et efficientes."
             }
         },
         "experience": {
@@ -61,8 +62,8 @@
                 },
                 {
                     "title": {
-                        "en": "System Engineer - Electronic Support Measures",
-                        "fr": "Ingénieur Système - Mesures de Soutien Électronique"
+                        "en": "Systems Engineer - Electronic Support Measures",
+                        "fr": "Ingénieur de Systèmes - Mesures de Soutien Électronique"
                     },
                     "company": {
                         "en": "Canadian Armed Forces - Ottawa, ON",

@@ -362,6 +362,56 @@
         font-size: 2rem;
       }
     }
+
+    /* Contact info */
+    .contact-info {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .contact-info p {
+      display: flex;
+      align-items: center;
+      color: var(--text-secondary);
+    }
+
+    .contact-info i {
+      margin-right: 0.5rem;
+      color: var(--accent-blue);
+    }
+
+    /* Social links */
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--space-medium);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .social-links a:hover {
+      transform: translateY(-3px);
+      background-color: var(--accent-blue);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .social-links i {
+      font-size: 1.5rem;
+    }
   </style>
 </head>
 
@@ -418,6 +468,23 @@
         conviviales. Avec une expérience dans les secteurs militaire et civil, j'apporte une perspective unique à la
         résolution de problèmes et à la gestion de projets.
       </p>
+
+      <!-- Contact info -->
+      <div class="contact-info">
+        <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
+        <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+        <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
+        <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
+        <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
+      </div>
+
+      <!-- Social links -->
+      <div class="social-links">
+        <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
+        <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
+      </div>
+
       <div>
         <a href="resume.html" class="cta-button primary en">View My Resume</a>
         <a href="resume.html" class="cta-button primary fr">Voir Mon CV</a>
