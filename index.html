@@ -8,28 +8,27 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --space-dark: #4269c4;
-      --space-medium: #1a2333;
-      --space-light: #2c3e50;
-      --text-primary: #e0e6ed;
-      --text-secondary: #a3b1c6;
-      --accent-blue: #4a9ff5;
-      --accent-purple: #9b59b6;
-      --accent-teal: #1abc9c;
-      --accent-orange: #e67e22;
-      --card-shadow: rgba(0, 0, 0, 0.5);
-      --star-color: rgba(255, 255, 255, 0.8);
+      --bg-primary: #f8f9fa;
+      --bg-secondary: #e9ecef;
+      --bg-accent: #dee2e6;
+      --text-primary: #212529;
+      --text-secondary: #495057;
+      --accent-blue: #0d6efd;
+      --accent-dark: #343a40;
+      --accent-light: #6c757d;
+      --accent-highlight: #0dcaf0;
+      --accent-warm: #fd7e14;
+      --card-shadow: rgba(0, 0, 0, 0.1);
     }
 
-    /* Light theme variables */
-    .light-theme {
-      --space-dark: #f5f7fa;
-      --space-medium: #e4e9f0;
-      --space-light: #d0d7e1;
-      --text-primary: #2c3e50;
-      --text-secondary: #546778;
-      --card-shadow: rgba(0, 0, 0, 0.1);
-      --star-color: rgba(0, 0, 0, 0.1);
+    /* Dark theme variables */
+    .dark-theme {
+      --bg-primary: #212529;
+      --bg-secondary: #343a40;
+      --bg-accent: #495057;
+      --text-primary: #f8f9fa;
+      --text-secondary: #e9ecef;
+      --card-shadow: rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -40,57 +39,20 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--space-dark);
-      background-image:
-        radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-      background-size: 100px 100px;
+      background-color: var(--bg-primary);
       color: var(--text-primary);
       line-height: 1.6;
       position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Stars background */
-    .stars {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background-color: var(--star-color);
-      border-radius: 50%;
-      animation: twinkle 4s infinite ease-in-out;
-    }
-
-    @keyframes twinkle {
-
-      0%,
-      100% {
-        opacity: 0.5;
-      }
-
-      50% {
-        opacity: 1;
-      }
     }
 
     /* Navigation and Header */
     nav {
-      background-color: var(--space-medium);
+      background-color: var(--bg-secondary);
       padding: 1rem 2rem;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px var(--card-shadow);
       border-bottom: 2px solid var(--accent-blue);
     }
 
@@ -111,21 +73,21 @@
     }
 
     .header-left h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      font-size: 2.2rem;
+      margin-bottom: 0.3rem;
       color: var(--text-primary);
       font-weight: 600;
     }
 
     .header-left p {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: var(--accent-blue);
       margin-bottom: 0;
     }
 
     .nav-links {
       display: flex;
-      gap: 2rem;
+      gap: 1.5rem;
     }
 
     .nav-links a {
@@ -133,6 +95,7 @@
       text-decoration: none;
       font-weight: 500;
       transition: color 0.3s ease;
+      padding: 0.3rem 0;
     }
 
     .nav-links a:hover {
@@ -146,7 +109,7 @@
 
     /* Theme toggle button */
     .theme-toggle {
-      background-color: var(--space-light);
+      background-color: var(--bg-accent);
       color: var(--text-primary);
       border: none;
       border-radius: 50%;
@@ -171,7 +134,7 @@
 
     /* Language toggle button */
     .language-toggle {
-      background-color: var(--space-light);
+      background-color: var(--bg-accent);
       color: var(--text-primary);
       border: none;
       border-radius: 50%;
@@ -216,24 +179,52 @@
     .welcome-section {
       margin: 2rem 0;
       max-width: 800px;
+      background-color: var(--bg-secondary);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px var(--card-shadow);
+      padding: 2rem;
     }
 
-    .welcome-title {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      color: var(--text-primary);
+    /* Portrait image styles */
+    .portrait-container {
+      width: 300px;
+      height: 300px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+
+    .portrait-image {
+      width: 60%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 100% / 50%;
+      box-shadow: 0 0 15px var(--card-shadow);
+    }
+
+    .portrait-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 110%;
+      height: 110%;
+      background: radial-gradient(circle, var(--bg-secondary) 40%, transparent 70%);
+      z-index: -1;
+      opacity: 0.7;
+      filter: blur(15px);
     }
 
     .welcome-subtitle {
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
       color: var(--text-secondary);
     }
 
     .welcome-text {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
       color: var(--text-primary);
+      text-align: left;
     }
 
     /* CTA Buttons */
@@ -241,8 +232,8 @@
       display: inline-block;
       background-color: var(--accent-blue);
       color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 30px;
+      padding: 0.7rem 1.3rem;
+      border-radius: 4px;
       text-decoration: none;
       font-weight: 600;
       transition: all 0.3s ease;
@@ -252,8 +243,8 @@
     }
 
     .cta-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--card-shadow);
     }
 
     .cta-button.primary {
@@ -261,19 +252,17 @@
     }
 
     .cta-button.secondary {
-      background-color: var(--accent-purple);
+      background-color: var(--accent-light);
     }
 
     .cta-button.mars-red {
       background-color: #c1440e;
-      /* Dark Mars red color */
     }
 
     .cta-button.mars-red:hover {
       background-color: #e25822;
-      /* Lighter Mars red on hover */
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(193, 68, 14, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(193, 68, 14, 0.3);
     }
 
     /* Hide French content by default */
@@ -307,69 +296,15 @@
       display: inline-block !important;
     }
 
-    /* Responsive design */
-    @media (max-width: 768px) {
-      .nav-container {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1rem;
-      }
-
-      .header-content {
-        flex-direction: column;
-        text-align: center;
-        width: 100%;
-      }
-
-      .nav-links {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        gap: 0.8rem;
-        font-size: 0.9rem;
-      }
-
-      .nav-buttons {
-        margin-top: 0.5rem;
-      }
-
-      .hero-content {
-        padding: 2rem 1rem;
-      }
-
-      .hero-title {
-        font-size: 2.5rem;
-      }
-
-      .project-cards {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .nav-links {
-        font-size: 0.8rem;
-        gap: 0.5rem;
-      }
-
-      .nav-links a {
-        padding: 0.3rem 0.5rem;
-      }
-
-      .hero-title {
-        font-size: 2rem;
-      }
-    }
-
     /* Contact info */
     .contact-info {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1.5rem;
+      gap: 1.3rem;
       margin: 1.5rem 0;
+      border-top: 1px solid var(--bg-accent);
+      padding-top: 1.5rem;
     }
 
     .contact-info p {
@@ -395,30 +330,112 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: var(--space-medium);
+      width: 45px;
+      height: 45px;
+      border-radius: 4px;
+      background-color: var(--bg-accent);
       color: var(--text-primary);
       transition: all 0.3s ease;
     }
 
     .social-links a:hover {
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       background-color: var(--accent-blue);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      color: white;
+      box-shadow: 0 4px 8px var(--card-shadow);
     }
 
     .social-links i {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .nav-container {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
+      }
+
+      .nav-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 0.9rem;
+      }
+
+      .nav-buttons {
+        margin-top: 0.5rem;
+      }
+
+      .welcome-section {
+        padding: 1.5rem;
+      }
+      
+      .portrait-container {
+        width: 150px;
+        height: 150px;
+      }
+
+      .welcome-subtitle {
+        font-size: 1.1rem;
+      }
+
+      .welcome-text {
+        font-size: 1rem;
+      }
+
+      .contact-info {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+      }
+
+      main {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links {
+        font-size: 0.8rem;
+        gap: 0.5rem;
+      }
+
+      .nav-links a {
+        padding: 0.3rem 0.5rem;
+      }
+
+      .cta-button {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+
+      .header-left h1 {
+        font-size: 1.8rem;
+      }
+
+      .header-left p {
+        font-size: 0.9rem;
+      }
+      
+      .portrait-container {
+        width: 120px;
+        height: 120px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <!-- Stars background -->
-  <div class="stars" id="stars"></div>
-
   <!-- Navigation and Header -->
   <nav>
     <div class="nav-container">
@@ -454,8 +471,12 @@
 
   <main>
     <section class="welcome-section">
-      <h1 class="welcome-title en">Welcome to My Portfolio</h1>
-      <h1 class="welcome-title fr">Bienvenue sur Mon Portfolio</h1>
+      <!-- Portrait image with soft edge effect -->
+      <div class="portrait-container">
+        <div class="portrait-glow"></div>
+        <img src="assets/portrait.jpg" alt="Mitchell Carroll" class="portrait-image">
+      </div>
+      
       <p class="welcome-subtitle en">Exploring the intersection of technology and innovation</p>
       <p class="welcome-subtitle fr">Explorer l'intersection de la technologie et de l'innovation</p>
       <p class="welcome-text en">
@@ -468,16 +489,6 @@
         conviviales. Avec une expérience dans les secteurs militaire et civil, j'apporte une perspective unique à la
         résolution de problèmes et à la gestion de projets.
       </p>
-
-      <!-- Contact info -->
-      <div class="contact-info">
-        <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
-        <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
-        <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
-        <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
-        <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
-        <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
-      </div>
 
       <!-- Social links -->
       <div class="social-links">
@@ -493,68 +504,45 @@
         <a href="mars_weather.html" class="cta-button mars-red en">Mars Weather Project</a>
         <a href="mars_weather.html" class="cta-button mars-red fr">Projet Météo Mars</a>
       </div>
+
+      <!-- Contact info -->
+      <div class="contact-info">
+        <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
+        <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+        <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
+        <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
+        <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
+      </div>
     </section>
   </main>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Create stars in the background
-      const starsContainer = document.getElementById('stars');
-      const starsCount = 200;
-
-      for (let i = 0; i < starsCount; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-
-        // Random position
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        star.style.left = `${x}%`;
-        star.style.top = `${y}%`;
-
-        // Random size
-        const size = Math.random() * 2 + 1;
-        star.style.width = `${size}px`;
-        star.style.height = `${size}px`;
-
-        // Random twinkle delay
-        star.style.animationDelay = `${Math.random() * 4}s`;
-
-        starsContainer.appendChild(star);
-      }
-
-      // Parallax effect for stars
-      document.addEventListener('mousemove', function (e) {
-        const x = e.clientX / window.innerWidth;
-        const y = e.clientY / window.innerHeight;
-
-        starsContainer.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
-      });
-
       // Theme toggle functionality
       const themeToggle = document.getElementById('themeToggle');
       const themeIcon = themeToggle.querySelector('i');
 
       // Check if user has a saved preference
       const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'light') {
-        document.body.classList.add('light-theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
         themeIcon.classList.remove('fa-moon');
         themeIcon.classList.add('fa-sun');
       }
 
       themeToggle.addEventListener('click', function () {
-        document.body.classList.toggle('light-theme');
+        document.body.classList.toggle('dark-theme');
 
         // Update icon
-        if (document.body.classList.contains('light-theme')) {
+        if (document.body.classList.contains('dark-theme')) {
           themeIcon.classList.remove('fa-moon');
           themeIcon.classList.add('fa-sun');
-          localStorage.setItem('theme', 'light');
+          localStorage.setItem('theme', 'dark');
         } else {
           themeIcon.classList.remove('fa-sun');
           themeIcon.classList.add('fa-moon');
-          localStorage.setItem('theme', 'dark');
+          localStorage.setItem('theme', 'light');
         }
       });
 
