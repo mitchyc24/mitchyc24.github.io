@@ -7,89 +7,77 @@
   <title>Mitchell Carroll - Home</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script src="htmx.min.js"></script>
 </head>
 
 <body>
-  <!-- Navigation and Header -->
-  <nav>
-    <div class="nav-container">
-      <div class="header-content">
-        <div class="header-left">
-          <h1>Mitchell Carroll</h1>
-          <p class="en">Full-stack Web Developer | Systems Engineer</p>
-          <p class="fr">Développeur Web Full-stack | Ingénieur Systèmes</p>
-        </div>
-      </div>
-      <div class="nav-links">
-        <a href="index.html" class="en active">Home</a>
-        <a href="index.html" class="fr active">Accueil</a>
-        <a href="resume.html" class="en">Resume</a>
-        <a href="resume.html" class="fr">CV</a>
-        <a href="epic_earth.html" class="en">EPIC Earth</a>
-        <a href="epic_earth.html" class="fr">Terre EPIC</a>
-        <a href="mars_weather.html" class="en">Mars Weather</a>
-        <a href="mars_weather.html" class="fr">Météo Mars</a>
-      </div>
-      <div class="nav-buttons">
-        <!-- Language toggle button -->
-        <button class="language-toggle" id="languageToggle">
-          <i class="fas fa-language"></i>
-        </button>
-        <!-- Theme toggle button -->
-        <button class="theme-toggle" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
+  <div class="nav-container">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Mitchell Carroll</h1>
+        <p class="en">Full-stack Web Developer | Systems Engineer</p>
+        <p class="fr">Développeur Web Full-stack | Ingénieur Systèmes</p>
       </div>
     </div>
-  </nav>
+    <div class="nav-links">
+      <a href="#" class="active">Home</a>
+      <a href="#" class="en" id="nav-resume-en" hx-get="/pages/resume.html" hx-target="#content-container">Resume</a>
+      <a href="#" class="fr" id="nav-resume-fr" hx-get="/pages/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-epic-en" hx-get="/pages/epic_earth.html" hx-target="#content-container">EPIC Earth</a>
+      <a href="#" class="fr" id="nav-epic-fr" hx-get="/pages/epic_earth.html" hx-target="#content-container">Terre EPIC</a>
+      <a href="#" class="en" id="nav-mars-en" hx-get="/pages/mars_weather.html" hx-target="#content-container">Mars Weather</a>
+      <a href="#" class="fr" id="nav-mars-fr" hx-get="/pages/mars_weather.html" hx-target="#content-container">Météo Mars</a>
+    </div>
+    <div class="nav-buttons">
+      <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
+      <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+    </div>
+  </div>
 
-  <main class="home-main">
-    <section class="welcome-section">
-      <!-- Portrait image with soft edge effect -->
-      <div class="portrait-container">
-        <div class="portrait-glow"></div>
-        <img src="assets/portrait.jpg" alt="Mitchell Carroll" class="portrait-image">
-      </div>
-      
-      <p class="welcome-subtitle en">Exploring the intersection of technology and innovation</p>
-      <p class="welcome-subtitle fr">Explorer l'intersection de la technologie et de l'innovation</p>
-      <p class="welcome-text en">
-        I'm a full-stack developer and systems engineer with a passion for creating efficient, user-friendly
-        applications. With experience in both military and civilian sectors, I bring a unique perspective to
-        problem-solving and project management.
-      </p>
-      <p class="welcome-text fr">
-        Je suis un développeur full-stack et ingénieur systèmes passionné par la création d'applications efficaces et
-        conviviales. Avec une expérience dans les secteurs militaire et civil, j'apporte une perspective unique à la
-        résolution de problèmes et à la gestion de projets.
-      </p>
+  <!-- Content Container for Dynamic Content Loading -->
+  <div id="content-container">
+    <!-- Initial home content -->
+    <main class="home-main">
+      <section class="welcome-section">
+        <!-- Portrait image with soft edge effect -->
+        <div class="portrait-container">
+          <div class="portrait-glow"></div>
+          <img src="assets/portrait.jpg" alt="Mitchell Carroll" class="portrait-image">
+        </div>
 
-      <!-- Social links -->
-      <div class="social-links">
-        <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
-        <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
-      </div>
+        <p class="welcome-subtitle en">Exploring the intersection of technology and innovation</p>
+        <p class="welcome-subtitle fr">Explorer l'intersection de la technologie et de l'innovation</p>
+        <p class="welcome-text en">
+          I'm a full-stack developer and systems engineer with a passion for creating efficient, user-friendly
+          applications. With experience in both military and civilian sectors, I bring a unique perspective to
+          problem-solving and project management.
+        </p>
+        <p class="welcome-text fr">
+          Je suis un développeur full-stack et ingénieur systèmes passionné par la création d'applications efficaces et
+          conviviales. Avec une expérience dans les secteurs militaire et civil, j'apporte une perspective unique à la
+          résolution de problèmes et à la gestion de projets.
+        </p>
 
-      <div>
-        <a href="resume.html" class="cta-button primary en">View My Resume</a>
-        <a href="resume.html" class="cta-button primary fr">Voir Mon CV</a>
-        <a href="epic_earth.html" class="cta-button secondary en">EPIC Earth Project</a>
-        <a href="epic_earth.html" class="cta-button secondary fr">Projet Terre EPIC</a>
-        <a href="mars_weather.html" class="cta-button mars-red en">Mars Weather Project</a>
-        <a href="mars_weather.html" class="cta-button mars-red fr">Projet Météo Mars</a>
-      </div>
+        <!-- Social links -->
+        <div class="social-links">
+          <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
+          <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
+        </div>
 
-      <!-- Contact info -->
-      <div class="contact-info home-contact-info">
-        <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
-        <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
-        <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
-        <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
-        <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
-        <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
-      </div>
-    </section>
-  </main>
+
+        <!-- Contact info -->
+        <div class="contact-info home-contact-info">
+          <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
+          <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
+          <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
+          <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
+          <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
+          <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -138,6 +126,32 @@
         } else {
           localStorage.setItem('language', 'en');
         }
+      });
+
+      // Add active class handling for navigation
+      document.querySelectorAll('.nav-links a').forEach(link => {
+        link.addEventListener('click', function (e) {
+          // Remove active class from all links
+          document.querySelectorAll('.nav-links a').forEach(l => {
+            l.classList.remove('active');
+          });
+
+          // Add active class to clicked link
+          this.classList.add('active');
+
+          // If it's the Home link, show the home content
+          if (this.textContent.trim() === 'Home') {
+            // Load home content
+            fetch('/')
+              .then(response => response.text())
+              .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const homeContent = doc.querySelector('.home-main').outerHTML;
+                document.getElementById('content-container').innerHTML = homeContent;
+              });
+          }
+        });
       });
     });
   </script>
