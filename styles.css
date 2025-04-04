@@ -157,9 +157,9 @@ nav {
   background-color: var(--bg-accent);
   color: var(--text-primary);
   border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  border-radius: 60%;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,9 +182,9 @@ nav {
   background-color: var(--bg-accent);
   color: var(--text-primary);
   border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  border-radius: 60%;
+  width: 25px;
+  height: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,6 +205,7 @@ nav {
 .nav-buttons {
   display: flex;
   align-items: center;
+  z-index: 200;
 }
 
 /* Space-themed buttons */
@@ -1112,8 +1113,17 @@ nav {
 /* Medium screens */
 @media (max-width: 768px) {
   .nav-container {
-    flex-direction: row;
-    gap: 0.3rem;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  .nav-buttons {
+    position: absolute;
+    top: 0.5rem;
+    right: 0;
+    margin: 0;
   }
 
   .header-content {
@@ -1129,10 +1139,6 @@ nav {
     align-items: center;
     gap: 0.8rem;
     font-size: 0.9rem;
-  }
-
-  .nav-buttons {
-    margin-top: 0.5rem;
   }
 
   .top-sections-container {
@@ -1157,7 +1163,7 @@ nav {
   .welcome-section {
     padding: 1.5rem;
   }
-  
+
   .portrait-container {
     width: 150px;
     height: 150px;
@@ -1223,6 +1229,12 @@ nav {
     padding: 0.3rem 0.5rem;
   }
 
+  .nav-buttons {
+    position: absolute;
+    top: 0.5rem;
+    right: 0;
+  }
+
   .header-left h1 {
     font-size: 1.8rem;
   }
@@ -1258,9 +1270,9 @@ nav {
     width: 100%;
     margin: 0.5rem 0;
   }
-  
+
   .portrait-container {
-    width: 120px;
-    height: 120px;
+    width: 300px;
+    height: 300px;
   }
 }
