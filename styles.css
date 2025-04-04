@@ -739,17 +739,20 @@ nav {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .epic-header {
   text-align: center;
   margin-bottom: 2rem;
+  animation: slideInUp 0.8s ease-out;
 }
 
 .epic-title {
   font-size: 2.5rem;
   margin-bottom: 1rem;
   color: var(--text-primary);
+  text-shadow: 0 2px 5px var(--card-shadow);
 }
 
 .epic-subtitle {
@@ -757,6 +760,7 @@ nav {
   color: var(--text-secondary);
   max-width: 800px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
 .epic-controls {
@@ -765,6 +769,8 @@ nav {
   align-items: center;
   margin: 2rem 0;
   gap: 1rem;
+  flex-wrap: wrap;
+  animation: fadeIn 1s ease-in-out 0.3s both;
 }
 
 .epic-controls input,
@@ -776,6 +782,14 @@ nav {
   color: var(--text-primary);
   font-size: 1rem;
   margin-right: 1rem;
+  box-shadow: 0 2px 5px var(--card-shadow);
+  transition: all 0.3s ease;
+}
+
+.epic-controls input:focus,
+.epic-controls select:focus {
+  outline: 2px solid var(--accent-blue);
+  box-shadow: 0 0 8px rgba(58, 143, 216, 0.5);
 }
 
 .epic-controls button {
@@ -787,11 +801,13 @@ nav {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 5px var(--card-shadow);
 }
 
 .epic-controls button:hover {
   background-color: #3a8fd8;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--card-shadow);
 }
 
 .epic-gallery {
@@ -799,6 +815,7 @@ nav {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+  animation: fadeIn 1s ease-in-out 0.5s both;
 }
 
 .epic-image-card {
@@ -806,307 +823,110 @@ nav {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 8px var(--card-shadow);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .epic-image-card:hover {
   transform: translateY(-5px);
-}
-
-.epic-image-container {
-  position: relative;
-  padding-top: 100%;
-  overflow: hidden;
-}
-
-.epic-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.epic-image-card:hover .epic-image {
-  transform: scale(1.05);
-}
-
-.epic-image-info {
-  padding: 1rem;
-}
-
-.epic-image-title {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
-}
-
-.epic-image-date {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.epic-full-view {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  display: none;
-}
-
-.full-image {
-  max-width: 90%;
-  max-height: 80vh;
-  border-radius: 5px;
-}
-
-.image-caption {
-  margin-top: 1rem;
-  color: white;
-  text-align: center;
-  max-width: 80%;
-}
-
-.close-full-view {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 2rem;
-  cursor: pointer;
-}
-
-.error-message {
-  text-align: center;
-  color: #e74c3c;
-  padding: 1rem;
-  background-color: var(--space-medium);
-  border-radius: 5px;
-  margin-top: 1rem;
-  display: none;
+  box-shadow: 0 6px 12px var(--card-shadow);
 }
 
 /* ============ MARS WEATHER PAGE STYLES ============ */
-/* Main content styles for Mars Weather */
 .mars-main {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 2rem;
+  margin: 0 auto;
+  padding: 2rem;
+  animation: fadeIn 1s ease-in-out;
 }
 
-/* Mars Weather Header */
 .mars-header {
   text-align: center;
-  margin-bottom: 3rem;
-  position: relative;
+  margin-bottom: 2rem;
+  animation: slideInUp 0.8s ease-out;
 }
 
 .mars-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--accent-red);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: var(--text-primary);
+  text-shadow: 0 2px 5px var(--card-shadow);
 }
 
 .mars-subtitle {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: var(--text-secondary);
   max-width: 800px;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
+  line-height: 1.6;
 }
 
-/* Error message */
-.mars-error-message {
-  text-align: center;
-  color: var(--accent-red);
-  font-size: 1.2rem;
-  padding: 2rem;
-  background-color: var(--space-medium);
-  border-radius: 10px;
-  margin: 2rem auto;
-  max-width: 800px;
-  display: none;
-}
-
-/* Mars Weather Cards */
 .mars-weather-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+  animation: fadeIn 1s ease-in-out 0.3s both;
 }
 
 .mars-weather-card {
   background-color: var(--space-medium);
   border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 20px var(--card-shadow);
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px var(--card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
 }
 
 .mars-weather-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px var(--card-shadow);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px var(--card-shadow);
 }
 
-.mars-weather-header {
-  background-color: var(--space-light);
-  padding: 1.5rem;
-  border-bottom: 2px solid var(--accent-red);
+.mars-date {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
 }
 
-.sol-number {
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--accent-red);
-}
-
-.earth-date {
-  font-size: 1rem;
-  color: var(--text-secondary);
-}
-
-.mars-weather-body {
-  padding: 1.5rem;
-}
-
-.weather-data-item {
-  margin-bottom: 1.5rem;
-}
-
-.weather-data-label {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.weather-data-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.weather-data-range {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-top: 0.5rem;
-}
-
-.season-badge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background-color: var(--accent-purple);
-  color: white;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-/* Wind direction compass */
-.wind-direction {
+.mars-weather-data {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 1rem;
+  gap: 0.8rem;
 }
 
-.compass {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border: 2px solid var(--text-secondary);
-  border-radius: 50%;
-  margin-bottom: 1rem;
+.mars-data-item {
+  display: flex;
+  justify-content: space-between;
 }
 
-.compass-arrow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  transform-origin: center;
-}
-
-.compass-arrow::before {
-  content: '';
-  position: absolute;
-  top: -30px;
-  left: -5px;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 30px solid var(--accent-red);
-}
-
-.compass-labels {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.compass-label {
-  position: absolute;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.compass-label.north {
-  top: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.compass-label.east {
-  top: 50%;
-  right: 5px;
-  transform: translateY(-50%);
-}
-
-.compass-label.south {
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.compass-label.west {
-  top: 50%;
-  left: 5px;
-  transform: translateY(-50%);
-}
-
-/* Info section */
-.info-section {
-  background-color: var(--space-medium);
-  padding: 2rem;
+.loading-indicator, .error-message {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1rem;
   border-radius: 10px;
-  margin-top: 3rem;
-  box-shadow: 0 10px 20px var(--card-shadow);
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-.info-title {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: var(--accent-blue);
+.error-message {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid #dc3545;
 }
 
-.info-text {
-  margin-bottom: 1.5rem;
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--accent-blue);
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+.mars-nav, .mars-main {
+  position: relative;
+  z-index: 2;
 }
 
 /* ============ RESPONSIVE DESIGN ============ */
