@@ -89,14 +89,26 @@ nav {
   z-index: 100;
   box-shadow: 0 2px 4px var(--card-shadow);
   border-bottom: 2px solid var(--accent-blue);
+  /* This rule will still apply to any <nav> HTML5 elements. */
+  /* The main site navbar in index.html is a div.nav-container, styled below. */
 }
 
 .nav-container {
+  /* Properties moved from the 'nav' rule or similar to ensure div.nav-container is a styled bar */
+  background-color: var(--bg-secondary); /* Added from nav rule */
+  padding: 1rem 2rem; /* Added from nav rule, now applies within max-width */
+  position: sticky; /* Added from nav rule */
+  top: 0; /* Added from nav rule */
+  z-index: 100; /* Added from nav rule */
+  box-shadow: 0 2px 4px var(--card-shadow); /* Added from nav rule */
+  border-bottom: 2px solid var(--accent-blue); /* Added from nav rule */
+
+  /* Existing properties for layout and constraining width */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1200px; /* This makes the bar itself constrained */
+  margin: 0 auto; /* This centers the constrained bar */
   flex-wrap: wrap;
 }
 
@@ -339,7 +351,7 @@ nav {
 /* Welcome section */
 .welcome-section {
   margin: 2rem 0;
-  max-width: 800px;
+  max-width: 100%; /* Changed from 800px */
   background-color: var(--bg-secondary);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--card-shadow);
@@ -482,9 +494,9 @@ nav {
 /* ============ RESUME PAGE STYLES ============ */
 /* Main content styles for resume page */
 .resume-main {
-  max-width: 1000px;
-  margin: 1.5rem auto;
-  padding: 0 1.5rem;
+  max-width: 1200px; /* Changed from 1000px */
+  margin: 1.5rem auto; /* Unchanged */
+  padding: 0 2rem; /* Changed from 0 1.5rem */
 }
 
 .section {
@@ -663,6 +675,32 @@ nav {
   position: absolute;
   left: 0;
   color: var(--accent-teal);
+}
+
+/* Styles for Markdown Resume Section */
+.markdown-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#markdown-preview-container {
+  margin-top: 1rem;
+}
+
+.markdown-preview-box {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--bg-accent);
+  border-radius: 4px;
+  padding: 1rem;
+  white-space: pre-wrap; /* Ensures long lines wrap */
+  word-wrap: break-word; /* Breaks long words if necessary */
+  max-height: 400px; /* Optional: limit height and make scrollable */
+  overflow-y: auto;   /* Optional: adds scrollbar if content exceeds max-height */
+  font-family: 'Courier New', Courier, monospace; /* Monospaced font for code-like appearance */
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 /* Top sections container for side-by-side layout */
