@@ -7,7 +7,6 @@
   <title>Mitchell Carroll</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
-  <script src="navbar.js"></script>
   <script src="htmx.min.js"></script>
 </head>
 
@@ -22,8 +21,10 @@
     </div>
     <div class="nav-links">
       <a href="#" class="active">Home</a>
-      <a href="#" class="en" id="nav-resume-en" hx-get="/pages/resume.html" hx-target="#content-container">Resume</a>
-      <a href="#" class="fr" id="nav-resume-fr" hx-get="/pages/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-resume-en" hx-get="/content/resume.html" hx-target="#content-container">Resume</a>
+      <a href="#" class="fr" id="nav-resume-fr" hx-get="/content/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-namibia-en" hx-get="/pages/namibia_report.html" hx-target="#content-container">Namibia Report</a>
+      <a href="#" class="fr" id="nav-namibia-fr" hx-get="/pages/namibia_report.html" hx-target="#content-container">Rapport Namibie</a>
     </div>
     <div class="nav-buttons">
       <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
