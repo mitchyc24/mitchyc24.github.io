@@ -5,9 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mitchell Carroll</title>
-  <link rel="icon" type="image/x-icon" href="static/images/favicon.png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/x-icon" href="images/favicon.png">
   <link rel="stylesheet" href="static/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" integrity="sha512-TU/clvRaSqKB43MX6dvJPEWV8tEGDTbmT4mdxTs6DSYsBY9zKmiw4Qeykp0nS10ndH14HRNG2VWN+IjiMfA17Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="static/htmx.min.js"></script>
 </head>
 
@@ -24,6 +25,8 @@
       <a href="#" class="active">Home</a>
       <a href="#" class="en" id="nav-resume-en" hx-get="/pages/resume.html" hx-target="#content-container">Resume</a>
       <a href="#" class="fr" id="nav-resume-fr" hx-get="/pages/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-chess-en" hx-get="/pages/chess.html" hx-target="#content-container">Chess</a>
+      <a href="#" class="fr" id="nav-chess-fr" hx-get="/pages/chess.html" hx-target="#content-container">Éches</a>
     </div>
     <div class="nav-buttons">
       <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
@@ -151,6 +154,10 @@
       });
     });
   </script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js" integrity="sha512-WfASs5HtTgTL/eZsLaOftSN9wMQl7WZGlU5UiKx/yxTViMfGh9whWRwKAC27qH8VtZJqSMqDdbq2uUb1tY3jvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 
 </html>

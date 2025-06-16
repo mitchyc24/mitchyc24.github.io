@@ -1,0 +1,150 @@
+<div id="chess-content" class="chess-main">
+  <div id="myBoard" style="width: 600px"></div>
+  <p>Status: <span id="status"></span></p>
+  <p>PGN: <span id="pgn"></span></p>
+</div>
+
+<script>
+  var board = null;
+  var game = new Chess();
+  var $status = null; // Declare but don't assign yet
+  var $pgn = null;    // Declare but don't assign yet
+
+  function onDragStart(source, piece, position, orientation) {
+    // do not pick up pieces if the game is over
+    if (game.game_over()) return false;
+
+    // only pick up pieces for the side to move
+    if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+      return false;
+    }
+  }
+
+  function onDrop(source, target) {
+    // see if the move is legal
+    var move = game.move({
+      from: source,
+      to: target,
+      promotion: 'q' // NOTE: always promote to a queen for example simplicity
+    });
+
+    // illegal move
+    if (move === null) return 'snapback';
+
+    updateStatus();
+  }
+
+  // update the board position after the piece snap
+  // for castling, en passant, pawn promotion
+  function onSnapEnd() {
+    board.position(game.fen());
+  }
+
+  function updateStatus() {
+    var status = '';
+
+    var moveColor = 'White';
+    if (game.turn() === 'b') {
+      moveColor = 'Black';
+    }
+
+    // checkmate?
+    if (game.in_checkmate()) {
+      status = 'Game over, ' + moveColor + ' is in checkmate.';
+    }
+
+    // draw?
+    else if (game.in_draw()) {
+      status = 'Game over, drawn position';
+    }
+
+    // game still on
+    else {
+      status = moveColor + ' to move';
+
+      // check?
+      if (game.in_check()) {
+        status += ', ' + moveColor + ' is in check';
+      }
+    }
+
+    if ($status) $status.html(status); // Check if $status is initialized
+    if ($pgn) $pgn.html(game.pgn());   // Check if $pgn is initialized
+  }
+
+  var config = {
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd,
+    pieceTheme: function(piece) {
+      return '/static/images/custom_chess_pieces/' + piece + '.png';
+    }
+  };
+  // Ensure #myBoard is in the DOM before initializing Chessboard
+  // This can be tricky with HTMX loading content.
+  // A common pattern is to initialize after HTMX settles the content.
+  // For now, we assume this script runs after the div is loaded.
+  
+  // A MutationObserver can be used if #myBoard is not immediately available
+  // or use htmx:afterSwap event if this content is loaded via htmx
+  
+  function initChessboard() {
+    var boardElement = document.getElementById('myBoard');
+    if (boardElement && typeof $ !== 'undefined') { // Ensure jQuery is also available
+      $status = $('#status'); // Initialize jQuery dependent vars here
+      $pgn = $('#pgn');       // Initialize jQuery dependent vars here
+      board = Chessboard('myBoard', config);
+      updateStatus();
+    } else {
+      // If the board element isn't found or jQuery isn't loaded, retry or log error.
+      // console.warn('#myBoard not found or jQuery not loaded, retrying initialization...');
+      // setTimeout(initChessboard, 100); // Simple polling, consider htmx events
+      if (typeof $ === 'undefined') {
+        console.error("jQuery is not loaded. Chessboard cannot be initialized.");
+      }
+    }
+  }
+
+  // If this script is part of an HTMX loaded fragment,
+  // HTMX might execute scripts before the DOM is fully ready in some cases,
+  // or if jQuery is also loaded asynchronously.
+  // Using a small timeout or ensuring jQuery is loaded first can help.
+  if (typeof $ !== 'undefined') {
+    initChessboard();
+  } else {
+    // Fallback if jQuery is not immediately available (e.g. loaded async)
+    // This is less likely if jQuery is loaded in the head of index.html
+    // or before this script if all are at the end of body.
+    var jqueryCheckInterval = setInterval(function() {
+      if (typeof $ !== 'undefined') {
+        clearInterval(jqueryCheckInterval);
+        initChessboard();
+      }
+    }, 100); // Check every 100ms for jQuery
+  }
+  
+  // Listen for HTMX event if this content is loaded via htmx
+  // This is a more robust way to ensure the DOM is ready
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+    // Check if the swapped content contains #myBoard or if the target is the content container itself
+    var targetElement = evt.detail.target;
+    var myBoardElement = document.getElementById('myBoard');
+
+    if (myBoardElement && (targetElement.id === 'content-container' || targetElement.contains(myBoardElement) || targetElement === myBoardElement)) {
+      // Re-initialize or ensure chess board is set up if it's part of the swapped content
+      // Check if #myBoard is now in the DOM and not yet initialized or needs re-initialization
+      if (!board || board.fen() !== game.fen()) { // Re-init if board not there or FEN is different (e.g. after navigating away and back)
+        game = new Chess(); // Reset game state if needed
+        initChessboard();
+      } else if (board) {
+        // If board exists, perhaps just update status or re-render
+        board.position(game.fen()); // Ensure board position is current
+        updateStatus();
+      }
+    }
+  });
+
+</script>
