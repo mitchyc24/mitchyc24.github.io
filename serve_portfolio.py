@@ -31,8 +31,8 @@ async def get_page_content(page_name: str):
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Page {page_name} not found")
 
-# Mount the current directory to serve any static files (CSS, JS, images) 
-app.mount("/", StaticFiles(directory="."), name="static") 
+# Mount the 'static' directory to serve static files (CSS, JS, images) under the '/static' path
+app.mount("/static", StaticFiles(directory="static"), name="static")
  
 if __name__ == "__main__": 
     uvicorn.run("serve_portfolio:app", host="0.0.0.0", port=8000, reload=True)

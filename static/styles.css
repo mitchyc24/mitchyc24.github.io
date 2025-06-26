@@ -771,172 +771,7 @@ nav {
   font-size: 1.2rem;
 }
 
-/* ============ EPIC EARTH PAGE STYLES ============ */
-/* Main content styles for EPIC Earth */
-.epic-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  animation: fadeIn 1s ease-in-out;
-}
 
-.epic-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  animation: slideInUp 0.8s ease-out;
-}
-
-.epic-title {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  text-shadow: 0 2px 5px var(--card-shadow);
-}
-
-.epic-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-
-.epic-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 2rem 0;
-  gap: 1rem;
-  flex-wrap: wrap;
-  animation: fadeIn 1s ease-in-out 0.3s both;
-}
-
-.epic-controls input,
-.epic-controls select {
-  padding: 0.8rem 1rem;
-  border: none;
-  border-radius: 5px;
-  background-color: var(--space-light);
-  color: var(--text-primary);
-  font-size: 1rem;
-  margin-right: 1rem;
-  box-shadow: 0 2px 5px var(--card-shadow);
-  transition: all 0.3s ease;
-}
-
-.epic-controls input:focus,
-.epic-controls select:focus {
-  outline: 2px solid var(--accent-blue);
-  box-shadow: 0 0 8px rgba(58, 143, 216, 0.5);
-}
-
-.epic-controls button {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 5px;
-  background-color: var(--accent-blue);
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px var(--card-shadow);
-}
-
-.epic-controls button:hover {
-  background-color: #3a8fd8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px var(--card-shadow);
-}
-
-.epic-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-  animation: fadeIn 1s ease-in-out 0.5s both;
-}
-
-.epic-image-card {
-  background-color: var(--space-medium);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.epic-image-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px var(--card-shadow);
-}
-
-/* ============ MARS WEATHER PAGE STYLES ============ */
-.mars-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  animation: fadeIn 1s ease-in-out;
-}
-
-.mars-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  animation: slideInUp 0.8s ease-out;
-}
-
-.mars-title {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  text-shadow: 0 2px 5px var(--card-shadow);
-}
-
-.mars-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  max-width: 800px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-
-.mars-weather-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-  animation: fadeIn 1s ease-in-out 0.3s both;
-}
-
-.mars-weather-card {
-  background-color: var(--space-medium);
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 8px var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.mars-weather-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px var(--card-shadow);
-}
-
-.mars-date {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
-}
-
-.mars-weather-data {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.mars-data-item {
-  display: flex;
-  justify-content: space-between;
-}
 
 .loading-indicator, .error-message {
   text-align: center;
@@ -962,10 +797,16 @@ nav {
   margin: 0 auto;
 }
 
-.mars-nav, .mars-main {
-  position: relative;
-  z-index: 2;
+
+/* ============ CHESS PAGE STYLES ============ */
+.chess-main {
+  display: flex;
+  flex-direction: column; /* Stack title, board, controls vertically */
+  align-items: center;   /* Horizontally center all direct children, including the board */
+  padding: 2rem;         /* Optional: for spacing around the chess content */
+  width: 100%;           /* Ensure the wrapper takes full available width in #content-container */
 }
+
 
 /* ============ RESPONSIVE DESIGN ============ */
 /* Medium screens */
@@ -1043,36 +884,6 @@ nav {
 
   .home-main {
     padding: 1rem;
-  }
-
-  /* EPIC page responsive */
-  .epic-header {
-    padding: 2rem 1rem;
-  }
-
-  .epic-title {
-    font-size: 2rem;
-  }
-
-  .epic-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .epic-gallery {
-    grid-template-columns: 1fr;
-  }
-
-  /* Mars page responsive */
-  .mars-title {
-    font-size: 2rem;
-  }
-
-  .mars-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .mars-weather-container {
-    grid-template-columns: 1fr;
   }
 }
 
