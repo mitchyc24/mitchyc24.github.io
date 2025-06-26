@@ -8,7 +8,7 @@
   <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
     <!-- Lichess Rating Display Section - Sidebar -->
     <div class="lichess-rating-sidebar" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
-      <h4 style="margin-top: 0;">My Lichess Profile: 
+      <h4 style="margin-top: 0;">My Lichess Ratings: 
         <a href="https://lichess.org/@/Simply_a_Pawn">Simply_A_Pawn</a>
       </h4>
       <div id="lichess-ratings" class="rating-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
@@ -98,6 +98,11 @@
     if ($status) $status.html(status); // Check if $status is initialized
     if ($pgn) $pgn.html(game.pgn());   // Check if $pgn is initialized
   }
+  
+  // Function to calculate responsive board size
+  function calculateBoardSize() {
+    return Math.min(Math.floor(window.innerWidth * 0.8), 512); 
+  }
 
   var config = {
     draggable: true,
@@ -115,15 +120,18 @@
     if (boardElement && typeof $ !== 'undefined') {
       $status = $('#status');
       $pgn = $('#pgn');
+      
+      // Set board size before initialization
+      const boardWidth = calculateBoardSize();
+      boardElement.style.width = `${boardWidth}px`;
+      boardElement.style.maxWidth = `${boardWidth}px`;
+      
+      // Initialize the board
       board = Chessboard('myBoard', config);
       
-      // Force the board to be 600px width and apply custom styling
-      $('#myBoard').css({
-        'width': '600px !important',
-        'max-width': '600px !important',
-        'min-width': '600px !important'
-      });
-      
+      // Resize the board to ensure it matches our calculated dimensions
+      board.resize();
+            
       // Apply custom board colors after initialization
       setTimeout(function() {
         applyCustomBoardColors();
@@ -136,27 +144,22 @@
       }
     }
   }
-
-  function applyCustomBoardColors() {
-    // Get CSS custom properties for colors
-    const rootStyles = getComputedStyle(document.documentElement);
-    const lightSquareColor = '#f0f0f0'; // Light squares
-    const darkSquareColor = '#6ba6ff';  // Dark squares (using accent blue)
-    const borderColor = '#495057';      // Border color
-    
-    // Apply colors to light squares
-    $('#myBoard .square-55d63.white-1e1d7').css('background-color', lightSquareColor);
-    
-    // Apply colors to dark squares  
-    $('#myBoard .square-55d63.black-3c85d').css('background-color', darkSquareColor);
-    
-    // Add subtle border and shadow to the board
-    $('#myBoard .board-b72b1').css({
-      'border': `2px solid ${borderColor}`,
-      'border-radius': '8px',
-      'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)'
-    });
+  
+  // Handle window resize events
+  function handleWindowResize() {
+    if (board) {
+      const boardWidth = calculateBoardSize();
+      const boardElement = document.getElementById('myBoard');
+      if (boardElement) {
+        boardElement.style.width = `${boardWidth}px`;
+        boardElement.style.maxWidth = `${boardWidth}px`;
+      }
+      board.resize();
+    }
   }
+  
+  // Add resize event listener
+  window.addEventListener('resize', handleWindowResize);
 
   // If this script is part of an HTMX loaded fragment,
   // HTMX might execute scripts before the DOM is fully ready in some cases,
@@ -261,7 +264,7 @@
       if (data.ratings && Object.keys(data.ratings).length > 0) {
         // Display ratings
         Object.entries(data.ratings).forEach(([gameType, ratingInfo]) => {
-          if (ratingInfo.games > 0) { // Only show game types with games played
+          if (ratingInfo.games > 100) { // Only show game types with games played
             const ratingDiv = document.createElement('div');
             ratingDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; text-align: center;';
             ratingDiv.innerHTML = `
@@ -289,12 +292,3 @@
   }
 
 </script>
-
-<style>
-  /* Ensure the chessboard always has a width of 600px */
-  #myBoard {
-    width: 600px !important;
-    max-width: 600px !important;
-    min-width: 600px !important;
-  }
-</style>
