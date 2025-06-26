@@ -19,10 +19,10 @@
     </div>
     
     <!-- Main Chess Game Area - Centered -->
-    <div class="chess-game-area" style="flex: 1 1 600px; max-width: 600px;">
-      <div id="myBoard" style="width: 100%;"></div>
-      <p style="margin: 10px 0;">Status: <span id="status"></span></p>
-      <p style="margin: 10px 0;">PGN: <span id="pgn"></span></p>
+    <div class="chess-game-area">
+      <div id="myBoard" class="chess-board-container"></div>
+      <p>Status: <span id="status"></span></p>
+      <p>PGN: <span id="pgn"></span></p>
     </div>
 
     <!-- Empty right column for balance -->
@@ -109,29 +109,53 @@
       return '/static/images/custom_chess_pieces/' + piece + '.png';
     }
   };
-  // Ensure #myBoard is in the DOM before initializing Chessboard
-  // This can be tricky with HTMX loading content.
-  // A common pattern is to initialize after HTMX settles the content.
-  // For now, we assume this script runs after the div is loaded.
-  
-  // A MutationObserver can be used if #myBoard is not immediately available
-  // or use htmx:afterSwap event if this content is loaded via htmx
-  
+
   function initChessboard() {
     var boardElement = document.getElementById('myBoard');
-    if (boardElement && typeof $ !== 'undefined') { // Ensure jQuery is also available
-      $status = $('#status'); // Initialize jQuery dependent vars here
-      $pgn = $('#pgn');       // Initialize jQuery dependent vars here
+    if (boardElement && typeof $ !== 'undefined') {
+      $status = $('#status');
+      $pgn = $('#pgn');
       board = Chessboard('myBoard', config);
+      
+      // Force the board to be 600px width and apply custom styling
+      $('#myBoard').css({
+        'width': '600px !important',
+        'max-width': '600px !important',
+        'min-width': '600px !important'
+      });
+      
+      // Apply custom board colors after initialization
+      setTimeout(function() {
+        applyCustomBoardColors();
+      }, 100);
+      
       updateStatus();
     } else {
-      // If the board element isn't found or jQuery isn't loaded, retry or log error.
-      // console.warn('#myBoard not found or jQuery not loaded, retrying initialization...');
-      // setTimeout(initChessboard, 100); // Simple polling, consider htmx events
       if (typeof $ === 'undefined') {
         console.error("jQuery is not loaded. Chessboard cannot be initialized.");
       }
     }
+  }
+
+  function applyCustomBoardColors() {
+    // Get CSS custom properties for colors
+    const rootStyles = getComputedStyle(document.documentElement);
+    const lightSquareColor = '#f0f0f0'; // Light squares
+    const darkSquareColor = '#6ba6ff';  // Dark squares (using accent blue)
+    const borderColor = '#495057';      // Border color
+    
+    // Apply colors to light squares
+    $('#myBoard .square-55d63.white-1e1d7').css('background-color', lightSquareColor);
+    
+    // Apply colors to dark squares  
+    $('#myBoard .square-55d63.black-3c85d').css('background-color', darkSquareColor);
+    
+    // Add subtle border and shadow to the board
+    $('#myBoard .board-b72b1').css({
+      'border': `2px solid ${borderColor}`,
+      'border-radius': '8px',
+      'box-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)'
+    });
   }
 
   // If this script is part of an HTMX loaded fragment,
@@ -241,7 +265,7 @@
             const ratingDiv = document.createElement('div');
             ratingDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; text-align: center;';
             ratingDiv.innerHTML = `
-              <strong>${gameType.charAt(0).toUpperCase() + gameType.slice(1)}</strong><br>
+              <strong>${gameType.charAt(0).toUpperCase() + gameType.slice(1,10)}</strong><br>
               <span style="font-size: 1.2em; color: #4a90e2;">${ratingInfo.rating}</span><br>
               <small>${ratingInfo.games} games</small>
             `;
@@ -265,3 +289,12 @@
   }
 
 </script>
+
+<style>
+  /* Ensure the chessboard always has a width of 600px */
+  #myBoard {
+    width: 600px !important;
+    max-width: 600px !important;
+    min-width: 600px !important;
+  }
+</style>

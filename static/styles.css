@@ -805,6 +805,7 @@ nav {
   align-items: center;
   padding: 2rem;
   width: 100%;
+  overflow-x: auto; /* Allow horizontal scroll if needed on very small screens */
 }
 
 .chess-description {
@@ -841,6 +842,7 @@ nav {
   max-width: 1200px;
   align-items: start;
   justify-items: center;
+  overflow-x: auto; /* Allow horizontal scroll if needed */
 }
 
 .chess-game-area {
@@ -848,63 +850,71 @@ nav {
   flex-direction: column;
   align-items: center;
   justify-self: center;
+  min-width: 600px; /* Ensure minimum width for the game area */
 }
 
-.lichess-rating-sidebar {
-  background-color: rgba(0,0,0,0.05);
-  border-radius: 8px;
-  padding: 1rem;
-  width: 100%;
-  max-width: 250px;
+/* Chess board container - enforce 600px width */
+.chess-board-container,
+#myBoard {
+  width: 600px !important;
+  max-width: 600px !important;
+  min-width: 600px !important;
+  height: auto !important;
 }
 
-.lichess-rating-sidebar h4 {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
-  color: var(--accent-blue);
-  text-align: center;
+/* Override any Chessboard.js internal styles */
+#myBoard .board-b72b1 {
+  width: 600px !important;
+  height: 600px !important;
+  border: 2px solid var(--text-secondary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px var(--card-shadow) !important;
 }
 
-.rating-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+/* Custom chessboard square colors */
+#myBoard .square-55d63.white-1e1d7 {
+  background-color: #f0f0f0 !important;
 }
 
-.rating-grid > div:not(.loading-text) {
-  background: rgba(255,255,255,0.1);
-  padding: 0.75rem;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 0.9rem;
+#myBoard .square-55d63.black-3c85d {
+  background-color: var(--accent-blue) !important;
 }
 
-.rating-grid strong {
-  display: block;
-  font-size: 0.85rem;
-  margin-bottom: 0.25rem;
-}
-
-.rating-grid .rating-value {
-  font-size: 1.1rem;
-  color: #4a90e2;
-  font-weight: bold;
-}
-
-.rating-grid small {
-  font-size: 0.75rem;
+/* Highlighted squares for moves */
+#myBoard .square-55d63.highlight1-32417,
+#myBoard .square-55d63.highlight2-9c5d2 {
+  background-color: var(--accent-highlight) !important;
   opacity: 0.8;
 }
 
-.loading-text {
-  text-align: center;
-  color: #666;
-  font-size: 0.9rem;
+/* Square highlighting on hover */
+#myBoard .square-55d63:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
-.chess-spacer {
-  width: 100%;
-  max-width: 250px;
+/* Ensure chess pieces and squares maintain proper proportions */
+#myBoard .square-55d63 {
+  width: 75px !important;
+  height: 75px !important;
+}
+
+/* Dark theme adjustments for chessboard */
+.dark-theme #myBoard .square-55d63.white-1e1d7 {
+  background-color: #e9ecef !important;
+}
+
+.dark-theme #myBoard .square-55d63.black-3c85d {
+  background-color: #4a9ff5 !important;
+}
+
+/* Space theme adjustments for chessboard */
+.space-theme #myBoard .square-55d63.white-1e1d7 {
+  background-color: #d0d7e1 !important;
+}
+
+.space-theme #myBoard .square-55d63.black-3c85d {
+  background-color: #4a9ff5 !important;
 }
 
 /* Responsive chess layout */
@@ -958,15 +968,39 @@ nav {
 @media (max-width: 480px) {
   .chess-main {
     padding: 1rem;
+    overflow-x: auto; /* Allow horizontal scrolling on small screens */
   }
   
+  /* Remove the override that was reducing board size */
   .chess-game-area #myBoard {
-    width: 400px !important;
+    width: 600px !important;
+    max-width: 600px !important;
+    min-width: 600px !important;
+  }
+  
+  /* Keep the board at 600px but allow the container to scroll */
+  .chess-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    overflow-x: auto;
+    min-width: 600px; /* Ensure the layout can accommodate the board */
   }
   
   .rating-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    display: block;
+    display: grid;
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .portrait-container {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    display: grid;
     width: 100%;
     margin: 0.5rem 0;
   }
