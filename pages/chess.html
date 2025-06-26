@@ -5,11 +5,27 @@
     <p>Feel free to play around with the board - you can drag and drop pieces to make your moves. The game enforces all standard chess rules including castling, en passant, and pawn promotion. Enjoy your game!</p>
     <p>Currently there is no computer opponent, I am working on training my own AI model to eventually play agaisnt my website visitors. My goal is to be able to train a chess AI that can eventually outplay me!</p>
   </div>
-  
-  <div class="chess-game-area" style="flex: 0 0 auto; max-width: 1200px; margin: 0 auto;">
-    <div id="myBoard" style="width: 600px"></div>
-    <p>Status: <span id="status"></span></p>
-    <p>PGN: <span id="pgn"></span></p>
+
+  <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
+    <!-- Lichess Rating Display Section - Sidebar -->
+    <div class="lichess-rating-sidebar" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
+      <h4 style="margin-top: 0;">My Lichess Profile: Simply_A_Pawn</h4>
+      <div id="lichess-ratings" class="rating-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
+        <div id="loading-ratings" class="loading-text" style="grid-column: 1 / -1; text-align: center; color: #666;">
+          Loading ratings...
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Chess Game Area - Centered -->
+    <div class="chess-game-area" style="flex: 1 1 600px; max-width: 600px;">
+      <div id="myBoard" style="width: 100%;"></div>
+      <p style="margin: 10px 0;">Status: <span id="status"></span></p>
+      <p style="margin: 10px 0;">PGN: <span id="pgn"></span></p>
+    </div>
+
+    <!-- Empty right column for balance -->
+    <div class="chess-spacer" style="flex: 0 0 250px; max-width: 250px;"></div>
   </div>
 </div>
 
@@ -154,6 +170,63 @@
         updateStatus();
       }
     }
+
+    // Fetch Lichess ratings when chess page is loaded
+    var targetElement = evt.detail.target;
+    var chessContentElement = document.getElementById('chess-content');
+    
+    if (chessContentElement && (targetElement.id === 'content-container' || targetElement.contains(chessContentElement) || targetElement === chessContentElement)) {
+      fetchLichessRatings();
+    }
   });
 
+  // Also fetch ratings on initial load if this page is loaded directly
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('chess-content')) {
+      fetchLichessRatings();
+    }
+  });
+
+  // Function to fetch and display Lichess ratings
+  async function fetchLichessRatings() {
+    try {
+      const response = await fetch('/api/lichess-rating/Simply_A_Pawn');
+      const data = await response.json();
+      
+      const ratingsContainer = document.getElementById('lichess-ratings');
+      const loadingElement = document.getElementById('loading-ratings');
+      
+      if (loadingElement) {
+        loadingElement.remove();
+      }
+      
+      if (data.ratings && Object.keys(data.ratings).length > 0) {
+        // Display ratings
+        Object.entries(data.ratings).forEach(([gameType, ratingInfo]) => {
+          if (ratingInfo.games > 0) { // Only show game types with games played
+            const ratingDiv = document.createElement('div');
+            ratingDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; text-align: center;';
+            ratingDiv.innerHTML = `
+              <strong>${gameType.charAt(0).toUpperCase() + gameType.slice(1)}</strong><br>
+              <span style="font-size: 1.2em; color: #4a90e2;">${ratingInfo.rating}</span><br>
+              <small>${ratingInfo.games} games</small>
+            `;
+            ratingsContainer.appendChild(ratingDiv);
+          }
+        });
+      } else {
+        ratingsContainer.innerHTML = '<div style="text-align: center; color: #666;">No rating data available</div>';
+      }
+    } catch (error) {
+      console.error('Error fetching Lichess ratings:', error);
+      const ratingsContainer = document.getElementById('lichess-ratings');
+      const loadingElement = document.getElementById('loading-ratings');
+      if (loadingElement) {
+        loadingElement.textContent = 'Failed to load ratings';
+        loadingElement.style.color = '#e74c3c';
+      }
+    }
+  }
+
+  // ...existing code...
 </script>

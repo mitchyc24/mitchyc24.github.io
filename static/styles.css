@@ -801,10 +801,10 @@ nav {
 /* ============ CHESS PAGE STYLES ============ */
 .chess-main {
   display: flex;
-  flex-direction: column; /* Stack title, board, controls vertically */
-  align-items: center;   /* Horizontally center all direct children, including the board */
-  padding: 2rem;         /* Optional: for spacing around the chess content */
-  width: 100%;           /* Ensure the wrapper takes full available width in #content-container */
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  width: 100%;
 }
 
 .chess-description {
@@ -833,141 +833,141 @@ nav {
   margin-bottom: 0;
 }
 
+.chess-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr 250px;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  align-items: start;
+  justify-items: center;
+}
+
 .chess-game-area {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-self: center;
 }
 
-/* ...existing code... */
+.lichess-rating-sidebar {
+  background-color: rgba(0,0,0,0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  width: 100%;
+  max-width: 250px;
+}
 
-/* ============ RESPONSIVE DESIGN ============ */
-/* Medium screens */
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+.lichess-rating-sidebar h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: var(--accent-blue);
+  text-align: center;
+}
+
+.rating-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rating-grid > div:not(.loading-text) {
+  background: rgba(255,255,255,0.1);
+  padding: 0.75rem;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.rating-grid strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.rating-grid .rating-value {
+  font-size: 1.1rem;
+  color: #4a90e2;
+  font-weight: bold;
+}
+
+.rating-grid small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.loading-text {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.chess-spacer {
+  width: 100%;
+  max-width: 250px;
+}
+
+/* Responsive chess layout */
+@media (max-width: 1024px) {
+  .chess-layout {
+    grid-template-columns: 200px 1fr 200px;
+    gap: 1.5rem;
   }
-
-  .nav-buttons {
-    position: absolute;
-    top: 0.5rem;
-    right: 0;
-    margin: 0;
+  
+  .lichess-rating-sidebar {
+    max-width: 200px;
+    padding: 0.8rem;
   }
-
-  .header-content {
-    flex-direction: column;
-    text-align: center;
-    width: 100%;
-  }
-
-  .nav-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.8rem;
+  
+  .lichess-rating-sidebar h4 {
     font-size: 0.9rem;
   }
-
-  .top-sections-container {
-    grid-template-columns: 1fr;
-  }
-
-  .section {
-    padding: 1.2rem;
-  }
-
-  .timeline-container,
-  .education-container,
-  .skills-container {
-    grid-template-columns: 1fr;
-  }
-
-  .skills-list {
-    columns: 2;
-  }
-
-  /* Home page responsive */
-  .welcome-section {
-    padding: 1.5rem;
-  }
-
-  .portrait-container {
-    width: 150px;
-    height: 150px;
-  }
-
-  .welcome-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .welcome-text {
-    font-size: 1rem;
-  }
-
-  .home-contact-info {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.8rem;
-  }
-
-  .home-main {
-    padding: 1rem;
+  
+  .rating-grid > div:not(.loading-text) {
+    padding: 0.6rem;
+    font-size: 0.8rem;
   }
 }
 
-/* Small screens */
-@media (max-width: 480px) {
-  .nav-links {
-    font-size: 0.8rem;
+@media (max-width: 768px) {
+  .chess-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .lichess-rating-sidebar {
+    max-width: 600px;
+    order: 2;
+  }
+  
+  .chess-game-area {
+    order: 1;
+  }
+  
+  .chess-spacer {
+    display: none;
+  }
+  
+  .rating-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.5rem;
   }
+}
 
-  .nav-links a {
-    padding: 0.3rem 0.5rem;
+@media (max-width: 480px) {
+  .chess-main {
+    padding: 1rem;
   }
-
-  .nav-buttons {
-    position: absolute;
-    top: 0.5rem;
-    right: 0;
+  
+  .chess-game-area #myBoard {
+    width: 400px !important;
   }
-
-  .header-left h1 {
-    font-size: 1.8rem;
+  
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
-
-  .header-left p {
-    font-size: 0.9rem;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-  }
-
-  .timeline-header {
-    flex-direction: column;
-  }
-
-  .timespan {
-    margin-left: 0;
-    margin-top: 0.3rem;
-  }
-
-  .skills-list {
-    columns: 1;
-  }
-
-  .contact-info {
-    flex-direction: column;
-  }
-
-  /* Home page small screen */
-  .cta-button {
+}
     display: block;
     width: 100%;
     margin: 0.5rem 0;
