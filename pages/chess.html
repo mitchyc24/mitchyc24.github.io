@@ -8,6 +8,12 @@
   <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
     <!-- Lichess Rating Display Section - Sidebar -->
     <div class="lichess-rating" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
+      <!-- Lichess Logo -->
+      <div class="lichess-logo-container" style="text-align: center; margin-bottom: 15px;">
+        <img id="lichess-logo-light" src="/static/images/Landscape-Lichess-logo-black.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: block;">
+        <img id="lichess-logo-dark" src="/static/images/Landscape-Lichess-logo-white.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: none;">
+      </div>
+      
       <h4 style="margin-top: 0;">My Lichess Ratings: 
         <a href="https://lichess.org/@/Simply_a_Pawn">Simply_A_Pawn</a>
       </h4>
@@ -135,6 +141,7 @@
       // Apply custom board colors after initialization
       setTimeout(function() {
         applyCustomBoardColors();
+        initializeChessThemeWatcher(); // Initialize theme watcher and update logo
       }, 100);
       
       updateStatus();
@@ -205,6 +212,7 @@
     
     if (chessContentElement && (targetElement.id === 'content-container' || targetElement.contains(chessContentElement) || targetElement === chessContentElement)) {
       fetchLichessRatings();
+      initializeChessThemeWatcher(); // Initialize theme watcher when chess page is loaded
     }
   });
 
@@ -212,6 +220,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('chess-content')) {
       fetchLichessRatings();
+      initializeChessThemeWatcher(); // Initialize theme watcher on direct page load
     }
   });
 
@@ -347,6 +356,46 @@
         }
       `;
     }
+  }
+
+  // Function to update Lichess logo based on theme
+  function updateLichessLogo() {
+    const lightLogo = document.getElementById('lichess-logo-light');
+    const darkLogo = document.getElementById('lichess-logo-dark');
+    
+    if (lightLogo && darkLogo) {
+      const isDarkTheme = document.body.classList.contains('dark-theme');
+      
+      if (isDarkTheme) {
+        lightLogo.style.display = 'none';
+        darkLogo.style.display = 'block';
+      } else {
+        lightLogo.style.display = 'block';
+        darkLogo.style.display = 'none';
+      }
+    }
+  }
+
+  // Watch for theme changes on the body element
+  function watchForThemeChanges() {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateLichessLogo();
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  // Initialize theme watcher when chess content is loaded
+  function initializeChessThemeWatcher() {
+    updateLichessLogo(); // Set initial state
+    watchForThemeChanges(); // Watch for changes
   }
 
 </script>
