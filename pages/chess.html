@@ -1,13 +1,13 @@
 <div id="chess-content" class="chess-main">
   <div class="chess-description" style="max-width: 1200px; margin: 0 auto; padding: 20px; background-color: rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box;">
     <h3 style="margin-top: 0;">Welcome to My Chess Game!</h3>
-    <p>Hello and welcome to my implementation of chess! This game was built leveraging the Chess.js and Chessboard.js libraries, and generated custom chess piece designs using OpenAI's DALL-E 2 image generator. Each piece has been crafted to provide a unique and visually appealing chess experience.</p>
-    <p>Currently there is no computer opponent, I am working on training my own AI model to eventually play agaisnt my website visitors. My goal is to be able to train a chess AI that can eventually outplay me!</p>
+    <p>Chess has always been a fun passtime of mine, I'm no master but I love to play. I implemented this game by leveraging the Chess.js and Chessboard.js libraries. I'm not a professional designer either but decided to design each piece myself.</p>
+    <p>Currently there is no computer opponent, but I am working on training my own AI model based on my online lichess games to eventually play agaisnt my website visitors in a similar style and strength as me! Stay tuned and come back in the future to challenge AI Mitchell!</p>
   </div>
 
   <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
     <!-- Lichess Rating Display Section - Sidebar -->
-    <div class="lichess-rating-sidebar" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
+    <div class="lichess-rating" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
       <h4 style="margin-top: 0;">My Lichess Ratings: 
         <a href="https://lichess.org/@/Simply_a_Pawn">Simply_A_Pawn</a>
       </h4>
@@ -111,7 +111,7 @@
     onDrop: onDrop,
     onSnapEnd: onSnapEnd,
     pieceTheme: function(piece) {
-      return '/static/images/custom_chess_pieces/' + piece + '.png';
+      return '/static/images/custom_chess_pieces/svgs/' + piece + '.svg';
     }
   };
 
@@ -257,8 +257,9 @@
       const ratingsContainer = document.getElementById('lichess-ratings');
       const loadingElement = document.getElementById('loading-ratings');
       
-      if (loadingElement) {
-        loadingElement.remove();
+      // Clear any existing content (loading element and/or previous ratings)
+      if (ratingsContainer) {
+        ratingsContainer.innerHTML = '';
       }
       
       if (data.ratings && Object.keys(data.ratings).length > 0) {
@@ -281,13 +282,70 @@
     } catch (error) {
       console.error('Error fetching Lichess ratings:', error);
       const ratingsContainer = document.getElementById('lichess-ratings');
-      const loadingElement = document.getElementById('loading-ratings');
-      if (loadingElement) {
-        loadingElement.textContent = 'Failed to load ratings';
-        loadingElement.style.color = '#e74c3c';
-      } else {
+      
+      // Clear any existing content before showing error
+      if (ratingsContainer) {
         ratingsContainer.innerHTML = '<div style="text-align: center; color: #e74c3c;">Failed to load ratings</div>';
       }
+    }
+  }
+
+  // Function to apply custom board colors that match the website theme
+  function applyCustomBoardColors() {
+    // Get CSS custom properties from the document
+    const rootStyles = getComputedStyle(document.documentElement);
+    const bgSecondary = rootStyles.getPropertyValue('--bg-secondary').trim();
+    const bgAccent = rootStyles.getPropertyValue('--bg-accent').trim();
+    const accentBlue = rootStyles.getPropertyValue('--accent-blue').trim();
+    
+    // Default colors if CSS variables aren't available
+    const lightSquareColor = bgSecondary || '#e9ecef';
+    const darkSquareColor = bgAccent || '#dee2e6';
+    const borderColor = accentBlue || '#6ba6ff';
+    
+    // Apply custom styles to the chessboard
+    const boardElement = document.querySelector('#myBoard');
+    if (boardElement) {
+      // Create a style element for custom chessboard colors
+      let customStyle = document.getElementById('chess-custom-styles');
+      if (!customStyle) {
+        customStyle = document.createElement('style');
+        customStyle.id = 'chess-custom-styles';
+        document.head.appendChild(customStyle);
+      }
+      
+      customStyle.textContent = `
+        /* Custom chessboard colors to match website theme */
+        .chessboard-63f37 {
+          border: 3px solid ${borderColor} !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .white-1e1d7 {
+          background-color: ${lightSquareColor} !important;
+        }
+        
+        .black-3c85d {
+          background-color: ${darkSquareColor} !important;
+        }
+        
+        .highlight1-32417, .highlight2-9c5d2 {
+          background-color: ${accentBlue}40 !important; /* 40 adds transparency */
+        }
+        
+        .notation-322f9 {
+          color: var(--text-secondary) !important;
+          font-weight: 600 !important;
+        }
+        
+        /* Style for when squares are highlighted during moves */
+        .square-55d63.highlight1-32417,
+        .square-55d63.highlight2-9c5d2 {
+          background-color: ${accentBlue}60 !important;
+          box-shadow: inset 0 0 3px ${accentBlue} !important;
+        }
+      `;
     }
   }
 
