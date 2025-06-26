@@ -2,14 +2,15 @@
   <div class="chess-description" style="max-width: 1200px; margin: 0 auto; padding: 20px; background-color: rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box;">
     <h3 style="margin-top: 0;">Welcome to My Chess Game!</h3>
     <p>Hello and welcome to my implementation of chess! This game was built leveraging the Chess.js and Chessboard.js libraries, and generated custom chess piece designs using OpenAI's DALL-E 2 image generator. Each piece has been crafted to provide a unique and visually appealing chess experience.</p>
-    <p>Feel free to play around with the board - you can drag and drop pieces to make your moves. The game enforces all standard chess rules including castling, en passant, and pawn promotion. Enjoy your game!</p>
     <p>Currently there is no computer opponent, I am working on training my own AI model to eventually play agaisnt my website visitors. My goal is to be able to train a chess AI that can eventually outplay me!</p>
   </div>
 
   <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
     <!-- Lichess Rating Display Section - Sidebar -->
     <div class="lichess-rating-sidebar" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
-      <h4 style="margin-top: 0;">My Lichess Profile: Simply_A_Pawn</h4>
+      <h4 style="margin-top: 0;">My Lichess Profile: 
+        <a href="https://lichess.org/@/Simply_a_Pawn">Simply_A_Pawn</a>
+      </h4>
       <div id="lichess-ratings" class="rating-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
         <div id="loading-ratings" class="loading-text" style="grid-column: 1 / -1; text-align: center; color: #666;">
           Loading ratings...
@@ -228,5 +229,4 @@
     }
   }
 
-  // ...existing code...
 </script>

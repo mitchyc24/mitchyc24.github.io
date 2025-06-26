@@ -966,8 +966,6 @@ nav {
   
   .rating-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  }
-}
     display: block;
     width: 100%;
     margin: 0.5rem 0;
