@@ -191,8 +191,41 @@
   // Function to fetch and display Lichess ratings
   async function fetchLichessRatings() {
     try {
-      const response = await fetch('/api/lichess-rating/Simply_A_Pawn');
-      const data = await response.json();
+      // Call Lichess API directly from the frontend
+      const response = await fetch('https://lichess.org/api/user/Simply_A_Pawn', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const userData = await response.json();
+      const perfs = userData.perfs || {};
+      
+      // Extract relevant rating information
+      const ratings = {};
+      for (const [gameType, ratingInfo] of Object.entries(perfs)) {
+        if (ratingInfo && typeof ratingInfo === 'object' && 'rating' in ratingInfo) {
+          ratings[gameType] = {
+            rating: ratingInfo.rating,
+            games: ratingInfo.games || 0,
+            rd: ratingInfo.rd || 0
+          };
+        }
+      }
+      
+      const data = {
+        username: 'Simply_A_Pawn',
+        ratings: ratings,
+        profile: {
+          country: userData.profile?.country,
+          location: userData.profile?.location
+        }
+      };
       
       const ratingsContainer = document.getElementById('lichess-ratings');
       const loadingElement = document.getElementById('loading-ratings');
@@ -225,6 +258,8 @@
       if (loadingElement) {
         loadingElement.textContent = 'Failed to load ratings';
         loadingElement.style.color = '#e74c3c';
+      } else {
+        ratingsContainer.innerHTML = '<div style="text-align: center; color: #e74c3c;">Failed to load ratings</div>';
       }
     }
   }
