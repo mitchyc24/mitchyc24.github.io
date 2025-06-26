@@ -807,6 +807,39 @@ nav {
   width: 100%;           /* Ensure the wrapper takes full available width in #content-container */
 }
 
+.chess-description {
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 8px;
+  box-sizing: border-box;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.chess-description h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--accent-blue);
+}
+
+.chess-description p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.chess-description p:last-child {
+  margin-bottom: 0;
+}
+
+.chess-game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ...existing code... */
 
 /* ============ RESPONSIVE DESIGN ============ */
 /* Medium screens */

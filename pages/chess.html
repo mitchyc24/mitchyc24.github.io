@@ -1,7 +1,16 @@
 <div id="chess-content" class="chess-main">
-  <div id="myBoard" style="width: 600px"></div>
-  <p>Status: <span id="status"></span></p>
-  <p>PGN: <span id="pgn"></span></p>
+  <div class="chess-description" style="max-width: 1200px; margin: 0 auto; padding: 20px; background-color: rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box;">
+    <h3 style="margin-top: 0;">Welcome to My Chess Game!</h3>
+    <p>Hello and welcome to my implementation of chess! This game was built leveraging the Chess.js and Chessboard.js libraries, and generated custom chess piece designs using OpenAI's DALL-E 2 image generator. Each piece has been crafted to provide a unique and visually appealing chess experience.</p>
+    <p>Feel free to play around with the board - you can drag and drop pieces to make your moves. The game enforces all standard chess rules including castling, en passant, and pawn promotion. Enjoy your game!</p>
+    <p>Currently there is no computer opponent, I am working on training my own AI model to eventually play agaisnt my website visitors. My goal is to be able to train a chess AI that can eventually outplay me!</p>
+  </div>
+  
+  <div class="chess-game-area" style="flex: 0 0 auto; max-width: 1200px; margin: 0 auto;">
+    <div id="myBoard" style="width: 600px"></div>
+    <p>Status: <span id="status"></span></p>
+    <p>PGN: <span id="pgn"></span></p>
+  </div>
 </div>
 
 <script>
