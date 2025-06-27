@@ -303,3 +303,21 @@
   animation: spin 1s ease-in-out infinite;
   margin: 0 auto;
 }
+
+@media (max-width: 768px) {
+  .top-sections-container {
+    grid-template-columns: 1fr;
+  }
+
+  .skills-container {
+    grid-template-columns: 1fr;
+  }
+
+  .education-container {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-container {
+    grid-template-columns: 1fr;
+  }
+}
