@@ -48,6 +48,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.8rem;
+  flex-wrap: wrap;
 }
 
 .job-title {
@@ -65,7 +66,6 @@
 .timespan {
   font-size: 0.9rem;
   color: var(--accent-light);
-  white-space: nowrap;
   margin-left: 0.8rem;
 }
 

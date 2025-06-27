@@ -110,6 +110,11 @@
           document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
           this.classList.add('active');
           
+          // Close the hamburger menu if it's open
+          if (navRightContent.classList.contains('active')) {
+            navRightContent.classList.remove('active');
+          }
+
           // Update page-specific stylesheet
           const page = this.id.split('-')[1];
           const pageStyle = document.getElementById('page-styles');
