@@ -41,8 +41,7 @@
 
   <!-- Content Container for Dynamic Content Loading -->
   <div id="content-container">
-    <!-- Initial home content -->
-    Content will be loaded here dynamically.
+    <!-- Initial content is loaded via JavaScript -->
   </div>
 
   <script>
@@ -104,29 +103,14 @@
 
           // Add active class to clicked link
           this.classList.add('active');
-
-          // If it's the Home link, show the home content
-          if (this.textContent.trim() === 'Home') {
-            // Load home content
-            fetch('/')
-              .then(response => response.text())
-              .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const homeContent = doc.querySelector('.home-main').outerHTML;
-                document.getElementById('content-container').innerHTML = homeContent;
-              });
-          } else if (this.id === 'nav-blog-en' || this.id === 'nav-blog-fr') {
-            // Load blog content structure
-            fetch('static/pages/blog.html')
-              .then(response => response.text())
-              .then(html => {
-                document.getElementById('content-container').innerHTML = html;
-                // After loading blog.html, fetch and display posts
-                fetchBlogPosts();
-              });
-          }
         });
+      });
+
+      document.body.addEventListener('htmx:afterSwap', function(event) {
+        // After blog page is loaded, fetch posts
+        if (document.getElementById('blog-posts-container')) {
+          fetchBlogPosts();
+        }
       });
 
       // Function to fetch and display blog posts
@@ -159,25 +143,24 @@
         }
       }
 
-      // Initial content load check - if blog is the target, load posts
-      // This handles direct navigation or refresh on the blog page
+      // Initial content load
       if (window.location.hash && window.location.hash.includes('blog')) {
-         // Simulate a click on the blog tab if htmx hasn't loaded it yet
-         // This is a fallback, hx-get should ideally handle this
-        const blogNavLink = document.getElementById('nav-blog-en') || document.getElementById('nav-blog-fr');
-        if (blogNavLink && !document.getElementById('blog-posts-container')) {
-            htmx.process(blogNavLink); // Trigger htmx loading
-            // htmx.onLoad isn't standard, using a small delay to ensure container exists
-            setTimeout(fetchBlogPosts, 500);
-        } else if (document.getElementById('blog-posts-container')) {
-            fetchBlogPosts();
+        const lang = document.body.classList.contains('french-active') ? 'fr' : 'en';
+        const blogNavLink = document.getElementById(`nav-blog-${lang}`);
+        if (blogNavLink) {
+          blogNavLink.click();
+        }
+      } else {
+        const lang = document.body.classList.contains('french-active') ? 'fr' : 'en';
+        const homeNavLink = document.getElementById(`nav-home-${lang}`);
+        if (homeNavLink) {
+          homeNavLink.click();
         }
       }
     });
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js" integrity="sha512-WfASs5HtTgTL/eZsLaOftSN9wMQl7WZGlU5UiKx/yxTViMfGh9whWRwKAC27qH8VtZJqSMqDdbq2uUb1tY3jvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 
