@@ -35,13 +35,12 @@
 }
 
 .chess-layout {
-  display: grid;
-  grid-template-columns: 250px 1fr 250px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   gap: 2rem;
   width: 100%;
   max-width: 1200px;
-  align-items: start;
-  justify-items: center;
   overflow-x: auto; /* Allow horizontal scroll if needed */
 }
 
@@ -89,8 +88,8 @@
 
 /* Lichess rating section styling improvements */
 .lichess-rating {
-  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-accent)) !important;
-  border: 1px solid var(--accent-blue);
+  background: linear-gradient(90deg, var(--bg-secondary), var(--bg-accent)) !important;
+  border: 2px solid var(--accent-blue);
   box-shadow: 0 4px 8px var(--card-shadow);
 }
 
@@ -125,6 +124,28 @@
 
 /* Responsive chessboard container */
 @media screen and (max-width: 768px) {
+  .chess-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .lichess-rating {
+    max-width: 100% !important;
+    margin-right: 0 !important;
+  }
+  
+  /* Make rating grid more landscape-oriented on smaller screens */
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+    gap: 8px !important;
+  }
+  
+  .rating-grid > div {
+    padding: 8px !important;
+    font-size: 0.85rem;
+  }
+  
   .chess-board-container {
     padding: 0.5rem;
     margin: 0.5rem auto;
@@ -134,4 +155,5 @@
     font-size: 0.9rem;
     padding: 0.6rem;
   }
+
 }
