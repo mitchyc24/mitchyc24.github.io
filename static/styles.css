@@ -129,6 +129,21 @@ nav {
   border-bottom: 2px solid var(--accent-blue);
 }
 
+.nav-right-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hamburger-menu {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
 /* Theme toggle button */
 .theme-toggle {
   background-color: var(--bg-accent);
@@ -261,5 +276,56 @@ nav {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 850px) {
+  .nav-container {
+    flex-wrap: nowrap;
+  }
+
+  .nav-right-content {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-secondary);
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 6px var(--card-shadow);
+    width: 250px; /* Or adjust as needed */
+    z-index: 150;
+    border-bottom-left-radius: 8px;
+  }
+
+  .nav-right-content.active {
+    display: flex;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .nav-links a {
+    padding: 0.5rem 0;
+  }
+
+  .nav-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    border-top: 1px solid var(--bg-accent);
+    padding-top: 1rem;
+  }
+
+  .hamburger-menu {
+    display: block;
   }
 }

@@ -22,19 +22,22 @@
         <p class="fr">&#128435 Informaticien & Développeur de logiciel &#128736</p>
       </div>
     </div>
-    <div class="nav-links">
-      <a href="#" class="en" id="nav-home-en" hx-get="static/pages/home.html" hx-target="#content-container">Home</a>
-      <a href="#" class="fr" id="nav-home-fr" hx-get="static/pages/home.html" hx-target="#content-container">Accueil</a>
-      <a href="#" class="en" id="nav-resume-en" hx-get="static/pages/resume.html" hx-target="#content-container">Resume</a>
-      <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume.html" hx-target="#content-container">CV</a>
-      <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog.html" hx-target="#content-container">Blog</a>
-      <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog.html" hx-target="#content-container">Blogue</a>
-      <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess.html" hx-target="#content-container">Chess</a>
-      <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess.html" hx-target="#content-container">Échecs</a>
-    </div>
-    <div class="nav-buttons">
-      <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
-      <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+    <button class="hamburger-menu" id="hamburgerMenu"><i class="fas fa-bars"></i></button>
+    <div class="nav-right-content" id="navRightContent">
+      <div class="nav-links">
+        <a href="#" class="en" id="nav-home-en" hx-get="static/pages/home.html" hx-target="#content-container">Home</a>
+        <a href="#" class="fr" id="nav-home-fr" hx-get="static/pages/home.html" hx-target="#content-container">Accueil</a>
+        <a href="#" class="en" id="nav-resume-en" hx-get="static/pages/resume.html" hx-target="#content-container">Resume</a>
+        <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume.html" hx-target="#content-container">CV</a>
+        <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog.html" hx-target="#content-container">Blog</a>
+        <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog.html" hx-target="#content-container">Blogue</a>
+        <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess.html" hx-target="#content-container">Chess</a>
+        <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess.html" hx-target="#content-container">Échecs</a>
+      </div>
+      <div class="nav-buttons">
+        <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+      </div>
     </div>
   </div>
 
@@ -90,6 +93,14 @@
         } else {
           localStorage.setItem('language', 'en');
         }
+      });
+
+      // Hamburger menu toggle
+      const hamburgerMenu = document.getElementById('hamburgerMenu');
+      const navRightContent = document.getElementById('navRightContent');
+
+      hamburgerMenu.addEventListener('click', function() {
+        navRightContent.classList.toggle('active');
       });
 
       // Add active class handling for navigation
