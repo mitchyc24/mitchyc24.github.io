@@ -259,12 +259,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 100px;
+  height: 100px;
   border-radius: 4px;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: all 0.3s ease;
+  text-decoration: none;
 }
 
 .resume-social-links a:hover {
@@ -275,7 +276,7 @@
 }
 
 .resume-social-links i {
-  font-size: 1.2rem;
+  font-size: 4rem;
 }
 
 
