@@ -7,6 +7,7 @@
   <title>Mitchell Carroll</title>
   <link rel="icon" type="image/x-icon" href="images/favicon.png">
   <link rel="stylesheet" href="static/styles.css">
+  <link rel="stylesheet" id="page-styles" href=""> <!-- Placeholder for page-specific styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" integrity="sha512-TU/clvRaSqKB43MX6dvJPEWV8tEGDTbmT4mdxTs6DSYsBY9zKmiw4Qeykp0nS10ndH14HRNG2VWN+IjiMfA17Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="static/htmx.min.js"></script>
@@ -96,13 +97,18 @@
       // Add active class handling for navigation
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.addEventListener('click', function (e) {
-          // Remove active class from all links
-          document.querySelectorAll('.nav-links a').forEach(l => {
-            l.classList.remove('active');
-          });
-
-          // Add active class to clicked link
+          e.preventDefault();
+          document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
           this.classList.add('active');
+          
+          // Update page-specific stylesheet
+          const page = this.id.split('-')[1];
+          const pageStyle = document.getElementById('page-styles');
+          if (page === 'home' || page === 'resume' || page === 'blog' || page === 'chess') {
+            pageStyle.setAttribute('href', `static/pages/${page}.css`);
+          } else {
+            pageStyle.setAttribute('href', '');
+          }
         });
       });
 
@@ -145,17 +151,9 @@
 
       // Initial content load
       if (window.location.hash && window.location.hash.includes('blog')) {
-        const lang = document.body.classList.contains('french-active') ? 'fr' : 'en';
-        const blogNavLink = document.getElementById(`nav-blog-${lang}`);
-        if (blogNavLink) {
-          blogNavLink.click();
-        }
+        document.getElementById('nav-blog-en').click();
       } else {
-        const lang = document.body.classList.contains('french-active') ? 'fr' : 'en';
-        const homeNavLink = document.getElementById(`nav-home-${lang}`);
-        if (homeNavLink) {
-          homeNavLink.click();
-        }
+        document.getElementById('nav-home-en').click();
       }
     });
   </script>

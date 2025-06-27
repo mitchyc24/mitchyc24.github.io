@@ -1,0 +1,156 @@
+/* ============ HOME PAGE STYLES ============ */
+/* Main content for home page */
+.home-main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Welcome section */
+.welcome-section {
+  margin: 2rem 0;
+  max-width: 100%; /* Changed from 800px */
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--card-shadow);
+  padding: 2rem;
+}
+
+/* Portrait image styles */
+.portrait-container {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+}
+
+.portrait-image {
+  width: 60%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 100% / 50%;
+  box-shadow: 0 0 15px var(--card-shadow);
+}
+
+.portrait-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  background: radial-gradient(circle, var(--bg-secondary) 40%, transparent 70%);
+  z-index: -1;
+  opacity: 0.7;
+  filter: blur(15px);
+}
+
+.welcome-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.welcome-text {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+/* CTA Buttons */
+.cta-button {
+  display: inline-block;
+  background-color: var(--accent-blue);
+  color: white;
+  padding: 0.7rem 1.3rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--card-shadow);
+}
+
+.cta-button.primary {
+  background-color: var(--accent-blue);
+}
+
+.cta-button.secondary {
+  background-color: var(--accent-light);
+}
+
+.cta-button.mars-red {
+  background-color: #c1440e;
+}
+
+.cta-button.mars-red:hover {
+  background-color: #e25822;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(193, 68, 14, 0.3);
+}
+
+/* Home page contact info */
+.home-contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.3rem;
+  margin: 1.5rem 0;
+  border-top: 1px solid var(--bg-accent);
+  padding-top: 1.5rem;
+}
+
+.home-contact-info p {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.home-contact-info i {
+  margin-right: 0.5rem;
+  color: var(--accent-blue);
+}
+
+/* Social links */
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 4px;
+  background-color: var(--bg-accent);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  transform: translateY(-2px);
+  background-color: var(--accent-blue);
+  color: white;
+  box-shadow: 0 4px 8px var(--card-shadow);
+}
+
+.social-links i {
+  font-size: 1.3rem;
+}

@@ -1,0 +1,72 @@
+/* ============ BLOG PAGE STYLES ============ */
+.blog-container {
+  max-width: 1200px;
+  margin: 1.5rem auto;
+  padding: 0 2rem;
+}
+
+.blog-container h2 {
+  font-size: 2rem;
+  color: var(--accent-blue);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--accent-blue);
+  padding-bottom: 0.8rem;
+}
+
+#blog-posts-container {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column for now, can be changed to more columns */
+  gap: 1.5rem;
+}
+
+.blog-post {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.blog-post:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px var(--card-shadow);
+}
+
+.blog-post h3 {
+  font-size: 1.5rem;
+  color: var(--accent-purple); /* Using a different accent for blog titles */
+  margin-bottom: 0.5rem;
+}
+
+.blog-post .post-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.blog-post p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+/* Responsive adjustments for blog */
+@media screen and (max-width: 768px) {
+  .blog-container {
+    padding: 0 1rem;
+  }
+
+  .blog-container h2 {
+    font-size: 1.8rem;
+  }
+
+  .blog-post {
+    padding: 1rem;
+  }
+
+  .blog-post h3 {
+    font-size: 1.3rem;
+  }
+}

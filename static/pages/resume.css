@@ -1,0 +1,305 @@
+/* ============ RESUME PAGE STYLES ============ */
+/* Main content styles for resume page */
+.resume-main {
+  max-width: 1200px; /* Changed from 1000px */
+  margin: 1.5rem auto; /* Unchanged */
+  padding: 0 2rem; /* Changed from 0 1.5rem */
+}
+
+.section {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px var(--card-shadow);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: var(--accent-blue);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--accent-blue);
+  padding-bottom: 0.5rem;
+}
+
+/* Profile section */
+.profile-content {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Experience section */
+.timeline-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+}
+
+.timeline-item {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 1.2rem;
+  position: relative;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.8rem;
+}
+
+.job-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  margin-bottom: 0.3rem;
+}
+
+.job-company {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.timespan {
+  font-size: 0.9rem;
+  color: var(--accent-light);
+  white-space: nowrap;
+  margin-left: 0.8rem;
+}
+
+.timeline-details ul {
+  list-style-type: none;
+  margin-top: 0.5rem;
+}
+
+.timeline-details li {
+  position: relative;
+  margin-bottom: 0.4rem;
+  padding-left: 1.2rem;
+  font-size: 0.95rem;
+}
+
+.timeline-details li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent-blue);
+}
+
+/* Education section */
+.education-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.2rem;
+}
+
+.education-item {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 1.2rem;
+  position: relative;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.degree-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-purple);
+  margin-bottom: 0.3rem;
+}
+
+.school {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+}
+
+.date {
+  font-size: 0.85rem;
+  color: var(--accent-light);
+  margin-bottom: 0.8rem;
+}
+
+.education-list {
+  list-style-type: none;
+  padding-left: 0.5rem;
+}
+
+.education-list li {
+  position: relative;
+  margin-bottom: 0.4rem;
+  padding-left: 1rem;
+  font-size: 0.9rem;
+}
+
+.education-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent-purple);
+}
+
+/* Skills section */
+.skills-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.2rem;
+}
+
+.skills-column {
+  background-color: var(--bg-primary);
+  padding: 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.skills-title {
+  font-size: 1.1rem;
+  color: var(--accent-teal);
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--accent-teal);
+  padding-bottom: 0.4rem;
+}
+
+.skills-list {
+  list-style-type: none;
+  columns: auto 140px;
+  column-gap: 1.5rem;
+}
+
+.skills-list li {
+  position: relative;
+  margin-bottom: 0.4rem;
+  padding-left: 1.2rem;
+  break-inside: avoid;
+  font-size: 0.9rem;
+}
+
+.skills-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent-teal);
+}
+
+/* Styles for Markdown Resume Section */
+.markdown-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#markdown-preview-container {
+  margin-top: 1rem;
+}
+
+.markdown-preview-box {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--bg-accent);
+  border-radius: 4px;
+  padding: 1rem;
+  white-space: pre-wrap; /* Ensures long lines wrap */
+  word-wrap: break-word; /* Breaks long words if necessary */
+  max-height: 400px; /* Optional: limit height and make scrollable */
+  overflow-y: auto;   /* Optional: adds scrollbar if content exceeds max-height */
+  font-family: 'Courier New', Courier, monospace; /* Monospaced font for code-like appearance */
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Top sections container for side-by-side layout */
+.top-sections-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Contact card styles */
+.contact-card {
+  background-color: var(--bg-primary);
+  border-radius: 6px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+/* Contact info */
+.contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin: 0.8rem 0;
+  font-size: 0.9rem;
+}
+
+.contact-info p {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.contact-info i {
+  margin-right: 0.5rem;
+  color: var(--accent-blue);
+}
+
+/* Resume social links */
+.resume-social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin: 0.8rem 0;
+}
+
+.resume-social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.resume-social-links a:hover {
+  transform: translateY(-2px);
+  background-color: var(--accent-blue);
+  color: white;
+  box-shadow: 0 2px 5px var(--card-shadow);
+}
+
+.resume-social-links i {
+  font-size: 1.2rem;
+}
+
+
+
+.loading-indicator, .error-message {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1rem;
+  border-radius: 10px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.error-message {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--accent-blue);
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+}
