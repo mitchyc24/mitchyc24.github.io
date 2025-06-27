@@ -5,7 +5,6 @@
   align-items: center;
   padding: 2rem;
   width: 100%;
-  overflow-x: auto; /* Allow horizontal scroll if needed on very small screens */
 }
 
 .chess-description {
@@ -21,8 +20,8 @@
 
 .chess-description h3 {
   margin-top: 0;
-  margin-bottom: 1rem;
-  color: var(--accent-blue);
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
 }
 
 .chess-description p {
@@ -41,7 +40,6 @@
   gap: 2rem;
   width: 100%;
   max-width: 1200px;
-  overflow-x: auto; /* Allow horizontal scroll if needed */
 }
 
 .chess-game-area {
@@ -58,17 +56,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
+  padding: 0rem;
   background-color: var(--bg-secondary);
   border-radius: 12px;
   box-shadow: 0 6px 12px var(--card-shadow);
   margin-bottom: 1rem;
+  border: 2px solid var(--accent-blue);
 }
 
-/* Chessboard wrapper styling */
-#myBoard {
-  margin: 0 auto;
-}
 
 /* Game status and PGN styling */
 .chess-game-area p {
@@ -76,8 +71,6 @@
   margin: 0.5rem 0;
   padding: 0.8rem;
   background-color: var(--bg-secondary);
-  border-radius: 6px;
-  border-left: 4px solid var(--accent-blue);
   box-shadow: 0 2px 4px var(--card-shadow);
 }
 
@@ -86,7 +79,7 @@
   color: var(--accent-blue);
 }
 
-/* Lichess rating section styling improvements */
+/* Lichess rating section */
 .lichess-rating {
   background: linear-gradient(90deg, var(--bg-secondary), var(--bg-accent)) !important;
   border: 2px solid var(--accent-blue);
@@ -112,7 +105,7 @@
 }
 
 .rating-grid > div {
-  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(63, 72, 187, 0.15)) !important;
   border: 1px solid rgba(255,255,255,0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
