@@ -17,18 +17,21 @@
     <div class="header-content">
       <div class="header-left">
         <h1>Mitchell Carroll</h1>
-        <p class="en">Full-stack Web Developer</p>
-        <p class="fr">Développeur Web Full-stack</p>
+        <p class="en">Computer Scientist at ♥</p>
+        <p class="fr">Informaticien à ♥</p>
+        <p class="en">Software Engineer by &#128736</p>
+        <p class="fr">Développeur de logiciel &#128736</p>
       </div>
     </div>
     <div class="nav-links">
-      <a href="#" class="active">Home</a>
-      <a href="#" class="en" id="nav-resume-en" hx-get="/pages/resume.html" hx-target="#content-container">Resume</a>
-      <a href="#" class="fr" id="nav-resume-fr" hx-get="/pages/resume.html" hx-target="#content-container">CV</a>
-      <a href="#" class="en" id="nav-blog-en" hx-get="/pages/blog.html" hx-target="#content-container">Blog</a>
-      <a href="#" class="fr" id="nav-blog-fr" hx-get="/pages/blog.html" hx-target="#content-container">Blogue</a>
-      <a href="#" class="en" id="nav-chess-en" hx-get="/pages/chess.html" hx-target="#content-container">Chess</a>
-      <a href="#" class="fr" id="nav-chess-fr" hx-get="/pages/chess.html" hx-target="#content-container">Échecs</a>
+      <a href="#" class="en" id="nav-home-en" hx-get="static/pages/home.html" hx-target="#content-container">Home</a>
+      <a href="#" class="fr" id="nav-home-fr" hx-get="static/pages/home.html" hx-target="#content-container">Accueil</a>
+      <a href="#" class="en" id="nav-resume-en" hx-get="static/pages/resume.html" hx-target="#content-container">Resume</a>
+      <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog.html" hx-target="#content-container">Blog</a>
+      <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog.html" hx-target="#content-container">Blogue</a>
+      <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess.html" hx-target="#content-container">Chess</a>
+      <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess.html" hx-target="#content-container">Échecs</a>
     </div>
     <div class="nav-buttons">
       <button class="language-toggle" id="languageToggle"><i class="fas fa-language"></i></button>
@@ -39,45 +42,7 @@
   <!-- Content Container for Dynamic Content Loading -->
   <div id="content-container">
     <!-- Initial home content -->
-    <main class="home-main">
-      <section class="welcome-section">
-        <!-- Portrait image with soft edge effect -->
-        <div class="portrait-container">
-          <div class="portrait-glow"></div>
-          <img src="static/images/portrait.jpg" alt="Mitchell Carroll" class="portrait-image">
-        </div>
-
-        <p class="welcome-subtitle en">Exploring the intersection of technology and innovation</p>
-        <p class="welcome-subtitle fr">Explorer l'intersection de la technologie et de l'innovation</p>
-        <p class="welcome-text en">
-          I'm a full-stack developer and systems engineer with a passion for creating efficient, user-friendly
-          applications. With experience in both military and civilian sectors, I bring a unique perspective to
-          problem-solving and project management.
-        </p>
-        <p class="welcome-text fr">
-          Je suis un développeur full-stack et ingénieur systèmes passionné par la création d'applications efficaces et
-          conviviales. Avec une expérience dans les secteurs militaire et civil, j'apporte une perspective unique à la
-          résolution de problèmes et à la gestion de projets.
-        </p>
-
-        <!-- Social links -->
-        <div class="social-links">
-          <a href="https://github.com/mitchyc24" target="_blank"><i class="fab fa-github"></i></a>
-          <a href="https://linkedin.com/in/mitchell-carroll" target="_blank"><i class="fab fa-linkedin"></i></a>
-        </div>
-
-
-        <!-- Contact info -->
-        <div class="contact-info home-contact-info">
-          <p><i class="fas fa-envelope"></i> mitchell.carroll24@gmail.com</p>
-          <p><i class="fas fa-map-marker-alt"></i> Ottawa, ON</p>
-          <p class="en"><i class="fas fa-shield-alt"></i> Secret Security Clearance</p>
-          <p class="fr"><i class="fas fa-shield-alt"></i> Cote de sécurité Secrète</p>
-          <p class="en"><i class="fas fa-language"></i> Bilingual (English, French)</p>
-          <p class="fr"><i class="fas fa-language"></i> Bilingue (Anglais, Français)</p>
-        </div>
-      </section>
-    </main>
+    Content will be loaded here dynamically.
   </div>
 
   <script>
@@ -153,7 +118,7 @@
               });
           } else if (this.id === 'nav-blog-en' || this.id === 'nav-blog-fr') {
             // Load blog content structure
-            fetch('/pages/blog.html')
+            fetch('static/pages/blog.html')
               .then(response => response.text())
               .then(html => {
                 document.getElementById('content-container').innerHTML = html;
@@ -170,18 +135,14 @@
         if (!blogPostsContainer) return;
 
         try {
-          // For now, we'll fetch a predefined list of posts.
-          // In a real scenario, you might fetch a directory listing or a manifest file.
-          const postFiles = ['first_post.json']; // Add more post files here
+          const response = await fetch(`static/blog/blog_posts.json`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch blog posts: ${response.statusText}`);
+          }
+          const posts = await response.json();
           let allPostsHTML = '';
 
-          for (const fileName of postFiles) {
-            const response = await fetch(`src/blog_posts/${fileName}`);
-            if (!response.ok) {
-              console.error(`Failed to fetch ${fileName}: ${response.statusText}`);
-              continue;
-            }
-            const post = await response.json();
+          for (const post of posts) {
             const postHTML = `
               <article class="blog-post">
                 <h3>${post.title}</h3>
