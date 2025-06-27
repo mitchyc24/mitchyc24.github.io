@@ -1,12 +1,12 @@
 [
   {
-  "title": "Professional Blog",
-  "date": "2025-06-27",
-  "content": "This is where I will post my professional blog posts. I will write about my experiences, projects, and anything else related to my work in computer science and software engineering."
-},
-{
-  "title": "Personal Blog",
-  "date": "2025-06-27",
-  "content": "This is where I will post my personal blog posts. I will write about my hobbies, interests, and anything else that doesn't fit into my professional blog."
-}
+    "title": "Professional Blog",
+    "date": "2025-06-27",
+    "content": "This is where I will post about my professional experiences, projects, and thoughts related to my work in computer science and software engineering."
+  },
+  {
+    "title": "Back to Basics",
+    "date": "2025-06-27",
+    "content": "AI and Machine Learning are all the rage today. They are the latest technologies to generate headlines, following in the footsteps of cryptocurrencies and Virtual Reality. While these innovations garner buzz and progress through boom-and-bust cycles, it's crucial to understand the foundations on which they are built.There's a long road from a single transistor to a pair of VR goggles, from simple binary to complex software. The computer advancements that have occurred in our lifetimes are not always easy to grasp; they often defy the intuition that our species developed over millennia in a world without them. That is why I am planning to start my blog journey by starting with the basics."
+  }
 ]
