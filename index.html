@@ -25,6 +25,8 @@
       <a href="#" class="active">Home</a>
       <a href="#" class="en" id="nav-resume-en" hx-get="/pages/resume.html" hx-target="#content-container">Resume</a>
       <a href="#" class="fr" id="nav-resume-fr" hx-get="/pages/resume.html" hx-target="#content-container">CV</a>
+      <a href="#" class="en" id="nav-blog-en" hx-get="/pages/blog.html" hx-target="#content-container">Blog</a>
+      <a href="#" class="fr" id="nav-blog-fr" hx-get="/pages/blog.html" hx-target="#content-container">Blogue</a>
       <a href="#" class="en" id="nav-chess-en" hx-get="/pages/chess.html" hx-target="#content-container">Chess</a>
       <a href="#" class="fr" id="nav-chess-fr" hx-get="/pages/chess.html" hx-target="#content-container">Échecs</a>
     </div>
@@ -149,9 +151,67 @@
                 const homeContent = doc.querySelector('.home-main').outerHTML;
                 document.getElementById('content-container').innerHTML = homeContent;
               });
+          } else if (this.id === 'nav-blog-en' || this.id === 'nav-blog-fr') {
+            // Load blog content structure
+            fetch('/pages/blog.html')
+              .then(response => response.text())
+              .then(html => {
+                document.getElementById('content-container').innerHTML = html;
+                // After loading blog.html, fetch and display posts
+                fetchBlogPosts();
+              });
           }
         });
       });
+
+      // Function to fetch and display blog posts
+      async function fetchBlogPosts() {
+        const blogPostsContainer = document.getElementById('blog-posts-container');
+        if (!blogPostsContainer) return;
+
+        try {
+          // For now, we'll fetch a predefined list of posts.
+          // In a real scenario, you might fetch a directory listing or a manifest file.
+          const postFiles = ['first_post.json']; // Add more post files here
+          let allPostsHTML = '';
+
+          for (const fileName of postFiles) {
+            const response = await fetch(`src/blog_posts/${fileName}`);
+            if (!response.ok) {
+              console.error(`Failed to fetch ${fileName}: ${response.statusText}`);
+              continue;
+            }
+            const post = await response.json();
+            const postHTML = `
+              <article class="blog-post">
+                <h3>${post.title}</h3>
+                <p class="post-date">${new Date(post.date).toLocaleDateString()}</p>
+                <p>${post.content}</p>
+              </article>
+            `;
+            allPostsHTML += postHTML;
+          }
+          blogPostsContainer.innerHTML = allPostsHTML || '<p>No blog posts found.</p>';
+        } catch (error) {
+          console.error('Error fetching blog posts:', error);
+          blogPostsContainer.innerHTML = '<p>Error loading blog posts.</p>';
+        }
+      }
+
+      // Initial content load check - if blog is the target, load posts
+      // This handles direct navigation or refresh on the blog page
+      if (window.location.hash && window.location.hash.includes('blog')) {
+         // Simulate a click on the blog tab if htmx hasn't loaded it yet
+         // This is a fallback, hx-get should ideally handle this
+        const blogNavLink = document.getElementById('nav-blog-en') || document.getElementById('nav-blog-fr');
+        if (blogNavLink && !document.getElementById('blog-posts-container')) {
+            htmx.process(blogNavLink); // Trigger htmx loading
+            // htmx.onLoad isn't standard, using a small delay to ensure container exists
+            setTimeout(fetchBlogPosts, 500);
+        } else if (document.getElementById('blog-posts-container')) {
+            fetchBlogPosts();
+        }
+      }
     });
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
