@@ -44,6 +44,9 @@
   <!-- Content Container for Dynamic Content Loading -->
   <div id="content-container">
     <!-- Initial content is loaded via JavaScript -->
+    <div class="loading-indicator">
+      <div class="spinner"></div>
+    </div>
   </div>
 
   <script>
@@ -124,6 +127,15 @@
             pageStyle.setAttribute('href', '');
           }
         });
+      });
+
+      document.body.addEventListener('htmx:beforeRequest', function(event) {
+        const container = document.getElementById('content-container');
+        // Show loading indicator before new content is fetched
+        container.innerHTML = `
+          <div class="loading-indicator">
+            <div class="spinner"></div>
+          </div>`;
       });
 
       document.body.addEventListener('htmx:afterSwap', function(event) {

@@ -232,6 +232,24 @@ nav {
 }
 
 /* Loading indicators */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 5rem; /* Give it some space from the navbar */
+  min-height: 300px; /* Ensure it has some height */
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--bg-secondary);
+  border-top: 5px solid var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Loading indicators */
 .loading {
   display: flex;
   justify-content: center;
