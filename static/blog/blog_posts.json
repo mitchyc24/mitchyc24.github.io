@@ -1,20 +1,14 @@
 [
-  {
-    "title": "Computer Science Blog",
-    "date": "2025-06-26",
-    "content": "This is where I will post computer science tidBITS, and interesting things I learn along the way. I will also post about my projects, and other things I find interesting.",
-    "image": null
-  },
-  {
-    "title": "Back to Basics",
+ {
+    "title": "From the Beginning",
     "date": "2025-06-27",
-    "content": "AI and Machine Learning are all the rage today. They are the latest technologies to generate headlines, following in the footsteps of cryptocurrencies and Virtual Reality. While these innovations garner buzz and progress through boom-and-bust cycles, it's crucial to understand the foundations on which they are built.There's a long road from a single transistor to a pair of VR goggles, from simple binary to complex software. The computer advancements that have occurred in our lifetimes are not always easy to grasp; they often defy the intuition that our species developed over millennia in a world without them. That is why I am planning to start my blog journey by starting with the basics.",
+    "content": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will bridge the 77-year gap from the invention of the first transistor to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through the history of computer science and discover the building blocks of the modern world together.",
     "image": null
   },
   {
-    "title": "Visualizing Concepts",
+    "title": "The Transistor",
     "date": "2025-06-28",
-    "content": "I am integrating visualizations into my blog to assist in understanding computer science concepts. I'm a visual learner and images have always helped me grasp complex ideas. In this post, nothing fancy, just comparing a switch to a transistor. Transistors are nothing special on their own, but when combined together, that's where the magic happens. For now, let's just leave it at that, a transistor is simply a switch that is turned on or off by an electrical signal as opposed to a human flipping a switch. This is the foundation computing hardware.",
+    "content": "The history of computer science, with its theoretical giants like Alan Turing and Claude Shannon, began long before the first physical computer was built. While their work on logic and information theory is foundational, our story will start with the practical invention: the transistor.\n\nHonestly, on its own, it's really not that special. A transistor is essentially a switch. It does the same job as a light switch on your wall, but instead of being flipped by a human hand, it's controlled by a tiny electrical signal.\n\nOne switch on its own isn't very powerful. But when we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
     "image": "static/blog/images/001.svg"
   }
 ]

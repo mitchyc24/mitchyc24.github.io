@@ -26,8 +26,8 @@
       const posts = await response.json();
       let allPostsHTML = '';
 
-      // Sort posts by date, newest first
-      posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Sort posts by date, oldest first
+      posts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       for (const post of posts) {
         let imageHTML = '';
