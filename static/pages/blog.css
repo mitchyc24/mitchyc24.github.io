@@ -52,18 +52,24 @@
   color: var(--text-primary);
 }
 
-.blog-post-content {
+.blog-text-and-source {
   margin-top: 1rem;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .blog-post-image {
-  max-width: 50%;
+  max-width: 75%;
   height: auto;
   border-radius: 4px;
   margin-bottom: 1rem;
   display: block;
+}
+
+.blog-post-source {
+  margin-top: 1rem;
+  font-size: 0.6rem;
+  color: var(--text-secondary);
 }
 
 /* Responsive adjustments for blog */
@@ -84,8 +90,9 @@
     font-size: 1.3rem;
   }
 
-  .blog-post-content {
+  .blog-text-and-source {
     display: flex;
     flex-direction: column;
+    align-items: center;
   }
 }

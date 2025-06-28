@@ -1,6 +1,6 @@
 <div class="blog-container">
-  <h2 class="en">Blog</h2>
-  <h2 class="fr">Blogue</h2>
+  <h2 class="en">Computer Science Blog</h2>
+  <h2 class="fr">Blogue en Informatique</h2>
   <div id="blog-posts-container">
     <!-- Blog posts will be loaded here by JavaScript -->
   </div>
@@ -42,8 +42,11 @@
             <p class="blog-post-date">${new Date(post.date.replace(/-/g, '\/')).toLocaleDateString()}</p>
             <div class="blog-post-content">
               ${imageHTML}
-              <p>${post.content}</p>
-            </div>
+              <div class="blog-text-and-source">
+                <p>${post.text}</p>
+                ${post.source ? `<div class="blog-post-source">Sources and further reading: <a href="${post.source}" target="_blank">${post.source}</a></div>` : ''}
+              </div>
+            </div>            
           </article>
         `;
         allPostsHTML += postHTML;
