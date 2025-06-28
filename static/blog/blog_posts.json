@@ -1,7 +1,7 @@
 [
   {
     "title": "Computer Science Blog",
-    "date": "2025-06-27",
+    "date": "2025-06-26",
     "content": "This is where I will post computer science tidBITS, and interesting things I learn along the way. I will also post about my projects, and other things I find interesting.",
     "image": null
   },
@@ -14,7 +14,7 @@
   {
     "title": "Visualizing Concepts",
     "date": "2025-06-28",
-    "content": "I am integrating visualizations into my blog to assist in understanding computer science concepts. I'm a visual learner and images have always helped me grasp complex ideas. In this post, nothing fancy, just comparing a switch to a transistor. Transistors are nothing special on their own, but when combined together, that's where the magic happens. For now, let's just leave it at that, a transistor is just a switch that is turned on or off by an electrical signal as opposed to a human flipping a switch. This is the foundation computing hardware.",
-    "image": "static/blog/images/002.svg"
+    "content": "I am integrating visualizations into my blog to assist in understanding computer science concepts. I'm a visual learner and images have always helped me grasp complex ideas. In this post, nothing fancy, just comparing a switch to a transistor. Transistors are nothing special on their own, but when combined together, that's where the magic happens. For now, let's just leave it at that, a transistor is simply a switch that is turned on or off by an electrical signal as opposed to a human flipping a switch. This is the foundation computing hardware.",
+    "image": "static/blog/images/001.svg"
   }
 ]

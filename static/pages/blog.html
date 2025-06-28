@@ -6,6 +6,12 @@
   </div>
 </div>
 
+<style>
+  body.dark-theme .blog-post-image.svg-invert {
+    filter: invert(93%) hue-rotate(180deg);
+  }
+</style>
+
 <script>
   // Function to fetch and display blog posts
   async function fetchBlogPosts() {
@@ -24,11 +30,16 @@
       posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       for (const post of posts) {
-        const imageHTML = post.image ? `<img src="${post.image}" alt="${post.title}" class="blog-post-image">` : '';
+        let imageHTML = '';
+        if (post.image) {
+          const imageClass = post.image.endsWith('.svg') ? 'blog-post-image svg-invert' : 'blog-post-image';
+          imageHTML = `<img src="${post.image}" alt="${post.title}" class="${imageClass}">`;
+        }
+        
         const postHTML = `
           <article class="blog-post">
             <h3>${post.title}</h3>
-            <p class="blog-post-date">${new Date(post.date).toLocaleDateString()}</p>
+            <p class="blog-post-date">${new Date(post.date.replace(/-/g, '\/')).toLocaleDateString()}</p>
             <div class="blog-post-content">
               ${imageHTML}
               <p>${post.content}</p>
