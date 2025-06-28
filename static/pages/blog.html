@@ -24,11 +24,15 @@
       posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       for (const post of posts) {
+        const imageHTML = post.image ? `<img src="${post.image}" alt="${post.title}" class="blog-post-image">` : '';
         const postHTML = `
           <article class="blog-post">
             <h3>${post.title}</h3>
-            <p class="post-date">${new Date(post.date).toLocaleDateString()}</p>
-            <p>${post.content}</p>
+            <p class="blog-post-date">${new Date(post.date).toLocaleDateString()}</p>
+            <div class="blog-post-content">
+              ${imageHTML}
+              <p>${post.content}</p>
+            </div>
           </article>
         `;
         allPostsHTML += postHTML;

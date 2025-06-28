@@ -39,7 +39,7 @@
   margin-bottom: 0.5rem;
 }
 
-.blog-post .post-date {
+.blog-post .blog-post-date {
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-bottom: 1rem;
@@ -50,6 +50,20 @@
   font-size: 1rem;
   line-height: 1.7;
   color: var(--text-primary);
+}
+
+.blog-post-content {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.blog-post-image {
+  max-width: 50%;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: block;
 }
 
 /* Responsive adjustments for blog */
@@ -68,5 +82,10 @@
 
   .blog-post h3 {
     font-size: 1.3rem;
+  }
+
+  .blog-post-content {
+    display: flex;
+    flex-direction: column;
   }
 }
