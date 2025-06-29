@@ -43,7 +43,7 @@
             <div class="blog-post-content">
               ${imageHTML}
               <div class="blog-text-and-source">
-                <p>${post.text}</p>
+                <p>${post.text.replace(/\n/g, '<br>')}</p>
                 ${post.source ? `<div class="blog-post-source">Sources and further reading: <a href="${post.source}" target="_blank">${post.source}</a></div>` : ''}
               </div>
             </div>            
