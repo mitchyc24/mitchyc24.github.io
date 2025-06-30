@@ -295,16 +295,6 @@
   border: 1px solid #dc3545;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: var(--accent-blue);
-  animation: spin 1s ease-in-out infinite;
-  margin: 0 auto;
-}
-
 @media (max-width: 768px) {
   .top-sections-container {
     grid-template-columns: 1fr;

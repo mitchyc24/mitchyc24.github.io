@@ -143,12 +143,9 @@
         // Page-specific actions are now handled within their respective HTML files.
       });
 
-      // Initial content load
-      if (window.location.hash && window.location.hash.includes('blog')) {
-        document.getElementById('nav-blog-en').click();
-      } else {
-        document.getElementById('nav-home-en').click();
-      }
+      // Load the initial content
+      document.getElementById('nav-home-en').click();
+      
     });
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
