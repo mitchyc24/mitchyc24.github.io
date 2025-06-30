@@ -26,6 +26,11 @@
   --text-primary: #f8f9fa;
   --text-secondary: #e9ecef;
   --card-shadow: rgba(0, 0, 0, 0.5);
+  --accent-purple: #9b59b6;
+}
+
+.dark-theme a {
+  color: var(--accent-highlight);
 }
 
 /* Light space theme variables */

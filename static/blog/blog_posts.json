@@ -4,11 +4,11 @@
     "date": "2025-06-27",
     "content": [
       {
-        "text": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will bridge the 77-year gap from the invention of the first transistor to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through the history of computer science and discover the building blocks of the modern world together.",
+        "text": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will attempt to bridge the gap from the invention of the first transistor in 1947 to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through an abridged overview of computer science and discover the foundations of the modern world of computation.",
         "image": null
       }
     ],
-    "source": null
+    "sources": []
   },
   {
     "title": "The Transistor",
@@ -19,7 +19,10 @@
         "image": "static/blog/images/001.svg"
       }
     ],
-    "source": "https://en.wikipedia.org/wiki/Transistor"
+    "sources": [
+      "https://en.wikipedia.org/wiki/Transistor"
+      ]
+      
   },
   {
     "title": "On and Off",
@@ -34,6 +37,6 @@
         "image": "static/blog/images/003.svg"
       }
     ],
-    "source": null
+    "sources": []
   }
 ]

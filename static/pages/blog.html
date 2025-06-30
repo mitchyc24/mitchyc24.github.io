@@ -56,7 +56,14 @@
             <div class="blog-post-content">
               ${contentHTML}
             </div>
-            ${post.source ? `<div class="blog-post-source">Sources and further reading: <a href="${post.source}" target="_blank">${post.source}</a></div>` : ''}
+            ${post.sources && post.sources.length > 0 ? `
+              <div class="blog-post-source">
+                <p>Sources and further reading:</p>
+                <ul>
+                  ${post.sources.map(source => `<li><a href="${source}" target="_blank">${source}</a></li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
           </article>
         `;
         allPostsHTML += postHTML;
