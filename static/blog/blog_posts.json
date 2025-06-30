@@ -38,5 +38,16 @@
       }
     ],
     "sources": []
+  },
+  {
+    "title": "Logic Gates",
+    "date": "2025-06-30",
+    "content": [
+      {
+        "text": "Now that we have a basic understanding of how a transistor works, we can start to build more complex circuits. The next step is to introduce logic gates, which are the building blocks of digital circuits.\n\nLogic gates perform basic logical functions that are fundamental to digital circuits. They take one or more binary inputs and produce a single binary output. The most common types of logic gates are AND, OR, and NOT gates. These gates can be combined to create more complex circuits that can perform a wide range of tasks.",
+        "image": "static/blog/images/004.svg"
+      }
+    ],
+    "sources": []
   }
 ]

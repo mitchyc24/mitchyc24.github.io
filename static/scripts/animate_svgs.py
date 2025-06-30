@@ -9,71 +9,89 @@ INPUT_DIR = 'static/scripts/input'
 OUTPUT_DIR = 'static/scripts/output'
 # ---------------------
 
-def combine_svgs(filename1, filename2):
+def combine_svgs(filenames):
+    if not filenames:
+        print("No SVG files found to combine.")
+        return
+
     # Register the SVG namespace to preserve it on output
     ET.register_namespace('', "http://www.w3.org/2000/svg")
 
-    file1_path = os.path.join(INPUT_DIR, filename1)
-    file2_path = os.path.join(INPUT_DIR, filename2)
-    # Parse the input files
-    tree1 = ET.parse(file1_path)
+    # Use the first file to set up the base SVG element
+    first_file_path = os.path.join(INPUT_DIR, filenames[0])
+    tree1 = ET.parse(first_file_path)
     root1 = tree1.getroot()
-    tree2 = ET.parse(file2_path)
-    root2 = tree2.getroot()
-
-    # Create the new root SVG element, copying attributes from the first file
     final_root = ET.Element('svg', attrib=root1.attrib)
 
     # Create defs and style elements
     defs = ET.SubElement(final_root, 'defs')
     style = ET.SubElement(defs, 'style')
-    style.text = f"""
-        #frame-on {{ visibility: hidden; }}
-        #frame-off, #frame-on {{
-          animation-duration: {ANIMATION_DURATION};
-          animation-timing-function: steps(1, end);
-          animation-iteration-count: infinite;
-        }}
-        #frame-off {{ animation-name: toggle-off; }}
-        #frame-on {{ animation-name: toggle-on; }}
-        @keyframes toggle-off {{
-          0% {{ visibility: visible; }}
-          50%, 100% {{ visibility: hidden; }}
-        }}
-        @keyframes toggle-on {{
-          0% {{ visibility: hidden; }}
-          50%, 100% {{ visibility: visible; }}
+
+    num_frames = len(filenames)
+    frame_duration_percent = 100 / num_frames
+
+    style_text = f"""
+        .frame {{
+            animation-duration: {ANIMATION_DURATION};
+            animation-timing-function: steps(1, end);
+            animation-iteration-count: infinite;
+            visibility: hidden;
         }}
     """
 
-    # Create frame groups
-    frame_off = ET.SubElement(final_root, 'g', attrib={'id': 'frame-off'})
-    frame_on = ET.SubElement(final_root, 'g', attrib={'id': 'frame-on'})
+    for i, filename in enumerate(filenames):
+        start_percent = i * frame_duration_percent
+        end_percent = (i + 1) * frame_duration_percent
+        # Make the last frame extend to 100%
+        if i == num_frames - 1:
+            end_percent = 100
 
-    # Function to get visual elements
+        animation_name = f'frame-anim-{i}'
+        style_text += f"""
+        #frame-{i} {{ animation-name: {animation_name}; }}
+        @keyframes {animation_name} {{
+            0% {{ visibility: hidden; }}
+            {start_percent}% {{ visibility: visible; }}
+            {end_percent}% {{ visibility: hidden; }}
+            100% {{ visibility: hidden; }}
+        }}
+        """
+    style.text = style_text
+
+    # Function to get visual elements from an SVG root
     def get_visual_elements(root_element):
         visuals = []
         for child in root_element:
-            # The tag is returned with namespace in curly braces, so we check the local name
             if child.tag.split('}')[-1] not in ['defs', 'metadata', 'style']:
                 visuals.append(child)
         return visuals
 
-    # Populate frames
-    for child in get_visual_elements(root1):
-        frame_off.append(child)
-    for child in get_visual_elements(root2):
-        frame_on.append(child)
+    # Create and populate frames
+    for i, filename in enumerate(filenames):
+        frame_group = ET.SubElement(final_root, 'g', attrib={'id': f'frame-{i}', 'class': 'frame'})
+        
+        file_path = os.path.join(INPUT_DIR, filename)
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        
+        for child in get_visual_elements(root):
+            frame_group.append(child)
 
     # Write to file
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
     final_tree = ET.ElementTree(final_root)
     final_tree.write(os.path.join(OUTPUT_DIR, OUTPUT_FILENAME), encoding='utf-8', xml_declaration=True)
-    print(f"✅ Successfully created {OUTPUT_FILENAME}")
+    print(f"✅ Successfully created {OUTPUT_FILENAME} with {num_frames} frames.")
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print("❌ Please provide two SVG files as arguments.")
-        print("Usage: python animate_svgs.py frame1.svg frame2.svg")
-    else:
-        combine_svgs(sys.argv[1], sys.argv[2])
+    try:
+        svg_files = sorted([f for f in os.listdir(INPUT_DIR) if f.endswith('.svg')])
+        if not svg_files:
+            print(f"❌ No SVG files found in '{INPUT_DIR}'.")
+        else:
+            print(f"Found {len(svg_files)} SVG files. Combining...")
+            combine_svgs(svg_files)
+    except FileNotFoundError:
+        print(f"❌ Input directory '{INPUT_DIR}' not found.")
