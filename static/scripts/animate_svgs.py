@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import os
 
 # --- CONFIGURATION ---
-ANIMATION_DURATION = '2s'
+ANIMATION_DURATION = '8s'
 OUTPUT_FILENAME = 'animated.svg'
 INPUT_DIR = 'static/scripts/input'
 OUTPUT_DIR = 'static/scripts/output'

@@ -44,8 +44,14 @@
     "date": "2025-06-30",
     "content": [
       {
-        "text": "Now that we have a basic understanding of how a transistor works, we can start to build more complex circuits. The next step is to introduce logic gates, which are the building blocks of digital circuits.\n\nLogic gates perform basic logical functions that are fundamental to digital circuits. They take one or more binary inputs and produce a single binary output. The most common types of logic gates are AND, OR, and NOT gates. These gates can be combined to create more complex circuits that can perform a wide range of tasks.",
-        "image": "static/blog/images/004.svg"
+        "text": "If we use two transitors like the ones configured in this circuit, we can create interesting behavior. We are interested in the bottom lightbulb, which we will call the output. The top two lightbulb and switches will be the inputs. As you can see in the animation, it's only when the first switch and the second switch are closed that the output lightbulb will turn on. This is an example of an AND gate. The name is pretty self-explanatory: the output is only on when both inputs are on. All the other combinations of inputs will result in the output light being off.",
+        "image": "static/blog/images/004.svg",
+        "caption": "This is an AND gate. The output is on only when both inputs are on."
+      },
+      {
+        "text": "Let me do a little housekeeping and organize our inputs on the left and the output on the right. I've also configured the input lights after the switch to show if the input is on or off. Now i've organized the two transistors in such a way that if input 1 or input 2 is on, the output will be on. Low and behold, we have an OR gate! This is another fundamental logic gate that is used in many circuits. The output is on if either input 1 or input 2 is on, or both are on.",
+        "image": "static/blog/images/005.svg",
+        "caption": "This is an OR gate. The output is on if either input 1 or input 2 is on, or both are on."
       }
     ],
     "sources": []
