@@ -2,22 +2,38 @@
   {
     "title": "From the Beginning",
     "date": "2025-06-27",
-    "text": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will bridge the 77-year gap from the invention of the first transistor to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through the history of computer science and discover the building blocks of the modern world together.",
-    "image": null,
+    "content": [
+      {
+        "text": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will bridge the 77-year gap from the invention of the first transistor to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through the history of computer science and discover the building blocks of the modern world together.",
+        "image": null
+      }
+    ],
     "source": null
   },
   {
     "title": "The Transistor",
     "date": "2025-06-28",
-    "text": "The history of computer science, with its theoretical giants like Alan Turing and Claude Shannon, began long before the first physical computer was built. While their work on logic and information theory is foundational, our story will start with the practical invention: the transistor.\n\nHonestly, on its own, it's really not that special. A transistor is essentially a switch. It does the same job as a light switch on your wall, but instead of being flipped by a human hand, it's controlled by a tiny electrical signal.\n\nOne switch on its own isn't very powerful. But when we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
-    "image": "static/blog/images/001.svg",
+    "content": [
+      {
+        "text": "The history of computer science, with its theoretical giants like Alan Turing and Claude Shannon, began long before the first physical computer was built. While their work on logic and information theory is foundational, our story will start with the practical invention: the transistor.\n\nHonestly, on its own, it's really not that special. A transistor is essentially a switch. It does the same job as a light switch on your wall, but instead of being flipped by a human hand, it's controlled by a tiny electrical signal.\n\nOne switch on its own isn't very powerful. But when we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
+        "image": "static/blog/images/001.svg"
+      }
+    ],
     "source": "https://en.wikipedia.org/wiki/Transistor"
   },
   {
     "title": "On and Off",
     "date": "2025-06-29",
-    "text": "Yesterday, I introduced the transistor and its standard pictogram but unlike the switch, there's no obvious way to see if it's on or off (closed or open). From here, we will start building simple circuits by slowly introducing new components.\n\nTo understand this, let's first look at a basic circuit. In this simple circuit, we see a power source (battery), a closed switch, and a lightbulb. Because the circuit is \"closed\" the current can flow and light up the bulb. If the circuit was \"open\", the current would not be able to flow and the lightbulb would be off. The order of these three components in this circuit does not matter; the behavior would be the same.\n\nNow we can see how to control the behavior of the transistor and, therefore, turn the light on and off. In the accompanying diagram, a physical switch controls a small current that flows to the transistor. When we close this physical switch, it allows current to activate the electrical switch (the transistor), which in turn closes the main circuit and turns on the lightbulb. This example is a little contrived because having both a switch and a transistor is redundant, but that won't be the case going forward.",
-    "image": "static/blog/images/002.svg",
+    "content": [
+      {
+        "text": "Yesterday, I introduced the transistor and its standard pictogram but unlike the switch, there's no obvious way to see if it's on or off (closed or open). From here, we will start building simple circuits by slowly introducing new components.\n\nTo understand this, let's first look at a basic circuit. In this simple circuit, we see a power source (battery), a closed switch, and a lightbulb. Because the circuit is \"closed\" the current can flow and light up the bulb. If the circuit was \"open\", the current would not be able to flow and the lightbulb would be off. The order of these three components in this circuit does not matter; the behavior would be the same.",
+        "image": "static/blog/images/002.svg"
+      },
+      {
+        "text": "Now we can see how to control the behavior of the transistor and, therefore, turn the light on and off. In the accompanying diagram, a physical switch controls a small current that flows to the transistor. When we close this physical switch, it allows current to activate the electrical switch (the transistor), which in turn closes the main circuit and turns on the lightbulb. This example is a little contrived because having both a switch and a transistor is redundant, but that won't be the case going forward.",
+        "image": "static/blog/images/003.svg"
+      }
+    ],
     "source": null
   }
 ]

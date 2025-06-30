@@ -1,3 +1,7 @@
+# Local
+static/scripts/input/*
+static/scripts/output/*
+
 # Python
 __pycache__/
 *.py[cod]

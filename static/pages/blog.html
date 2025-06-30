@@ -30,23 +30,33 @@
       posts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       for (const post of posts) {
-        let imageHTML = '';
-        if (post.image) {
-          const imageClass = post.image.endsWith('.svg') ? 'blog-post-image svg-invert' : 'blog-post-image';
-          imageHTML = `<img src="${post.image}" alt="${post.title}" class="${imageClass}">`;
+        let contentHTML = '';
+        if (post.content && post.content.length > 0) {
+          for (const contentBlock of post.content) {
+            let imageHTML = '';
+            if (contentBlock.image) {
+              const imageClass = contentBlock.image.endsWith('.svg') ? 'blog-post-image svg-invert' : 'blog-post-image';
+              imageHTML = `<img src="${contentBlock.image}" alt="${post.title}" class="${imageClass}">`;
+            }
+            contentHTML += `
+              <div class="blog-post-content-paragraph">
+                ${imageHTML}
+                <div class="blog-text-and-source">
+                  <p>${contentBlock.text.replace(/\n/g, '<br>')}</p>
+                </div>
+              </div>
+            `;
+          }
         }
-        
+
         const postHTML = `
           <article class="blog-post">
             <h3>${post.title}</h3>
             <p class="blog-post-date">${new Date(post.date.replace(/-/g, '\/')).toLocaleDateString()}</p>
             <div class="blog-post-content">
-              ${imageHTML}
-              <div class="blog-text-and-source">
-                <p>${post.text.replace(/\n/g, '<br>')}</p>
-                ${post.source ? `<div class="blog-post-source">Sources and further reading: <a href="${post.source}" target="_blank">${post.source}</a></div>` : ''}
-              </div>
-            </div>            
+              ${contentHTML}
+            </div>
+            ${post.source ? `<div class="blog-post-source">Sources and further reading: <a href="${post.source}" target="_blank">${post.source}</a></div>` : ''}
           </article>
         `;
         allPostsHTML += postHTML;
