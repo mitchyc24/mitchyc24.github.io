@@ -36,7 +36,12 @@
             let imageHTML = '';
             if (contentBlock.image) {
               const imageClass = contentBlock.image.endsWith('.svg') ? 'blog-post-image svg-invert' : 'blog-post-image';
-              imageHTML = `<img src="${contentBlock.image}" alt="${post.title}" class="${imageClass}">`;
+              imageHTML = `
+                <div class="blog-post-image-and-caption">
+                  <img src="${contentBlock.image}" alt="${post.title}" class="${imageClass}">
+                  ${contentBlock.caption ? `<div class="blog-post-image-caption">${contentBlock.caption}</div>` : ''}
+                </div>
+              `;
             }
             contentHTML += `
               <div class="blog-post-content-paragraph">

@@ -71,7 +71,7 @@
 }
 
 .blog-post-image {
-  max-width: 50%;
+  max-width: 100%;
   height: auto;
   border-radius: 4px;
   margin-bottom: 0;
@@ -83,6 +83,21 @@
   margin-top: 1rem;
   font-size: 0.8rem;
   color: var(--text-secondary);
+}
+
+.blog-post-image-and-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 300px;
+}
+
+.blog-post-image-caption {
+  font-size: 0.75rem;  /* Make captions smaller */
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+  text-align: center;
+  font-style: italic;
 }
 
 /* Responsive adjustments for blog */
@@ -115,5 +130,13 @@
 
   .blog-post-content {
     flex-direction: column;
+  }
+
+  .blog-post-image-and-caption {
+    max-width: 100%;
+  }
+
+  .blog-post-image {
+    max-width: 100%;
   }
 }
