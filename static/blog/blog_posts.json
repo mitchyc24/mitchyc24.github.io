@@ -4,7 +4,7 @@
     "date": "2025-06-27",
     "content": [
       {
-        "text": "Artificial Intelligence is everywhere, generating constant buzz and media attention. While it's tempting to dive right into the latest models, a true understanding of AI requires a deeper look into its past.\n\nTo grasp what makes today's AI tick, we must start at the beginning. This series will attempt to bridge the gap from the invention of the first transistor in 1947 to the powerful and often controversial AI of today. We'll explore the foundational knowledge that is essential before we can truly understand what AI is and what it is not.\n\nIt's a long road, but a necessary one. Join me as we journey through an abridged overview of computer science and discover the foundations of the modern world of computation.",
+        "text": "Computer technology is relentlessly marching forward, and we are in the midst of running headfirst into the AI revolution. This is where I want to write about and uncover the mysteries of the technology. Before I jump into writing about machine learning and neural networks, I think it would be best to start from the early days of computing to ensure that we have a common understanding of how computers work. It's a long road, as we have a lot to cover. I hope that you will join me and follow along as I write a daily, digestible \"byte\" covering the foundations of computer science and catch up to the latest developments in the field.",
         "image": null
       }
     ],
@@ -15,7 +15,7 @@
     "date": "2025-06-28",
     "content": [
       {
-        "text": "The history of computer science, with its theoretical giants like Alan Turing and Claude Shannon, began long before the first physical computer was built. While their work on logic and information theory is foundational, our story will start with the practical invention: the transistor.\n\nHonestly, on its own, it's really not that special. A transistor is essentially a switch. It does the same job as a light switch on your wall, but instead of being flipped by a human hand, it's controlled by a tiny electrical signal.\n\nOne switch on its own isn't very powerful. But when we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
+        "text": "As promised, our journey begins not with complex theory, but with a single, crucial invention: the transistor. While giants like Alan Turing and Claude Shannon laid the groundwork for computing, this small device is what allowed their ideas to become a physical reality.\n\nHonestly, a transistor on its own is really not that special. It's a switch. It does the same thing as a light switch on your wall, but instead of being turned on and off by hand, it's controlled by an electrical signal.\n\nWhen we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
         "image": "static/blog/images/001.svg"
       }
     ],
@@ -29,12 +29,19 @@
     "date": "2025-06-29",
     "content": [
       {
-        "text": "Yesterday, I introduced the transistor and its standard pictogram but unlike the switch, there's no obvious way to see if it's on or off (closed or open). From here, we will start building simple circuits by slowly introducing new components.\n\nTo understand this, let's first look at a basic circuit. In this simple circuit, we see a power source (battery), a closed switch, and a lightbulb. Because the circuit is \"closed\" the current can flow and light up the bulb. If the circuit was \"open\", the current would not be able to flow and the lightbulb would be off. The order of these three components in this circuit does not matter; the behavior would be the same.",
-        "image": "static/blog/images/002.svg"
+        "text": "Yesterday, I introduced the transistor and its standard pictogram but unlike the switch, there's no obvious way to see if it's on or off (closed or open), so I will add a lightbulbs inside the diagrams to indicate if current is flowing through the wire. From here, we will start building circuits and progressively introduce new components.",
+        "image": "static/blog/images/002.svg",
+        "caption": "There's no indication if a transistor is on or off"
       },
       {
-        "text": "Now we can see how to control the behavior of the transistor and, therefore, turn the light on and off. In the accompanying diagram, a physical switch controls a small current that flows to the transistor. When we close this physical switch, it allows current to activate the electrical switch (the transistor), which in turn closes the main circuit and turns on the lightbulb. This example is a little contrived because having both a switch and a transistor is redundant, but that won't be the case going forward.",
-        "image": "static/blog/images/003.svg"
+        "text": "In our first circuit, we have a power source (battery), a switch, and a lightbulb. When the circuit is \"closed\" the current can flow and it lights up the bulb. When the circuit is \"open\", the current stops. The order of these three components in this circuit does not matter; the behavior would be the same.",
+        "image": "static/blog/images/002b.svg",
+        "caption": "A simple circuit with a battery, switch, and lightbulb."
+      },
+      {
+        "text": "Now, let's add a transistor. When it receives an electical signal it allows current to flow it, just like a closed switch. When it's off, it blocks the current, just like an open switch. I've added a second battery to show that the transistor is not powered by the same source as the lightbulb. This is a common configuration in circuits, where the transistor acts as a switch to control the flow of current to another component.",
+        "image": "static/blog/images/003.svg",
+        "caption": "A transistor is an electrically controlled switch."
       }
     ],
     "sources": []
@@ -49,11 +56,34 @@
         "caption": "This is an AND gate. The output is on only when both inputs are on."
       },
       {
-        "text": "Let me do a little housekeeping and organize our inputs on the left and the output on the right. I've also configured the input lights after the switch to show if the input is on or off. Now i've organized the two transistors in such a way that if input 1 or input 2 is on, the output will be on. Low and behold, we have an OR gate! This is another fundamental logic gate that is used in many circuits. The output is on if either input 1 or input 2 is on, or both are on.",
+        "text": "Now, let's look at a different configuration of the same two transistors. In this case, the output lightbulb will turn on if either the first switch or the second switch is closed, or both are closed. This is an OR gate. The name comes from the fact that the output will be on if either the first or the second input is on. If both inputs are off, then the output will also be off.",
         "image": "static/blog/images/005.svg",
         "caption": "This is an OR gate. The output is on if either input 1 or input 2 is on, or both are on."
       }
     ],
     "sources": []
+  },
+  {
+    "title": "The NOT Gate",
+    "date": "2025-07-01",
+    "content": [
+      {
+        "text": "The last gate I want to introduce is the NOT gate. This gate is a little different from the previous two. It has only one input, one transistor, and one output. The output is on when the input is off, and the output is off when the input is on. This is why it's called a NOT gate, because it inverts the input signal. It may be a little confusing that the lightbulb is off when the switch is closed because there's still a closed circuit to the lightbulb, but the transistor is basically creating a short circuit and all the current flows through the transistor and not the lightbulb.",
+        "image": "static/blog/images/006.svg",
+        "caption": "This is a NOT gate. The output is on when the input is off, and vice versa."
+      }
+    ],
+    "sources": []
+  },
+  {
+    "title": "Binary Logic",
+    "date": "2025-07-02",
+    "content":[
+      {
+        "text": "Let me take a step back and explain the word \"logic\" in the context of computers and which I used to cover the basic logic gates. In computer science, logic refers to the study of reasoning and the principles of valid inference. Logic gates are the building blocks of digital circuits, and they perform basic logical functions that are fundamental to those digital circuits. From a theoretical perspective, the logic values we use are typically binary, meaning they can be On or Off, True or False, 1 or 0. You ever notice that many of the power buttons on our devices are represented by a circle with a line through it? This is the universal symbol for power, and it represents the binary state of the device: On (1) or Off (0).",
+        "image": "static/blog/images/007.svg",
+        "caption": "The universal symbol for power, representing the binary state of a device: On (1) or Off (0)."
+      }
+    ]
   }
 ]

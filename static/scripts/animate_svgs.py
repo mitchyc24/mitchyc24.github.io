@@ -1,6 +1,7 @@
 import sys
 import xml.etree.ElementTree as ET
 import os
+import re
 
 # --- CONFIGURATION ---
 ANIMATION_DURATION = '8s'
@@ -9,45 +10,88 @@ INPUT_DIR = 'static/scripts/input'
 OUTPUT_DIR = 'static/scripts/output'
 # ---------------------
 
+def extract_svg_content(file_path):
+    """
+    Extract everything between <svg...> and </svg> tags, excluding the outer svg tags themselves.
+    """
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Find the opening svg tag and its end
+    svg_start = content.find('<svg')
+    if svg_start == -1:
+        return ""
+    
+    # Find the end of the opening svg tag
+    tag_end = content.find('>', svg_start)
+    if tag_end == -1:
+        return ""
+    
+    # Find the closing svg tag
+    svg_close = content.rfind('</svg>')
+    if svg_close == -1:
+        return ""
+    
+    # Extract content between opening and closing svg tags
+    inner_content = content[tag_end + 1:svg_close].strip()
+    return inner_content
+
+def get_svg_attributes(file_path):
+    """
+    Extract attributes from the root SVG element.
+    """
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        return root.attrib
+    except:
+        return {}
+
 def combine_svgs(filenames):
     if not filenames:
         print("No SVG files found to combine.")
         return
 
-    # Register the SVG namespace to preserve it on output
-    ET.register_namespace('', "http://www.w3.org/2000/svg")
-
-    # Use the first file to set up the base SVG element
+    # Get attributes from the first SVG
     first_file_path = os.path.join(INPUT_DIR, filenames[0])
-    tree1 = ET.parse(first_file_path)
-    root1 = tree1.getroot()
-    final_root = ET.Element('svg', attrib=root1.attrib)
+    svg_attributes = get_svg_attributes(first_file_path)
+    
+    # Build the SVG string manually
+    svg_content = '<?xml version="1.0" encoding="utf-8"?>\n'
+    svg_content += '<svg'
+    
+    # Add attributes from the first SVG
+    for key, value in svg_attributes.items():
+        svg_content += f' {key}="{value}"'
+    
+    # Ensure we have the SVG namespace
+    if 'xmlns' not in svg_attributes:
+        svg_content += ' xmlns="http://www.w3.org/2000/svg"'
+    
+    svg_content += '>\n'
 
-    # Create defs and style elements
-    defs = ET.SubElement(final_root, 'defs')
-    style = ET.SubElement(defs, 'style')
-
+    # Add CSS animation styles
     num_frames = len(filenames)
     frame_duration_percent = 100 / num_frames
 
-    style_text = f"""
+    svg_content += '<defs><style>\n'
+    svg_content += f'''
         .frame {{
             animation-duration: {ANIMATION_DURATION};
             animation-timing-function: steps(1, end);
             animation-iteration-count: infinite;
             visibility: hidden;
         }}
-    """
+    '''
 
     for i, filename in enumerate(filenames):
         start_percent = i * frame_duration_percent
         end_percent = (i + 1) * frame_duration_percent
-        # Make the last frame extend to 100%
         if i == num_frames - 1:
             end_percent = 100
 
         animation_name = f'frame-anim-{i}'
-        style_text += f"""
+        svg_content += f'''
         #frame-{i} {{ animation-name: {animation_name}; }}
         @keyframes {animation_name} {{
             0% {{ visibility: hidden; }}
@@ -55,35 +99,30 @@ def combine_svgs(filenames):
             {end_percent}% {{ visibility: hidden; }}
             100% {{ visibility: hidden; }}
         }}
-        """
-    style.text = style_text
+        '''
+    
+    svg_content += '</style></defs>\n'
 
-    # Function to get visual elements from an SVG root
-    def get_visual_elements(root_element):
-        visuals = []
-        for child in root_element:
-            if child.tag.split('}')[-1] not in ['defs', 'metadata', 'style']:
-                visuals.append(child)
-        return visuals
-
-    # Create and populate frames
+    # Add each frame as a group with all its content
     for i, filename in enumerate(filenames):
-        frame_group = ET.SubElement(final_root, 'g', attrib={'id': f'frame-{i}', 'class': 'frame'})
-        
         file_path = os.path.join(INPUT_DIR, filename)
-        tree = ET.parse(file_path)
-        root = tree.getroot()
+        inner_content = extract_svg_content(file_path)
         
-        for child in get_visual_elements(root):
-            frame_group.append(child)
+        svg_content += f'<g id="frame-{i}" class="frame">\n'
+        svg_content += inner_content + '\n'
+        svg_content += '</g>\n'
+
+    svg_content += '</svg>'
 
     # Write to file
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
-    final_tree = ET.ElementTree(final_root)
-    final_tree.write(os.path.join(OUTPUT_DIR, OUTPUT_FILENAME), encoding='utf-8', xml_declaration=True)
+    
+    output_path = os.path.join(OUTPUT_DIR, OUTPUT_FILENAME)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(svg_content)
+    
     print(f"✅ Successfully created {OUTPUT_FILENAME} with {num_frames} frames.")
-
 
 if __name__ == '__main__':
     try:
