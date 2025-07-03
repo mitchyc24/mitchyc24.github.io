@@ -149,8 +149,8 @@ body:not(.nav-minimized) #content-container {
     cursor: pointer;
 }
 
-/* Theme toggle button */
-.theme-toggle {
+/* Toggle button (theme and language) */
+.toggle-button {
   background-color: var(--bg-accent);
   color: var(--text-primary);
   border: none;
@@ -166,36 +166,11 @@ body:not(.nav-minimized) #content-container {
   margin-left: 1rem;
 }
 
-.theme-toggle:hover {
+.toggle-button:hover {
   transform: scale(1.1);
 }
 
-.theme-toggle i {
-  font-size: 1.2rem;
-}
-
-/* Language toggle button */
-.language-toggle {
-  background-color: var(--bg-accent);
-  color: var(--text-primary);
-  border: none;
-  border-radius: 60%;
-  width: 25px;
-  height: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px var(--card-shadow);
-  margin-left: 1rem;
-}
-
-.language-toggle:hover {
-  transform: scale(1.1);
-}
-
-.language-toggle i {
+.toggle-button i {
   font-size: 1.2rem;
 }
 
@@ -325,6 +300,31 @@ body:not(.nav-minimized) #content-container {
 
   .nav-right-content.active {
     display: flex;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .nav-links a {
+    padding: 0.5rem 0;
+  }
+
+  .nav-buttons {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    border-top: 1px solid var(--bg-accent);
+    padding-top: 1rem;
+  }
+
+  .hamburger-menu {
+    display: block;
   }
 
   .nav-links {
