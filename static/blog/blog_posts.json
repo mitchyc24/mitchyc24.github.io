@@ -85,5 +85,17 @@
         "caption": "The universal symbol for power, representing the binary state of a device: On (1) or Off (0)."
       }
     ]
+  },
+  {
+    "title": "Abstraction",
+    "date": "2025-07-03",
+    "content": [
+      {
+        "text": "We can now take a step forward and start using some abstraction. Instead of drawing the the entire circuit with transistors, we can use symbols to represent the logic gates. This will allow us to continue to create more complex circuits without needing to draw all the individual components. Abstraction is the process of simplifying complex systems by focusing on essential characteristics and hiding unnecessary details. The AND gate is represented by a D-shaped symbol, the OR gate is represented by a curved shape, and the NOT gate is represented by a triangle with a small circle at the end. These symbols are standardized and widely recognized in the field of electronics. Take the time to watch the animation to understand how each gate works with the inputs and outputs.",
+        "image": "static/blog/images/008.svg",
+        "caption": "Standard symbols for logic gates: AND, OR, and NOT."
+      }
+    ],
+    "sources": ["https://en.wikipedia.org/wiki/Logic_gate"]
   }
 ]
