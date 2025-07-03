@@ -1,7 +1,7 @@
 <div id="chess-content" class="chess-main">
   <div class="chess-description" style="max-width: 1200px; margin: 0 auto; padding: 20px; background-color: rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box;">
     <h3 style="margin-top: 0;">Welcome to My Chess Game!</h3>
-    <p>Chess has always been a fun passtime of mine, I'm no master but I love to play. I implemented this game by leveraging the Chess.js and Chessboard.js libraries. I'm not a professional designer either but decided to design each piece myself.</p>
+    <p>Chess has always been a fun passtime of mine, I'm no master but I love to play. I've implemented this game by leveraging the public Chess.js, Chessboard.js libraries and piece images from Wikimedia Commons.</p>
     <p>Currently there is no computer opponent, but I am working on training my own AI model based on my online lichess games to eventually play agaisnt my website visitors in a similar style and strength as me! Stay tuned and come back in the future to challenge AI Mitchell!</p>
   </div>
 
@@ -36,33 +36,10 @@
 <script>
   var board = null;
   var game = new Chess();
+  var selectedSquare = null; // For click-based moves
   var $status = null; // Declare but don't assign yet
   var $pgn = null;    // Declare but don't assign yet
-
-  function onDragStart(source, piece, position, orientation) {
-    // do not pick up pieces if the game is over
-    if (game.game_over()) return false;
-
-    // only pick up pieces for the side to move
-    if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-      return false;
-    }
-  }
-
-  function onDrop(source, target) {
-    // see if the move is legal
-    var move = game.move({
-      from: source,
-      to: target,
-      promotion: 'q' // NOTE: always promote to a queen for example simplicity
-    });
-
-    // illegal move
-    if (move === null) return 'snapback';
-
-    updateStatus();
-  }
+  var previouslySelectedElement = null;
 
   // update the board position after the piece snap
   // for castling, en passant, pawn promotion
@@ -108,13 +85,10 @@
   }
 
   var config = {
-    draggable: true,
+    draggable: false, // Disable dragging
     position: 'start',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onSnapEnd: onSnapEnd,
     pieceTheme: function(piece) {
-      return '/static/chess/images/custom_chess_pieces/svgs/' + piece + '.svg';
+      return '/static/chess/images/chess_pieces/wikimedia_commons/svgs/' + piece + '.svg';
     }
   };
 
@@ -395,4 +369,38 @@
     watchForThemeChanges(); // Watch for changes
   }
 
+  // Click-to-move event
+  document.getElementById('myBoard').addEventListener('click', function(event) {
+    var squareDiv = event.target.closest('.square-55d63');
+    if (!squareDiv) return;
+    var clickedSquare = squareDiv.getAttribute('data-square');
+    handleSquareClick(clickedSquare);
+  });
+
+  function handleSquareClick(square) {
+    // Remove highlight from old square
+    if (previouslySelectedElement) {
+      previouslySelectedElement.classList.remove('selected-square');
+    }
+    if (!selectedSquare) {
+      // Select if piece is correct color
+      var pieceOnSquare = game.get(square);
+      if (pieceOnSquare && pieceOnSquare.color === game.turn()) {
+        selectedSquare = square;
+        // Highlight new square
+        previouslySelectedElement = document.querySelector('.square-55d63[data-square="' + square + '"]');
+        if (previouslySelectedElement) {
+          previouslySelectedElement.classList.add('selected-square');
+        }
+      }
+    } else {
+      // Attempt move
+      var move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
+      if (move !== null) {
+        updateStatus();
+        board.position(game.fen());
+      }
+      selectedSquare = null;
+    }
+  }
 </script>

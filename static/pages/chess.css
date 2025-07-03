@@ -115,6 +115,13 @@
   box-shadow: 0 4px 8px var(--card-shadow);
 }
 
+/* Highlight for selected square */
+.selected-square {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: -3px;
+  box-shadow: 0 0 10px var(--accent-blue);
+}
+
 /* Responsive chessboard container */
 @media screen and (max-width: 768px) {
   .chess-layout {
