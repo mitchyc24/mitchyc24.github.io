@@ -59,6 +59,16 @@ body {
   position: relative;
 }
 
+/* Content container spacing */
+#content-container {
+  margin-top: 0;
+  min-height: calc(100vh - 100px); /* Ensure content has proper height */
+}
+
+/* Ensure blog content has proper spacing from nav */
+body:not(.nav-minimized) #content-container {
+  padding-top: 1rem;
+}
 
 /* Navigation and Header - Common to all pages */
 nav {
@@ -82,6 +92,7 @@ nav {
   z-index: 100; /* Added from nav rule */
   box-shadow: 0 2px 4px var(--card-shadow); /* Added from nav rule */
   border-bottom: 2px solid var(--accent-blue); /* Added from nav rule */
+  transition: transform 0.3s ease, opacity 0.3s ease;
 
   /* Existing properties for layout and constraining width */
   display: flex;
@@ -90,6 +101,12 @@ nav {
   max-width: 1200px; /* This makes the bar itself constrained */
   margin: 0 auto; /* This centers the constrained bar */
   flex-wrap: wrap;
+}
+
+.nav-container.minimized {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .header-content {

@@ -1,8 +1,21 @@
 <div class="blog-container">
-  <h2 class="en">Computer Science Blog</h2>
-  <h2 class="fr">Blogue en Informatique</h2>
-  <div id="blog-posts-container">
-    <!-- Blog posts will be loaded here by JavaScript -->
+  <nav class="blog-nav" id="blog-nav">
+    <h3 class="en">Navigation</h3>
+    <h3 class="fr">Navigation</h3>
+    <ul class="blog-nav-list" id="blog-nav-list">
+      <!-- Navigation items will be populated by JavaScript -->
+    </ul>
+  </nav>
+  
+  <div class="blog-content">
+    <button class="blog-nav-toggle" id="blog-nav-toggle">
+      <i class="fas fa-list"></i> <span class="en">Show Navigation</span><span class="fr">Afficher Navigation</span>
+    </button>
+    <h2 class="en">Computer Science Blog</h2>
+    <h2 class="fr">Blogue en Informatique</h2>
+    <div id="blog-posts-container">
+      <!-- Blog posts will be loaded here by JavaScript -->
+    </div>
   </div>
 </div>
 
@@ -13,6 +26,64 @@
 </style>
 
 <script>
+  // Function to create navigation items
+  function createBlogNavigation(posts) {
+    const navList = document.getElementById('blog-nav-list');
+    if (!navList) return;
+
+    let navHTML = '';
+    posts.forEach((post, index) => {
+      const postId = `blog-post-${index}`;
+      const formattedDate = new Date(post.date.replace(/-/g, '\/')).toLocaleDateString();
+      navHTML += `
+        <li class="blog-nav-item">
+          <a href="#${postId}" class="blog-nav-link" data-post-id="${postId}">
+            ${post.title}
+            <span class="blog-nav-date">${formattedDate}</span>
+          </a>
+        </li>
+      `;
+    });
+    navList.innerHTML = navHTML;
+
+    // Add click event listeners for smooth scrolling
+    navList.querySelectorAll('.blog-nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('data-post-id');
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+          
+          // Update active state
+          navList.querySelectorAll('.blog-nav-link').forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        }
+      });
+    });
+  }
+
+  // Function to update active navigation item based on scroll position
+  function updateActiveNavigation() {
+    const posts = document.querySelectorAll('.blog-post');
+    const navLinks = document.querySelectorAll('.blog-nav-link');
+    
+    let currentActive = null;
+    posts.forEach((post, index) => {
+      const rect = post.getBoundingClientRect();
+      if (rect.top <= 100 && rect.bottom > 100) {
+        currentActive = index;
+      }
+    });
+
+    navLinks.forEach((link, index) => {
+      link.classList.toggle('active', index === currentActive);
+    });
+  }
+
   // Function to fetch and display blog posts
   async function fetchBlogPosts() {
     const blogPostsContainer = document.getElementById('blog-posts-container');
@@ -29,7 +100,10 @@
       // Sort posts by date, oldest first
       posts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-      for (const post of posts) {
+      // Create navigation first
+      createBlogNavigation(posts);
+
+      for (const [index, post] of posts.entries()) {
         let contentHTML = '';
         if (post.content && post.content.length > 0) {
           for (const contentBlock of post.content) {
@@ -55,7 +129,7 @@
         }
 
         const postHTML = `
-          <article class="blog-post">
+          <article class="blog-post" id="blog-post-${index}">
             <h3>${post.title}</h3>
             <p class="blog-post-date">${new Date(post.date.replace(/-/g, '\/')).toLocaleDateString()}</p>
             <div class="blog-post-content">
@@ -74,12 +148,38 @@
         allPostsHTML += postHTML;
       }
       blogPostsContainer.innerHTML = allPostsHTML || '<p>No blog posts found.</p>';
+
+      // Add scroll listener for active navigation updates
+      window.addEventListener('scroll', updateActiveNavigation);
+
     } catch (error) {
       console.error('Error fetching blog posts:', error);
       blogPostsContainer.innerHTML = '<p>Error loading blog posts.</p>';
     }
   }
 
-  // Fetch posts immediately when this partial is loaded
-  fetchBlogPosts();
+  // Navigation toggle functionality
+  function setupNavigationToggle() {
+    const navToggle = document.getElementById('blog-nav-toggle');
+    const nav = document.getElementById('blog-nav');
+    const toggleText = navToggle.querySelector('span');
+    
+    if (navToggle && nav) {
+      navToggle.addEventListener('click', function() {
+        nav.classList.toggle('collapsed');
+        const isCollapsed = nav.classList.contains('collapsed');
+        
+        if (document.body.classList.contains('french-active')) {
+          toggleText.textContent = isCollapsed ? 'Afficher Navigation' : 'Masquer Navigation';
+        } else {
+          toggleText.textContent = isCollapsed ? 'Show Navigation' : 'Hide Navigation';
+        }
+      });
+    }
+  }
+
+  // Initialize everything
+  fetchBlogPosts().then(() => {
+    setupNavigationToggle();
+  });
 </script>

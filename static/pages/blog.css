@@ -3,9 +3,93 @@
   max-width: 1200px;
   margin: 1.5rem auto;
   padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
 }
 
-.blog-container h2 {
+.blog-nav {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px var(--card-shadow);
+  position: sticky;
+  top: 150px; /* Increased from 1rem to account for nav height */
+  height: fit-content;
+  max-height: calc(100vh - 140px); /* Adjusted to account for top offset */
+  overflow-y: auto;
+  transition: top 0.3s ease;
+}
+
+.blog-nav h3 {
+  font-size: 1.2rem;
+  color: var(--accent-blue);
+  margin-bottom: 1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--accent-blue);
+  padding-bottom: 0.5rem;
+}
+
+.blog-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.blog-nav-item {
+  margin-bottom: 0.5rem;
+}
+
+.blog-nav-link {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.blog-nav-link:hover {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.blog-nav-link.active {
+  background-color: var(--accent-purple);
+  color: white;
+}
+
+.blog-nav-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.blog-nav-toggle {
+  display: none;
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.blog-nav-toggle:hover {
+  background-color: var(--accent-purple);
+}
+
+.blog-content {
+  min-width: 0; /* Prevents grid overflow */
+}
+
+.blog-content h2 {
   font-size: 2rem;
   color: var(--accent-blue);
   margin-bottom: 1.5rem;
@@ -26,6 +110,7 @@
   padding: 1.5rem;
   box-shadow: 0 4px 6px var(--card-shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  scroll-margin-top: 1rem;
 }
 
 .blog-post:hover {
@@ -101,6 +186,25 @@
 }
 
 /* Responsive adjustments for blog */
+@media screen and (max-width: 968px) {
+  .blog-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .blog-nav {
+    display: none; /* Hide navigation completely on small screens */
+  }
+
+  .blog-nav-toggle {
+    display: none; /* Also hide the toggle button since nav is hidden */
+  }
+
+  .blog-content {
+    order: 1;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .blog-container {
     padding: 0 1rem;
@@ -139,4 +243,10 @@
   .blog-post-image {
     max-width: 100%;
   }
+}
+
+
+.nav-container.minimized ~ * .blog-nav,
+body.nav-minimized .blog-nav {
+  top: 20px; /* Reduced offset when nav is minimized */
 }

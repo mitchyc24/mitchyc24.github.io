@@ -146,6 +146,42 @@
       // Load the initial content
       document.getElementById('nav-home-en').click();
       
+      // Navigation scroll behavior
+      let lastScrollTop = 0;
+      let scrollTimeout;
+      const navContainer = document.querySelector('.nav-container');
+      
+      function handleScroll() {
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Clear any existing timeout
+        clearTimeout(scrollTimeout);
+        
+        // Only handle scroll if we've moved more than 5px to avoid jitter
+        if (Math.abs(currentScrollTop - lastScrollTop) > 5) {
+          if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
+            // Scrolling down and past 100px - minimize nav
+            navContainer.classList.add('minimized');
+            document.body.classList.add('nav-minimized');
+          } else {
+            // Scrolling up - show nav
+            navContainer.classList.remove('minimized');
+            document.body.classList.remove('nav-minimized');
+          }
+          lastScrollTop = currentScrollTop;
+        }
+      }
+      
+      // Add scroll listener
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Show nav on mouse movement near top of screen
+      document.addEventListener('mousemove', function(e) {
+        if (e.clientY < 80) { // Mouse near top 80px of screen
+          navContainer.classList.remove('minimized');
+          document.body.classList.remove('nav-minimized');
+        }
+      });
     });
   </script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
