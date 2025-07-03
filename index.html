@@ -157,8 +157,8 @@
         // Clear any existing timeout
         clearTimeout(scrollTimeout);
         
-        // Only handle scroll if we've moved more than 5px to avoid jitter
-        if (Math.abs(currentScrollTop - lastScrollTop) > 5) {
+        // Only handle scroll if we've moved more than 10px to avoid jitter
+        if (Math.abs(currentScrollTop - lastScrollTop) > 20) {
           if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
             // Scrolling down and past 100px - minimize nav
             navContainer.classList.add('minimized');
