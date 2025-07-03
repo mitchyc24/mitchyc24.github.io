@@ -70,36 +70,19 @@ body:not(.nav-minimized) #content-container {
   padding-top: 1rem;
 }
 
-/* Navigation and Header - Common to all pages */
-nav {
-  background-color: var(--bg-secondary);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 4px var(--card-shadow);
-  border-bottom: 2px solid var(--accent-blue);
-  /* This rule will still apply to any <nav> HTML5 elements. */
-  /* The main site navbar in index.html is a div.nav-container, styled below. */
-}
-
 .nav-container {
-  /* Properties moved from the 'nav' rule or similar to ensure div.nav-container is a styled bar */
-  background-color: var(--bg-secondary); /* Added from nav rule */
-  padding: 1rem 2rem; /* Added from nav rule, now applies within max-width */
-  position: sticky; /* Added from nav rule */
-  top: 0; /* Added from nav rule */
-  z-index: 100; /* Added from nav rule */
-  box-shadow: 0 2px 4px var(--card-shadow); /* Added from nav rule */
-  border-bottom: 2px solid var(--accent-blue); /* Added from nav rule */
+  background-color: var(--bg-secondary); 
+  padding: 1rem 2rem; 
+  position: sticky; 
+  top: 0; 
+  z-index: 100; 
+  box-shadow: 0 2px 4px var(--card-shadow); 
+  border-bottom: 2px solid var(--accent-blue); 
   transition: transform 0.3s ease, opacity 0.3s ease;
-
-  /* Existing properties for layout and constraining width */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px; /* This makes the bar itself constrained */
-  margin: 0 auto; /* This centers the constrained bar */
+  margin: 0 auto; 
   flex-wrap: wrap;
 }
 
