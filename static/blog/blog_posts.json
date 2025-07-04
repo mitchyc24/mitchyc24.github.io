@@ -68,7 +68,7 @@
     "date": "2025-07-01",
     "content": [
       {
-        "text": "The last gate I want to introduce is the NOT gate. This gate is a little different from the previous two. It has only one input, one transistor, and one output. The output is on when the input is off, and the output is off when the input is on. This is why it's called a NOT gate, because it inverts the input signal. It may be a little confusing that the lightbulb is off when the switch is closed because there's still a closed circuit to the lightbulb, but the transistor is basically creating a short circuit and all the current flows through the transistor and not the lightbulb.",
+        "text": "One more gate that I want to introduce is the NOT gate. This gate is a little different from the previous two. It has only one input, one transistor, and one output. The output is on when the input is off, and the output is off when the input is on. This is why it's called a NOT gate, because it inverts the input signal. It may be a little confusing that the lightbulb is off when the switch is closed because there's still a closed circuit to the lightbulb, but the transistor is basically creating a short circuit and all the current flows through the transistor and not the lightbulb.",
         "image": "static/blog/images/006.svg",
         "caption": "This is a NOT gate. The output is on when the input is off, and vice versa."
       }
@@ -97,5 +97,20 @@
       }
     ],
     "sources": ["https://en.wikipedia.org/wiki/Logic_gate"]
+  },
+  {
+    "title": "NAND and NOR Gates",
+    "date": "2025-07-04",
+    "content": [
+      {
+        "text": "Let's introduce two final gates for now: NAND and NOR. These gates are actually combinations of the AND and OR gates with a NOT gate. The NAND gate is the opposite of the AND gate, meaning it outputs false only when both inputs are true. The NOR gate is the opposite of the OR gate, meaning it outputs true only when both inputs are false. These gates are important because they can be used to create any other logic gate, which is why they are often referred to as universal gates.",
+        "image": "static/blog/images/009.svg",
+        "caption": "NAND and NOR gates, which are universal gates."
+      }
+    ],
+    "sources": [
+      "https://en.wikipedia.org/wiki/NAND_gate",
+      "https://en.wikipedia.org/wiki/NOR_gate"
+    ]
   }
 ]
