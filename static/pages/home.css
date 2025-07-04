@@ -167,14 +167,20 @@
 .degree-img {
   width: 100px;
   transition: transform 1s ease;
-  /* Brown color for wood */
-  border: 8px solid;
-  border-image: linear-gradient(to bottom, #654321, #a07546) 1;
+  border: 2px solid var(--bg-accent);
+  border-color: var(--accent-blue);
+  border-image-slice: 1 fill;
   border-radius: 5px;
-  /* Optional shadow for depth */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .degree-img:hover {
-  transform: scale(8);
+  transform: scale(8); 
+}
+
+
+@media (max-width: 768px) {
+  .degree-img:hover {
+    transform: scale(4); 
+  }
 }
