@@ -155,3 +155,26 @@
 .social-links i {
   font-size: 4rem;
 }
+
+/* Degree images section */
+.degree-images {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.degree-img {
+  width: 100px;
+  transition: transform 1s ease;
+  /* Brown color for wood */
+  border: 8px solid;
+  border-image: linear-gradient(to bottom, #654321, #a07546) 1;
+  border-radius: 5px;
+  /* Optional shadow for depth */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.degree-img:hover {
+  transform: scale(8);
+}
