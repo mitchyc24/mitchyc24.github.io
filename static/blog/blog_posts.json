@@ -140,5 +140,19 @@
     "sources": [
       "https://en.wikipedia.org/wiki/Half_adder"
     ]
+  },
+  {
+    "title": "Full Adder",
+    "date": "2025-07-07",
+    "content": [
+      {
+        "text": "The half adder is a great start, but it can only add two bits together. In order to add large numbers together, we need to be able to add three bits together. That's where the full adder comes in. The full adder takes three bits as input: two bits to be added and a carry bit from a previous addition. It produces a sum bit and a carry bit as output. The sum bit is the result of adding the two input bits and the carry bit, and the carry bit is used to indicate if there was a carry from the addition.",
+        "image": "static/blog/images/012.svg",
+        "caption": "A full adder circuit."
+      }
+    ],
+    "sources": [
+      "https://en.wikipedia.org/wiki/Full_adder"
+    ]
   }
 ]
