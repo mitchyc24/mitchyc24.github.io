@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" viewBox="0 0 138.80791567297547 243.65953707721246" width="138.80791567297547" height="243.65953707721246" xmlns="http://www.w3.org/2000/svg">
+<defs><style>
+
+        .frame {
+            animation-duration: 1s;
+            animation-timing-function: steps(1, end);
+            animation-iteration-count: infinite;
+            visibility: hidden;
+        }
+    
+        #frame-0 { animation-name: frame-anim-0; }
+        @keyframes frame-anim-0 {
+            0% { visibility: hidden; }
+            0.0% { visibility: visible; }
+            50.0% { visibility: hidden; }
+            100% { visibility: hidden; }
+        }
+        
+        #frame-1 { animation-name: frame-anim-1; }
+        @keyframes frame-anim-1 {
+            0% { visibility: hidden; }
+            50.0% { visibility: visible; }
+            100% { visibility: hidden; }
+            100% { visibility: hidden; }
+        }
+        </style></defs>
+<g id="frame-0" class="frame">
+<!-- svg-source:excalidraw --><metadata></metadata><defs><style class="style-fonts">
+      @font-face { font-family: Excalifont; src: url(data:font/woff2;base64,d09GMgABAAAAAAL0AA0AAAAABgQAAAKiAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG3AcVgZgADQRCAqCfIJLCwgAATYCJAMKBCAFgxgHIBvoBFGUDsYEsh+HsWN6GaFNvUheul1EIpEnu9NbPNRP29tNus74o4yPULQq8bWMbx5jQVqEBCXuL61t4CFfGipSXwWx0oiRmvn5/b3nvS+M1p2ZICU6Lc0NVoKyMHEzzvL2+QRMU+qyscASXUusrQF2gdT/Cz9tf4EFNEG3us0gTwfXBorp4Dw2TS5RYDRrsu8dzPdAbj5XFcjDlVOAvFJ3HQg7fAjfy91VBzeNUEt26KWJzSrC0oXwmpNT4pu5UGCFNnVxnSi+Gn3W5hk4ZW+cy/oDLBi3dzZaws8sXT2XtRpfYTwX4BviK8/AghuJChObwMRuAdRqgbmUsn/lVwCiFAkq0KLBG/ADqAGpurcqIE3niZzwaxka4+cfEO85PRU59W9txlPKgGLGJqPOa/8YHR35bZ76j5+YD23Qa3WbNJtahI/QsdDo/pJQ7Yt+R4hvft9PqLcn/Tv49VcysujbwulaJinUtJpBFwhWzcozaLNmcFmmIztMjkrylvP8t5c6lfJSKRvu0omaQKESLnswqNQvLK2hsdYy3lRsWEsJo6DL70V7DkU3JF3Jsp2OB+421PsYMm8z7zgDDV3kC+pjk7v6VWS0NM7aFpuLDWsBIIAAn/NNdTiH6aubQXgE4C9H2RaA/4GXvP/yvzziM9EIQA8HCHBZs+EOwN+fHMBgvVlFgV22gSlTGFA5BTJAAgEDtgCgE4QAq2kAXh0MEsNrhsSxjZAEyipJIu46mmxs8Eut/cNg3xuDopLwDLq7hC2O4EFFuTriXN1IDDqUkZSWllYzovowiW5QTlIWCsvJyiqJpPNgMm14387IUk1KWnYo9Xitpo8riUB0h8IYESgrLSsP0T5QPSbrivKShDpUKtSV2yRxBLiLeuKwkmxAWWoAAAAA); }</style></defs><rect x="0" y="0" width="138.80791567297547" height="243.65953707721246" fill="transparent"></rect><g transform="translate(10 10) rotate(0 59.403957836487734 111.82976853860623)"><text x="0" y="157.63524173201944" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="178.92762966177006px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">0</text></g>
+</g>
+<g id="frame-1" class="frame">
+<!-- svg-source:excalidraw --><metadata></metadata><defs><style class="style-fonts">
+      @font-face { font-family: Excalifont; src: url(data:font/woff2;base64,d09GMgABAAAAAAJcAA0AAAAABKAAAAINAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGx4cNAZgADQRCAqBEIETCwYAATYCJAMIBCAFgxgHIBu6A8geg+NuKcRkMkXwv5QyvN6PINqP/ey9QzTRxLSZR0guJVMqoZKiWOaX9tM7ftx7g/xGoH1IaTCa2IQsdWUh//37LXecZQkdSWrhLwn1l1iCaaAvFv7aIqwF1ALS3MZanY7PES0J6dVRoFYLW0praTkloClDCQRqTQmiKnbbX8r4TLC+5ZMYYP2EE7LBGrCXcypR6qCmOjWlCgC7rIkTCPIFLqixtpeeBzswKbAQ/zVRK8RKYgTwAojnVAGggyYSCjRREZRVdQBZFpgs5ZzlmwBESQIJZATGgXkAMiDGcU3mTX0xFJXtlXcOSjNfJy4zW82LFv1X7v3DEfCDuube3kGwv29ZMugxY2lk8hIpSjttymXuOurelNYUP+9qgaZoYvN/5YJP8Uox4YvYraYdGtCl8VBVqJqvo3K4LVMFEAhuP4+rMAYxr5o6Ko/wJ/NKAeDf1Iviv2aF6nOOBFAtgeChVGEsbD8FASNTgYfUmGVOCckvVIKEEFgCgCoHVETWAp6cNkKTLSSNXlEYUoesBx4VFrhoV+oB1kkR4DDRkHGwCfkqQkIhwoTDV4aET4CGgw0J5CegXhwtHZMMF5UAEsxPEMRDsCBBwnmeexA/a09RLF2eaItnXlIyb+WS4aOhoBJCPBB4QoIECBICwZNB7koiPhwJP0giJibkR8EgEg3pKDESIj8qQDk1AA==); }</style></defs><rect x="0" y="0" width="96.39883422851562" height="243.65953707721246" fill="transparent"></rect><g transform="translate(10 10) rotate(0 38.19941711425781 111.82976853860623)"><text x="0" y="157.63524173201944" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="178.92762966177006px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">1</text></g>
+</g>
+</svg>

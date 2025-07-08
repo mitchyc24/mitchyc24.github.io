@@ -112,5 +112,33 @@
       "https://en.wikipedia.org/wiki/NAND_gate",
       "https://en.wikipedia.org/wiki/NOR_gate"
     ]
+  },
+  {
+    "title": "Binary Digit: The Bit",
+    "date": "2025-07-05",
+    "content": [
+      {
+        "text": "Let's talk about the basic unit of information in computing: the bit. A bit is a portemanteau of binary digit. It can either be a 0 or a 1. It's the smallest unit of data in a computer and is used to represent all kinds of information, from numbers to text to images. In fact, everything you see on your computer screen is ultimately represented by bits. The term \"bit\" was coined by John Tukey in 1947, and it has since become a fundamental concept in computer science. In the diagrams I've drawn so far, I've been using the lightbulb to represent the state of a bit. When the lightbulb is on, it represents a 1, and when it's off, it represents a 0. This is a simple way to visualize the concept of a bit, but in reality, bits are represented by electrical signals in a computer.",
+        "image": "static/blog/images/010.svg",
+        "caption": "A bit: 0 or 1"
+      }
+    ],
+    "sources": [
+      "https://en.wikipedia.org/wiki/Bit"
+    ]
+  },
+  {
+    "title": "Half Adder",
+    "date": "2025-07-06",
+    "content": [
+      {
+        "text": "Let's start building more complex circuits. One of the most important circuits in computer science is the adder, which is used to perform addition. The adder takes two binary numbers as input and produces their sum as output. The simplest form of an adder is the half adder, which takes two bits as input and produces a sum bit and a carry bit as output. The sum bit is the result of adding the two input bits, and the carry bit is used to indicate if there was a carry from the addition.",
+        "image": "static/blog/images/011.svg",
+        "caption": "A half adder circuit."
+      }
+    ],
+    "sources": [
+      "https://en.wikipedia.org/wiki/Half_adder"
+    ]
   }
 ]
