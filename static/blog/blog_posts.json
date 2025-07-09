@@ -15,8 +15,9 @@
     "date": "2025-06-28",
     "content": [
       {
-        "text": "As promised, our journey begins not with complex theory, but with a single, crucial invention: the transistor. While giants like Alan Turing and Claude Shannon laid the groundwork for computing, this small device is what allowed their ideas to become a physical reality.\n\nHonestly, a transistor on its own is really not that special. It's a switch. It does the same thing as a light switch on your wall, but instead of being turned on and off by hand, it's controlled by an electrical signal.\n\nWhen we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
-        "image": "static/blog/images/001.svg"
+        "text": "As promised, our journey begins not with complex theory, but with a single, crucial invention: the transistor. While giants like <a href=\"https://en.wikipedia.org/wiki/Alan_Turing\">Alan Turing</a> and <a href=\"https://en.wikipedia.org/wiki/Claude_Shannon\">Claude Shannon</a> laid the groundwork for computing, this small device is what allowed their ideas to become a physical reality.\n\nHonestly, a transistor on its own is really not that special. It's a switch. It does the same thing as a light switch on your wall, but instead of being turned on and off by hand, it's controlled by an electrical signal.\n\nWhen we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
+        "image": "static/blog/images/001.svg",
+        "caption": "A transistor is a switch that can be controlled by an electrical signal."
       }
     ],
     "sources": [
@@ -160,9 +161,14 @@
     "date": "2025-07-08",
     "content": [
       {
-        "text": "If we hadn't abstracted away the transistors, the full adder circuit we saw yesterday would contain 27 of them! That would be quite difficult to understand, but also quite cumbersome for me to draw. So, let's keep abstracting. We can abstract away the circuit by drawing a box, labeling it with its name, and drawing the inputs and outputs. Easy!",
+        "text": "If we hadn't abstracted away the transistors, the full adder circuit we saw yesterday would contain 27 of them! That would be quite difficult to understand, but also quite cumbersome for me to draw.",
         "image": "static/blog/images/013.svg",
-        "caption": "Standard symbols for half and full adders."
+        "caption": "Two half adders make a full adder."
+      },
+      {
+        "text": "So, let's keep abstracting. We can abstract away the circuit by drawing a box, labeling it with its name, and drawing the inputs and outputs. Easy!",
+        "image": "static/blog/images/014.svg",
+        "caption": "A full Adder, without needing to draw all the transistors."
       }
     ],
     "sources": [

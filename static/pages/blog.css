@@ -177,6 +177,14 @@
   min-width: 300px;
 }
 
+.blog-post-image-and-caption:hover{
+  transform: scale(2.0);
+  transition: transform 1s ease;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--card-shadow);
+}
+
 .blog-post-image-caption {
   font-size: 0.75rem;  /* Make captions smaller */
   color: var(--text-secondary);
