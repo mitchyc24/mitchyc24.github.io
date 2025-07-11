@@ -1,11 +1,16 @@
 [
   {
-    "title": "From the Beginning",
+    "title": "Introdution",
     "date": "2025-06-27",
     "content": [
       {
-        "text": "Computer technology is relentlessly marching forward, and we are in the midst of running headfirst into the AI revolution. This is where I want to write about and uncover the mysteries of the technology. Before I jump into writing about machine learning and neural networks, I think it would be best to start from the early days of computing to ensure that we have a common understanding of how computers work. It's a long road, as we have a lot to cover. I hope that you will join me and follow along as I write a daily, digestible \"byte\" covering the foundations of computer science and catch up to the latest developments in the field.",
-        "image": null
+        "text": "Computer technology is relentlessly marching forward. With global IT spending soaring past <a href=\"https://www.gartner.com/en/newsroom/press-releases/2025-01-21-gartner-forecasts-worldwide-it-spending-to-grow-9-point-8-percent-in-2025\">$5 Trillion</a>, it's clear that computers are the backbone of our modern world. Yet, for many, they are simply magic boxes. We know how to use them, but how they work is another story. I've always felt that while most people have a general idea of what's under the hood of a car, the same can't be said for the devices in our pockets and on our desks.My fascination with computers started when I found out I could program my <a href=\"https://en.wikipedia.org/wiki/TI-83_series\">TI-83</a> calculator in grade school. That curiosity led me down a path to understanding how these incredible machines are built and operate. Now, I want to help demystify technology for everyone. Having a foundational understanding of computers can be incredibly useful, especially as they become more and more a part of our lives."
+      },
+      {
+        "text":"As much as I'd love to jump straight into the complexities of modern marvels like AI, I believe a strong foundation is key. That's why I'm starting this blog. We'll begin with the very basics of computing and, in daily, digestible \"bytes\" build our knowledge from the ground up."
+      },
+      {
+        "text":"It's a long road, but an exciting one. I hope you'll follow along as we journey from the dawn of computing to the latest breakthroughs in the field."
       }
     ],
     "sources": []
@@ -172,7 +177,33 @@
       }
     ],
     "sources": [
-      
+    ]
+  },
+  {
+    "title": "Truth Tables",
+    "date": "2025-07-09",
+    "content": [
+      {
+        "text": "Let's introduce truth tables. A truth table is a way to represent the behavior of a logic circuit. So far I've been showing the behaviour of the circuits with the flashing bulbs, but a truth table simply lists all possible combinations of inputs and their corresponding outputs. Have a look at these truth tables for the AND, OR, NAND, and NOR gates. The first column represents the first input, the second column represents the second input, and the last column represents the output. For example, in the AND gate truth table, the output is 1 only when both inputs are 1. In the OR gate truth table, the output is 1 when either input is 1 or both inputs are 1. The NAND and NOR gates are the opposite of the AND and OR gates, respectively.",
+        "image": "static/blog/images/015.svg",
+        "caption": "Truth tables for logic gates."
+      }
+    ],
+    "sources": [
+      "https://en.wikipedia.org/wiki/Truth_table"
+    ]
+  },
+  {
+    "title": "Full Adder Truth Table",
+    "date": "2025-07-10",
+    "content": [
+      {
+        "text": "The truth table for a full adder shows all possible combinations of inputs and their corresponding outputs. The first three columns represent the inputs (A, B, and C), and the last two columns represent the outputs (Sum and Carry). The Sum output is 1 when either A or B is 1, or when both A and B are 1 and C is 1. The Carry output is 1 when either A and B are both 1, or when A and C are both 1, or when B and C are both 1.",
+        "image": "static/blog/images/016.svg",
+        "caption": "Truth table for a full adder."
+      }
+    ],
+    "sources": [
     ]
   }
 ]
