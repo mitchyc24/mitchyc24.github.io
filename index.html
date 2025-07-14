@@ -35,7 +35,10 @@
         <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess.html" hx-target="#content-container">Échecs</a>
       </div>
       <div class="nav-buttons">
-        <button class="toggle-button" id="languageToggle"><i class="fas fa-language"></i></button>
+        <button class="toggle-button" id="languageToggle">
+          <i class="fas fa-language"></i>
+          <span id="languageToggleText">EN</span>
+        </button>
         <button class="toggle-button" id="themeToggle"><i class="fas fa-moon"></i></button>
       </div>
     </div>
@@ -93,10 +96,19 @@
         // Save preference
         if (document.body.classList.contains('french-active')) {
           localStorage.setItem('language', 'fr');
+          document.getElementById('languageToggleText').innerText = 'FR';
         } else {
           localStorage.setItem('language', 'en');
+          document.getElementById('languageToggleText').innerText = 'EN';
         }
       });
+
+      // Set initial language text
+      if (savedLanguage === 'fr') {
+        document.getElementById('languageToggleText').innerText = 'FR';
+      } else {
+        document.getElementById('languageToggleText').innerText = 'EN';
+      }
 
       // Hamburger menu toggle
       const hamburgerMenu = document.getElementById('hamburgerMenu');
