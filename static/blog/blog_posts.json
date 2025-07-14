@@ -249,19 +249,19 @@
       {
         "type": "flashcard",
         "front": {
-          "text": "What are NAND and NOR gates often called, and why?"
+          "text": "What logic gates are considered the two universal gates?"
         },
         "back": {
-          "text": "They are often referred to as universal gates because they can be used to create any other logic gate."
+          "text": "NAND and NOR. Either of them can be used to create any other logic gate."
         }
       },
       {
         "type": "flashcard",
         "front": {
-          "text": "What is a bit, and who coined the term?"
+          "text": "The basic unit of information in computing, represented as a 0 or 1. The term was coined by John Tukey in 1947."
         },
         "back": {
-          "text": "A bit (a portmanteau of binary and digit) is the basic unit of information in computing, represented as a 0 or 1. The term was coined by John Tukey in 1947."
+          "text": "bit"
         }
       },
       {
@@ -270,16 +270,16 @@
           "text": "What are the inputs and outputs of a half adder?"
         },
         "back": {
-          "text": "A half adder takes two bits as input and produces a sum bit and a carry bit as output."
+          "text": "A half adder takes two input bits and outputs a sum bit and a carry bit."
         }
       },
       {
         "type": "flashcard",
         "front": {
-          "text": "What is a full adder and what is it composed of?"
+          "text": "A circuit that can add three bits together and outputs a sum bit and a carry bit."
         },
         "back": {
-          "text": "A full adder is a circuit that can add three bits together (two input bits and a carry-in bit). It is composed of two half adders."
+          "text": "Full Adder"
         }
       }
     ],
