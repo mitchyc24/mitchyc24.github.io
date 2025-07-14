@@ -118,6 +118,14 @@
         navRightContent.classList.toggle('active');
       });
 
+      // Close the hamburger menu if a click is performed outside of it
+      document.addEventListener('click', function(event) {
+        const isClickInside = navRightContent.contains(event.target) || hamburgerMenu.contains(event.target);
+        if (!isClickInside && navRightContent.classList.contains('active')) {
+          navRightContent.classList.remove('active');
+        }
+      });
+
       // Add active class handling for navigation
       document.querySelectorAll('.nav-links a').forEach(link => {
         link.addEventListener('click', function (e) {
