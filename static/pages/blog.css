@@ -1,11 +1,8 @@
 /* ============ BLOG PAGE STYLES ============ */
 .blog-container {
-  max-width: 1200px;
-  margin: 1.5rem auto;
+  max-width: 900px;
+  margin: 1.5rem auto 1.5rem 290px;
   padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 2rem;
 }
 
 .blog-nav {
@@ -13,12 +10,31 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 4px 6px var(--card-shadow);
-  position: sticky;
-  top: 150px; /* Increased from 1rem to account for nav height */
+  position: fixed;
+  top: 100px; /* Increased from 1rem to account for nav height */
   height: fit-content;
-  max-height: calc(100vh - 140px); /* Adjusted to account for top offset */
+  max-height: calc(100vh - 170px); /* Adjusted to account for top offset */
   overflow-y: auto;
   transition: top 0.3s ease;
+  left: 20px;
+  width: 250px;
+}
+
+.blog-nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.blog-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blog-nav::-webkit-scrollbar-thumb {
+  background-color: var(--accent-blue);
+  border-radius: 4px;
+}
+
+.blog-nav::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-purple);
 }
 
 .blog-nav h3 {
@@ -198,6 +214,7 @@
   .blog-container {
     grid-template-columns: 1fr;
     gap: 1rem;
+    margin-left: auto;
   }
 
   .blog-nav {
@@ -251,10 +268,4 @@
   .blog-post-image {
     max-width: 100%;
   }
-}
-
-
-.nav-container.minimized ~ * .blog-nav,
-body.nav-minimized .blog-nav {
-  top: 20px; /* Reduced offset when nav is minimized */
 }

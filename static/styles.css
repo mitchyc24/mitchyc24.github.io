@@ -65,14 +65,9 @@ body {
   min-height: calc(100vh - 100px); /* Ensure content has proper height */
 }
 
-/* Ensure blog content has proper spacing from nav */
-body:not(.nav-minimized) #content-container {
-  padding-top: 1rem;
-}
-
 .nav-container {
   background-color: var(--bg-secondary); 
-  padding: 1rem 2rem; 
+  padding: 0rem 0.5rem;
   position: sticky; 
   top: 0; 
   z-index: 100; 
@@ -86,12 +81,6 @@ body:not(.nav-minimized) #content-container {
   flex-wrap: wrap;
 }
 
-.nav-container.minimized {
-  transform: translateY(-100%);
-  opacity: 0;
-  pointer-events: none;
-}
-
 .header-content {
   display: flex;
   align-items: center;
@@ -100,14 +89,13 @@ body:not(.nav-minimized) #content-container {
 }
 
 .header-left h1 {
-  font-size: 2.2rem;
-  margin-bottom: 0.3rem;
+  font-size: 2rem;
+  margin-bottom: 0rem;
   color: var(--text-primary);
-  font-weight: 600;
 }
 
 .header-left p {
-  font-size: 1.1rem;
+  font-size: 0.8rem;
   color: var(--accent-blue);
   margin-bottom: 0;
 }
