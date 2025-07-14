@@ -1,9 +1,9 @@
 /* ============ RESUME PAGE STYLES ============ */
 /* Main content styles for resume page */
 .resume-main {
-  max-width: 1200px; /* Changed from 1000px */
-  margin: 1.5rem auto; /* Unchanged */
-  padding: 0 2rem; /* Changed from 0 1.5rem */
+  max-width: 1200px; 
+  margin: 1.5rem auto; 
+  padding: 0 2rem;
 }
 
 .section {
@@ -22,13 +22,11 @@
   padding-bottom: 0.5rem;
 }
 
-/* Profile section */
 .profile-content {
   font-size: 1rem;
   line-height: 1.6;
 }
 
-/* Experience section */
 .timeline-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -88,7 +86,6 @@
   color: var(--accent-blue);
 }
 
-/* Education section */
 .education-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -141,7 +138,6 @@
   color: var(--accent-purple);
 }
 
-/* Skills section */
 .skills-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -184,7 +180,6 @@
   color: var(--accent-teal);
 }
 
-/* Styles for Markdown Resume Section */
 .markdown-controls {
   margin-bottom: 1rem;
   display: flex;
@@ -201,16 +196,15 @@
   border: 1px solid var(--bg-accent);
   border-radius: 4px;
   padding: 1rem;
-  white-space: pre-wrap; /* Ensures long lines wrap */
-  word-wrap: break-word; /* Breaks long words if necessary */
-  max-height: 400px; /* Optional: limit height and make scrollable */
-  overflow-y: auto;   /* Optional: adds scrollbar if content exceeds max-height */
-  font-family: 'Courier New', Courier, monospace; /* Monospaced font for code-like appearance */
+  white-space: pre-wrap; 
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;  
+  font-family: 'Courier New', Courier, monospace;
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
-/* Top sections container for side-by-side layout */
 .top-sections-container {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -218,7 +212,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Contact card styles */
 .contact-card {
   background-color: var(--bg-primary);
   border-radius: 6px;
@@ -226,7 +219,6 @@
   box-shadow: 0 2px 4px var(--card-shadow);
 }
 
-/* Contact info */
 .contact-info {
   display: flex;
   flex-wrap: wrap;
@@ -247,7 +239,6 @@
   color: var(--accent-blue);
 }
 
-/* Resume social links */
 .resume-social-links {
   display: flex;
   justify-content: center;
@@ -278,8 +269,6 @@
 .resume-social-links i {
   font-size: 4rem;
 }
-
-
 
 .loading-indicator, .error-message {
   text-align: center;

@@ -11,9 +11,9 @@
   padding: 1.5rem;
   box-shadow: 0 4px 6px var(--card-shadow);
   position: fixed;
-  top: 100px; /* Increased from 1rem to account for nav height */
+  top: 100px; 
   height: fit-content;
-  max-height: calc(100vh - 170px); /* Adjusted to account for top offset */
+  max-height: calc(100vh - 170px); 
   overflow-y: auto;
   transition: top 0.3s ease;
   left: 20px;
@@ -116,7 +116,7 @@
 
 #blog-posts-container {
   display: grid;
-  grid-template-columns: 1fr; /* Single column for now, can be changed to more columns */
+  grid-template-columns: 1fr; 
   gap: 1.5rem;
 }
 
@@ -136,7 +136,7 @@
 
 .blog-post h3 {
   font-size: 1.5rem;
-  color: var(--accent-purple); /* Using a different accent for blog titles */
+  color: var(--accent-purple); 
   margin-bottom: 0.5rem;
 }
 
@@ -202,7 +202,7 @@
 }
 
 .blog-post-image-caption {
-  font-size: 0.75rem;  /* Make captions smaller */
+  font-size: 0.75rem; 
   color: var(--text-secondary);
   margin-top: 0.3rem;
   text-align: center;
