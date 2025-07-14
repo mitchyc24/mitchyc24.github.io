@@ -117,14 +117,30 @@
                 </div>
               `;
             }
-            contentHTML += `
-              <div class="blog-post-content-paragraph">
-                ${imageHTML}
-                <div class="blog-text-and-source">
-                  <p>${contentBlock.text.replace(/\n/g, '<br>')}</p>
+
+            if (contentBlock.type === 'flashcard') {
+              contentHTML += `
+                <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+                  <div class="flashcard">
+                    <div class="flashcard-front">
+                      ${contentBlock.front.text ? `<p>${contentBlock.front.text}</p>` : ''}
+                    </div>
+                    <div class="flashcard-back">
+                      ${contentBlock.back.text ? `<p>${contentBlock.back.text}</p>` : ''}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            `;
+              `;
+            } else {
+              contentHTML += `
+                <div class="blog-post-content-paragraph">
+                  ${imageHTML}
+                  <div class="blog-text-and-source">
+                    <p>${contentBlock.text.replace(/\n/g, '<br>')}</p>
+                  </div>
+                </div>
+              `;
+            }
           }
         }
 

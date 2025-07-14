@@ -105,8 +105,45 @@
     "sources": ["https://en.wikipedia.org/wiki/Logic_gate"]
   },
   {
-    "title": "NAND and NOR Gates",
+    "title": "Flashcard Friday: Logic Gates",
     "date": "2025-07-04",
+    "content": [
+      {
+        "text": "Let's test your knowledge with some flashcards. Click on a card to reveal the answer."
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is the output of an AND gate when both inputs are true?"
+        },
+        "back": {
+          "text": "The output is true (1) only when both inputs are true (1)."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What does a NOT gate do to its input?"
+        },
+        "back": {
+          "text": "It inverts the input: if the input is true (1), the output is false (0), and vice versa."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is the purpose of an OR gate?"
+        },
+        "back": {
+          "text": "The OR gate outputs true (1) if at least one of its inputs is true (1)."
+        }
+      }
+    ],
+    "sources": []
+  },
+  {
+    "title": "NAND and NOR Gates",
+    "date": "2025-07-05",
     "content": [
       {
         "text": "Let's introduce two final gates for now: NAND and NOR. These gates are actually combinations of the AND and OR gates with a NOT gate. The NAND gate is the opposite of the AND gate, meaning it outputs false only when both inputs are true. The NOR gate is the opposite of the OR gate, meaning it outputs true only when both inputs are false. These gates are important because they can be used to create any other logic gate, which is why they are often referred to as universal gates.",
@@ -121,7 +158,7 @@
   },
   {
     "title": "Binary Digit: The Bit",
-    "date": "2025-07-05",
+    "date": "2025-07-06",
     "content": [
       {
         "text": "Let's talk about the basic unit of information in computing: the bit. A bit is a porte-manteau of binary and digit. It can either be a 0 or a 1. It's the smallest unit of data in a computer and is used to represent all kinds of information, from numbers to text to images. In fact, everything you see on your computer screen is ultimately represented by bits. The term \"bit\" was coined by John Tukey in 1947, and it has since become a fundamental concept in computer science. In the diagrams I've drawn so far, I've been using the lightbulb to represent the state of a bit. When the lightbulb is on, it represents a 1, and when it's off, it represents a 0. This is a simple way to visualize the concept of a bit, but in reality, bits are represented by electrical signals in a computer.",
@@ -135,7 +172,7 @@
   },
   {
     "title": "Half Adder",
-    "date": "2025-07-06",
+    "date": "2025-07-07",
     "content": [
       {
         "text": "Let's start building more complex circuits. One of the most important circuits in computer science is the adder, which is used to perform addition. The adder takes two binary numbers as input and produces their sum as output. The simplest form of an adder is the half adder, which takes two bits as input and produces a sum bit and a carry bit as output. The sum bit is the result of adding the two input bits, and the carry bit is used to indicate if there was a carry from the addition.",
@@ -149,7 +186,7 @@
   },
   {
     "title": "Full Adder",
-    "date": "2025-07-07",
+    "date": "2025-07-08",
     "content": [
       {
         "text": "The half adder is a great start, but it can only add two bits together. If we want to add numbers with more than one bit each, we actually need a circuit that can add three bits together: one bit from each number and a third carry bit from a potential previous addition. A full adder is a combination of two half adders. The outputs of a full adder remain the same as a half adder: a sum and carry bit.",
@@ -163,7 +200,7 @@
   },
   {
     "title": "Keep Abstracting",
-    "date": "2025-07-08",
+    "date": "2025-07-09",
     "content": [
       {
         "text": "If we hadn't abstracted away the transistors, the full adder circuit we saw yesterday would contain 27 of them! That would be quite difficult to understand, but also quite cumbersome for me to draw.",
@@ -181,7 +218,7 @@
   },
   {
     "title": "Truth Tables",
-    "date": "2025-07-09",
+    "date": "2025-07-10",
     "content": [
       {
         "text": "Let's introduce truth tables. A truth table is a way to represent the behavior of a logic circuit. So far I've been showing the behaviour of the circuits with the flashing bulbs, but a truth table simply lists all possible combinations of inputs and their corresponding outputs. Have a look at these truth tables for the AND, OR, NAND, and NOR gates. The first column represents the first input, the second column represents the second input, and the last column represents the output. For example, in the AND gate truth table, the output is 1 only when both inputs are 1. In the OR gate truth table, the output is 1 when either input is 1 or both inputs are 1. The NAND and NOR gates are the opposite of the AND and OR gates, respectively.",
@@ -195,7 +232,7 @@
   },
   {
     "title": "Full Adder Truth Table",
-    "date": "2025-07-10",
+    "date": "2025-07-11",
     "content": [
       {
         "text": "The truth table for a full adder shows all possible combinations of inputs and their corresponding outputs. The first three columns represent the inputs (A, B, and C), and the last two columns represent the outputs (Sum and Carry). The Sum output is 1 when either A or B is 1, or when both A and B are 1 and C is 1. The Carry output is 1 when either A and B are both 1, or when A and C are both 1, or when B and C are both 1.",
@@ -205,5 +242,33 @@
     ],
     "sources": [
     ]
+  },
+  {
+    "title": "Flashcard Friday: Circuit Basics",
+    "date": "2025-07-12",
+    "content": [
+      {
+        "text": "Let's test your knowledge with some flashcards. Click on a card to reveal the answer."
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is the output of a full adder when all inputs are 0?"
+        },
+        "back": {
+          "text": "The Sum output is 0 and the Carry output is 0."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is the purpose of a full adder?"
+        },
+        "back": {
+          "text": "To add three bits together: two bits from the numbers being added and one carry bit from a previous addition."
+        }
+      }
+    ],
+    "sources": []
   }
 ]

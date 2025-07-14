@@ -209,6 +209,61 @@
   font-style: italic;
 }
 
+/* Flashcard Styles */
+.flashcard-container {
+  perspective: 1000px;
+  cursor: pointer;
+  min-height: 150px;
+  margin: 1rem 0;
+}
+
+.flashcard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  border-radius: 8px;
+}
+
+.flashcard-container.flipped .flashcard {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden; /* Safari */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--card-shadow);
+  text-align: center;
+}
+
+.flashcard-front {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.flashcard-back {
+  background-color: var(--accent-purple);
+  color: white;
+  transform: rotateY(180deg);
+}
+
+.flashcard p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: white;
+}
+
 /* Responsive adjustments for blog */
 @media screen and (max-width: 968px) {
   .blog-container {
