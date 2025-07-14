@@ -1,6 +1,6 @@
 .home-main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 2rem;
   display: flex;
@@ -11,12 +11,15 @@
 }
 
 .home-welcome-section {
-  margin: 2rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  margin: 0rem 0;
   max-width: 100%; 
   background-color: var(--bg-secondary);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--card-shadow);
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .home-portrait-container {
@@ -32,25 +35,6 @@
   object-fit: cover;
   border-radius: 100% / 50%;
   box-shadow: 0 0 15px var(--card-shadow);
-}
-
-.home-portrait-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 110%;
-  height: 110%;
-  background: radial-gradient(circle, var(--bg-secondary) 40%, transparent 70%);
-  z-index: -1;
-  opacity: 0.7;
-  filter: blur(15px);
-}
-
-.home-welcome-subtitle {
-  font-size: 1.3rem;
-  margin-bottom: 1.5rem;
-  color: var(--text-secondary);
 }
 
 .home-welcome-text {
@@ -130,11 +114,15 @@
 }
 
 .home-degree-img:hover {
-  transform: scale(8); 
+  transform: scale(6); 
 }
 
 @media (max-width: 768px) {
+  .home-welcome-section {
+    grid-template-columns: 1fr; /* Single column */
+  }
+
   .home-degree-img:hover {
-    transform: scale(4); 
+    transform: scale(3);
   }
 }
