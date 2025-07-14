@@ -215,6 +215,8 @@
   cursor: pointer;
   min-height: 150px;
   margin: 1rem 0;
+  width: 100%;
+  max-width: 400px; /* Reduced width for two-column layout */
 }
 
 .flashcard {
@@ -262,6 +264,14 @@
   font-size: 1.1rem;
   line-height: 1.5;
   color: white;
+}
+
+/* Two-column layout for flashcards */
+.flashcard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
 }
 
 /* Responsive adjustments for blog */
@@ -321,6 +331,15 @@
   }
 
   .blog-post-image {
+    max-width: 100%;
+  }
+  
+  /* Stack flashcards in single column on mobile */
+  .flashcard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .flashcard-container {
     max-width: 100%;
   }
 }

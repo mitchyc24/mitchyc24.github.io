@@ -105,7 +105,7 @@
     "sources": ["https://en.wikipedia.org/wiki/Logic_gate"]
   },
   {
-    "title": "Flashcard Friday: Logic Gates",
+    "title": "Flashcard Friday:",
     "date": "2025-07-04",
     "content": [
       {
@@ -114,28 +114,37 @@
       {
         "type": "flashcard",
         "front": {
-          "text": "What is the output of an AND gate when both inputs are true?"
+          "text": "A switch that is controlled by an electrical signal"
         },
         "back": {
-          "text": "The output is true (1) only when both inputs are true (1)."
+          "text": "Transistor"
         }
       },
       {
         "type": "flashcard",
         "front": {
-          "text": "What does a NOT gate do to its input?"
+          "text": "A logic gate that only outputs true only when both inputs are true"
         },
         "back": {
-          "text": "It inverts the input: if the input is true (1), the output is false (0), and vice versa."
+          "text": "AND gate"
         }
       },
       {
         "type": "flashcard",
         "front": {
-          "text": "What is the purpose of an OR gate?"
+          "text": "A logic gate that inverts the input signal"
         },
         "back": {
-          "text": "The OR gate outputs true (1) if at least one of its inputs is true (1)."
+          "text": "A NOT gate"
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "The process of simplifying complex systems by focusing on essential characteristics and hiding unnecessary details"
+        },
+        "back": {
+          "text": "Abstraction"
         }
       }
     ],
@@ -231,8 +240,54 @@
     ]
   },
   {
-    "title": "Full Adder Truth Table",
+    "title": "Flashcard Friday:",
     "date": "2025-07-11",
+    "content": [
+      {
+        "text": "Let's test your knowledge with some flashcards. Click on a card to reveal the answer."
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What are NAND and NOR gates often called, and why?"
+        },
+        "back": {
+          "text": "They are often referred to as universal gates because they can be used to create any other logic gate."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is a bit, and who coined the term?"
+        },
+        "back": {
+          "text": "A bit (a portmanteau of binary and digit) is the basic unit of information in computing, represented as a 0 or 1. The term was coined by John Tukey in 1947."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What are the inputs and outputs of a half adder?"
+        },
+        "back": {
+          "text": "A half adder takes two bits as input and produces a sum bit and a carry bit as output."
+        }
+      },
+      {
+        "type": "flashcard",
+        "front": {
+          "text": "What is a full adder and what is it composed of?"
+        },
+        "back": {
+          "text": "A full adder is a circuit that can add three bits together (two input bits and a carry-in bit). It is composed of two half adders."
+        }
+      }
+    ],
+    "sources": []
+  },
+  {
+    "title": "Full Adder Truth Table",
+    "date": "2025-07-12",
     "content": [
       {
         "text": "The truth table for a full adder shows all possible combinations of inputs and their corresponding outputs. The first three columns represent the inputs (A, B, and C), and the last two columns represent the outputs (Sum and Carry). The Sum output is 1 when either A or B is 1, or when both A and B are 1 and C is 1. The Carry output is 1 when either A and B are both 1, or when A and C are both 1, or when B and C are both 1.",
@@ -242,33 +297,5 @@
     ],
     "sources": [
     ]
-  },
-  {
-    "title": "Flashcard Friday: Circuit Basics",
-    "date": "2025-07-12",
-    "content": [
-      {
-        "text": "Let's test your knowledge with some flashcards. Click on a card to reveal the answer."
-      },
-      {
-        "type": "flashcard",
-        "front": {
-          "text": "What is the output of a full adder when all inputs are 0?"
-        },
-        "back": {
-          "text": "The Sum output is 0 and the Carry output is 0."
-        }
-      },
-      {
-        "type": "flashcard",
-        "front": {
-          "text": "What is the purpose of a full adder?"
-        },
-        "back": {
-          "text": "To add three bits together: two bits from the numbers being added and one carry bit from a previous addition."
-        }
-      }
-    ],
-    "sources": []
   }
 ]

@@ -106,6 +106,9 @@
       for (const [index, post] of posts.entries()) {
         let contentHTML = '';
         if (post.content && post.content.length > 0) {
+          let flashcardHTML = '';
+          let regularContentHTML = '';
+          
           for (const contentBlock of post.content) {
             let imageHTML = '';
             if (contentBlock.image) {
@@ -119,7 +122,7 @@
             }
 
             if (contentBlock.type === 'flashcard') {
-              contentHTML += `
+              flashcardHTML += `
                 <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
                   <div class="flashcard">
                     <div class="flashcard-front">
@@ -132,7 +135,7 @@
                 </div>
               `;
             } else {
-              contentHTML += `
+              regularContentHTML += `
                 <div class="blog-post-content-paragraph">
                   ${imageHTML}
                   <div class="blog-text-and-source">
@@ -141,6 +144,11 @@
                 </div>
               `;
             }
+          }
+          
+          contentHTML = regularContentHTML;
+          if (flashcardHTML) {
+            contentHTML += `<div class="flashcard-grid">${flashcardHTML}</div>`;
           }
         }
 
