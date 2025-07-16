@@ -1,4 +1,29 @@
 /* ============ RESUME PAGE STYLES ============ */
+.download-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.download-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent-blue);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.download-button:hover {
+  background-color: var(--accent-purple);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--card-shadow);
+}
+
 /* Main content styles for resume page */
 .resume-main {
   max-width: 1200px; 
