@@ -90,7 +90,7 @@
     if (!blogPostsContainer) return;
 
     try {
-      const response = await fetch(`static/blog/blog_posts.json`);
+      const response = await fetch(`static/pages/blog/blog_posts.json`);
       if (!response.ok) {
         throw new Error(`Failed to fetch blog posts: ${response.statusText}`);
       }

@@ -21,7 +21,7 @@
     "content": [
       {
         "text": "As promised, our journey begins not with complex theory, but with a single, crucial invention: the transistor. While giants like <a href=\"https://en.wikipedia.org/wiki/Alan_Turing\">Alan Turing</a> and <a href=\"https://en.wikipedia.org/wiki/Claude_Shannon\">Claude Shannon</a> laid the groundwork for computing, this small device is what allowed their ideas to become a physical reality.\n\nHonestly, a transistor on its own is really not that special. It's a switch. It does the same thing as a light switch on your wall, but instead of being turned on and off by hand, it's controlled by an electrical signal.\n\nWhen we start combining them, that's where the magic happens, and it's from here we will take the first step on our journey together.",
-        "image": "static/blog/images/001.svg",
+        "image": "static/pages/blog/images/001.svg",
         "caption": "A transistor is a switch that can be controlled by an electrical signal."
       }
     ],
@@ -36,17 +36,17 @@
     "content": [
       {
         "text": "Yesterday, I introduced the transistor and its standard pictogram but unlike the switch, there's no obvious way to see if it's on or off (closed or open), so I will add a lightbulbs inside the diagrams to indicate if current is flowing through the wire. From here, we will start building circuits and progressively introduce new components.",
-        "image": "static/blog/images/002.svg",
+        "image": "static/pages/blog/images/002.svg",
         "caption": "There's no indication if a transistor is on or off"
       },
       {
         "text": "In our first circuit, we have a power source (battery), a switch, and a lightbulb. When the circuit is \"closed\" the current can flow and it lights up the bulb. When the circuit is \"open\", the current stops. The order of these three components in this circuit does not matter; the behavior would be the same.",
-        "image": "static/blog/images/002b.svg",
+        "image": "static/pages/blog/images/002b.svg",
         "caption": "A simple circuit with a battery, switch, and lightbulb."
       },
       {
         "text": "Now, let's add a transistor. When it receives an electical signal it allows current to flow it, just like a closed switch. When it's off, it blocks the current, just like an open switch. I've added a second battery to show that the transistor is not powered by the same source as the lightbulb. This is a common configuration in circuits, where the transistor acts as a switch to control the flow of current to another component.",
-        "image": "static/blog/images/003.svg",
+        "image": "static/pages/blog/images/003.svg",
         "caption": "A transistor is an electrically controlled switch."
       }
     ],
@@ -58,12 +58,12 @@
     "content": [
       {
         "text": "If we use two transitors like the ones configured in this circuit, we can create interesting behavior. We are interested in how the lightbulb behaves (output) as a function of the states of the switches (input). As you can see in the animation, it's only when the first switch and the second switch are closed that the output lightbulb will turn on. This is an example of an AND gate. The name is pretty self-explanatory: the output is only on if both input 1 and input 2 are on. All the other combinations of inputs will result in the output light being off.",
-        "image": "static/blog/images/004.svg",
+        "image": "static/pages/blog/images/004.svg",
         "caption": "This is an AND gate. The output is on only when both inputs are on."
       },
       {
         "text": "Now, let's look at a different configuration of the same two transistors. In this case, the output lightbulb will turn on if either the first switch or the second switch is closed, or both are closed. This is an OR gate. The name comes from the fact that the output will be on if either the first or the second input is on. If both inputs are off, then the output will also be off.",
-        "image": "static/blog/images/005.svg",
+        "image": "static/pages/blog/images/005.svg",
         "caption": "This is an OR gate. The output is on if either input 1 or input 2 is on, or both are on."
       }
     ],
@@ -75,7 +75,7 @@
     "content": [
       {
         "text": "One more gate that I want to introduce is the NOT gate. This gate is a little different from the previous two. It has only one input, one transistor, and one output. The output is on when the input is off, and the output is off when the input is on. This is why it's called a NOT gate, because it inverts the input signal. It may be a little confusing that the lightbulb is off when the switch is closed because there's still a closed circuit to the lightbulb, but the transistor is basically creating a short circuit and all the current flows through the transistor and not the lightbulb.",
-        "image": "static/blog/images/006.svg",
+        "image": "static/pages/blog/images/006.svg",
         "caption": "This is a NOT gate. The output is on when the input is off, and vice versa."
       }
     ],
@@ -87,7 +87,7 @@
     "content":[
       {
         "text": "Let me take a step back and explain the word \"logic\" in the context of computers and which I used to cover the basic logic gates. In computer science, logic refers to the study of reasoning and the principles of valid inference. Logic gates are the building blocks of digital circuits, and they perform basic logical functions that are fundamental to those digital circuits. From a theoretical perspective, the logic values we use are typically binary, meaning they can be On or Off, True or False, 1 or 0. You ever notice that many of the power buttons on our devices are represented by a circle with a line through it? This is the universal symbol for power, and it represents the binary state of the device: On (1) or Off (0).",
-        "image": "static/blog/images/007.svg",
+        "image": "static/pages/blog/images/007.svg",
         "caption": "The universal symbol for power, representing the binary state of a device: On (1) or Off (0)."
       }
     ]
@@ -98,7 +98,7 @@
     "content": [
       {
         "text": "We can now take a step forward and start using some abstraction. Instead of drawing the the entire circuit with transistors, we can use symbols to represent the logic gates. This will allow us to continue to create more complex circuits without needing to draw all the individual components. Abstraction is the process of simplifying complex systems by focusing on essential characteristics and hiding unnecessary details. The AND gate is represented by a D-shaped symbol, the OR gate is represented by a curved shape, and the NOT gate is represented by a triangle with a small circle at the end. These symbols are standardized and widely recognized in the field of electronics. Take the time to watch the animation to understand how each gate works with the inputs and outputs.",
-        "image": "static/blog/images/008.svg",
+        "image": "static/pages/blog/images/008.svg",
         "caption": "Standard symbols for logic gates: AND, OR, and NOT."
       }
     ],
@@ -156,7 +156,7 @@
     "content": [
       {
         "text": "Let's introduce two final gates for now: NAND and NOR. These gates are actually combinations of the AND and OR gates with a NOT gate. The NAND gate is the opposite of the AND gate, meaning it outputs false only when both inputs are true. The NOR gate is the opposite of the OR gate, meaning it outputs true only when both inputs are false. These gates are important because they can be used to create any other logic gate, which is why they are often referred to as universal gates.",
-        "image": "static/blog/images/009.svg",
+        "image": "static/pages/blog/images/009.svg",
         "caption": "NAND and NOR gates, which are universal gates."
       }
     ],
@@ -171,7 +171,7 @@
     "content": [
       {
         "text": "Let's talk about the basic unit of information in computing: the bit. A bit is a porte-manteau of binary and digit. It can either be a 0 or a 1. It's the smallest unit of data in a computer and is used to represent all kinds of information, from numbers to text to images. In fact, everything you see on your computer screen is ultimately represented by bits. The term \"bit\" was coined by John Tukey in 1947, and it has since become a fundamental concept in computer science. In the diagrams I've drawn so far, I've been using the lightbulb to represent the state of a bit. When the lightbulb is on, it represents a 1, and when it's off, it represents a 0. This is a simple way to visualize the concept of a bit, but in reality, bits are represented by electrical signals in a computer.",
-        "image": "static/blog/images/010.svg",
+        "image": "static/pages/blog/images/010.svg",
         "caption": "A bit: 0 or 1"
       }
     ],
@@ -185,7 +185,7 @@
     "content": [
       {
         "text": "Let's start building more complex circuits. One of the most important circuits in computer science is the adder, which is used to perform addition. The adder takes two binary numbers as input and produces their sum as output. The simplest form of an adder is the half adder, which takes two bits as input and produces a sum bit and a carry bit as output. The sum bit is the result of adding the two input bits, and the carry bit is used to indicate if there was a carry from the addition.",
-        "image": "static/blog/images/011.svg",
+        "image": "static/pages/blog/images/011.svg",
         "caption": "A half adder circuit."
       }
     ],
@@ -199,7 +199,7 @@
     "content": [
       {
         "text": "The half adder is a great start, but it can only add two bits together. If we want to add numbers with more than one bit each, we actually need a circuit that can add three bits together: one bit from each number and a third carry bit from a potential previous addition. A full adder is a combination of two half adders. The outputs of a full adder remain the same as a half adder: a sum and carry bit.",
-        "image": "static/blog/images/012.svg",
+        "image": "static/pages/blog/images/012.svg",
         "caption": "A full adder circuit."
       }
     ],
@@ -213,12 +213,12 @@
     "content": [
       {
         "text": "If we hadn't abstracted away the transistors, the full adder circuit we saw yesterday would contain 27 of them! That would be quite difficult to understand, but also quite cumbersome for me to draw.",
-        "image": "static/blog/images/013.svg",
+        "image": "static/pages/blog/images/013.svg",
         "caption": "Two half adders make a full adder."
       },
       {
         "text": "So, let's keep abstracting. We can abstract away the circuit by drawing a box, labeling it with its name, and drawing the inputs and outputs. Easy!",
-        "image": "static/blog/images/014.svg",
+        "image": "static/pages/blog/images/014.svg",
         "caption": "A full Adder, without needing to draw all the transistors."
       }
     ],
@@ -231,7 +231,7 @@
     "content": [
       {
         "text": "Let's introduce truth tables. A truth table is a way to represent the behavior of a logic circuit. So far I've been showing the behaviour of the circuits with the flashing bulbs, but a truth table simply lists all possible combinations of inputs and their corresponding outputs. Have a look at these truth tables for the AND, OR, NAND, and NOR gates. The first column represents the first input, the second column represents the second input, and the last column represents the output. For example, in the AND gate truth table, the output is 1 only when both inputs are 1. In the OR gate truth table, the output is 1 when either input is 1 or both inputs are 1. The NAND and NOR gates are the opposite of the AND and OR gates, respectively.",
-        "image": "static/blog/images/015.svg",
+        "image": "static/pages/blog/images/015.svg",
         "caption": "Truth tables for logic gates."
       }
     ],
@@ -291,7 +291,7 @@
     "content": [
       {
         "text": "The truth table for a full adder shows all possible combinations of inputs and their corresponding outputs. The first three columns represent the inputs (A, B, and C), and the last two columns represent the outputs (Sum and Carry). The Sum output is 1 when either A or B is 1, or when both A and B are 1 and C is 1. The Carry output is 1 when either A and B are both 1, or when A and C are both 1, or when B and C are both 1.",
-        "image": "static/blog/images/016.svg",
+        "image": "static/pages/blog/images/016.svg",
         "caption": "Truth table for a full adder."
       }
     ],

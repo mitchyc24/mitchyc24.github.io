@@ -10,8 +10,12 @@
     <div class="lichess-rating" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
       <!-- Lichess Logo -->
       <div class="lichess-logo-container" style="text-align: center; margin-bottom: 15px;">
-        <img id="lichess-logo-light" src="/static/chess/images/Landscape-Lichess-logo-black.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: block;">
-        <img id="lichess-logo-dark" src="/static/chess/images/Landscape-Lichess-logo-white.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: none;">
+        <a href="https://lichess.org/">
+          <img id="lichess-logo-light" src="static/pages/chess/images/Landscape-Lichess-logo-black.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: block;">
+        </a>
+        <a href="https://lichess.org/">
+          <img id="lichess-logo-dark" src="static/pages/chess/images/Landscape-Lichess-logo-white.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: none;">
+        </a>
       </div>
       
       <h4 style="margin-top: 0;">My Lichess Ratings: 
@@ -88,7 +92,7 @@
     draggable: false, // Disable dragging
     position: 'start',
     pieceTheme: function(piece) {
-      return '/static/chess/images/chess_pieces/wikimedia_commons/' + piece + '.svg';
+      return 'static/pages/chess/images/chess_pieces/wikimedia_commons/' + piece + '.svg';
     }
   };
 

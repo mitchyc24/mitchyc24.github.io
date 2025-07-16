@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; img-src 'self' data:; object-src 'none'; frame-ancestors 'none';">
-  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; img-src 'self' data:; object-src 'none'; connect-src 'self' https://lichess.org;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer-policy" content="strict-origin-when-cross-origin">
   <meta name="permissions-policy" content="geolocation=(), microphone=(), camera=()">
@@ -30,14 +29,14 @@
     <button class="hamburger-menu" id="hamburgerMenu"><i class="fas fa-bars"></i></button>
     <div class="nav-right-content" id="navRightContent">
       <div class="nav-links">
-        <a href="#" class="en" id="nav-home-en" hx-get="static/pages/home.html" hx-target="#content-container">Home</a>
-        <a href="#" class="fr" id="nav-home-fr" hx-get="static/pages/home.html" hx-target="#content-container">Accueil</a>
-        <a href="#" class="en" id="nav-resume-en" hx-get="static/pages/resume.html" hx-target="#content-container">Resume</a>
-        <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume.html" hx-target="#content-container">CV</a>
-        <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog.html" hx-target="#content-container">Blog</a>
-        <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog.html" hx-target="#content-container">Blogue</a>
-        <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess.html" hx-target="#content-container">Chess</a>
-        <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess.html" hx-target="#content-container">Échecs</a>
+        <a href="#" class="en" id="nav-home-en" hx-get="static/pages/home/home.html" hx-target="#content-container">Home</a>
+        <a href="#" class="fr" id="nav-home-fr" hx-get="static/pages/home/home.html" hx-target="#content-container">Accueil</a>
+        <a href="#" class="en" id="nav-resume-en" hx-get="static/pages/resume/resume.html" hx-target="#content-container">Resume</a>
+        <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume/resume.html" hx-target="#content-container">CV</a>
+        <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog/blog.html" hx-target="#content-container">Blog</a>
+        <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog/blog.html" hx-target="#content-container">Blogue</a>
+        <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess/chess.html" hx-target="#content-container">Chess</a>
+        <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess/chess.html" hx-target="#content-container">Échecs</a>
       </div>
       <div class="nav-buttons">
         <button class="toggle-button" id="languageToggle">
@@ -147,7 +146,7 @@
           const page = this.id.split('-')[1];
           const pageStyle = document.getElementById('page-styles');
           if (page === 'home' || page === 'resume' || page === 'blog' || page === 'chess') {
-            pageStyle.setAttribute('href', `static/pages/${page}.css`);
+            pageStyle.setAttribute('href', `static/pages/${page}/${page}.css`);
           } else {
             pageStyle.setAttribute('href', '');
           }
