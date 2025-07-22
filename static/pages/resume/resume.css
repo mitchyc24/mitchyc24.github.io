@@ -203,7 +203,7 @@
 .timeline-details li {
   position: relative;
   padding-left: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem; /* Reduced margin */
   line-height: 1.4;
 }
 
@@ -256,44 +256,62 @@
   backface-visibility: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
 .flip-card-front {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  padding: 1.5rem;
   border-radius: 8px;
+  justify-content: space-evenly; /* Distribute content vertically */
+  align-items: center; /* Center content horizontally */
 }
 
 .flip-card-back {
   background-color: var(--accent-purple);
   color: white;
   transform: rotateY(180deg);
-  padding: 1.5rem;
+  padding: 1rem; 
   border-radius: 8px;
-  overflow-y: auto;
+  overflow: hidden; 
+  font-size: 0.75rem;
 }
 
 .degree-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem; 
   font-weight: 600;
-  color: var(--accent-purple);
-  margin-bottom: 0.5rem;
+  color: white;
+  margin-bottom: 0.3rem;
 }
 
 .school {
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8); 
+  margin-bottom: 0.3rem;
 }
 
 .date {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8); 
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.degree-image-container {
+  text-align: center;
+  margin: 0;
+}
+
+.degree-image {
+  max-width: 100%;
+  max-height: 180px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .flip-prompt {
-  margin-top: auto;
+  margin-top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,11 +323,13 @@
 .education-list {
   list-style-type: none;
   padding-left: 0;
+  margin-top: 0.5rem;
 }
 
 .education-list li {
   position: relative;
   padding-left: 1.2rem;
+  margin-bottom: 0rem;
 }
 
 .education-list li::before {
