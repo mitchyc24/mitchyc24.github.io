@@ -25,9 +25,10 @@
 }
 
 .download-container {
-  display: flex;
-  justify-content: center;
-  margin: 1rem 0;
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .download-button {
