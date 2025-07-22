@@ -29,10 +29,6 @@
   --accent-purple: #9b59b6;
 }
 
-.dark-theme a {
-  color: var(--accent-highlight);
-}
-
 /* Light space theme variables */
 .light-theme {
   --space-dark: #f5f7fa;
