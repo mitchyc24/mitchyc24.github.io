@@ -10,7 +10,7 @@
   text-align: center;
 }
 
-.home-welcome-section {
+.home-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
@@ -20,6 +20,14 @@
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--card-shadow);
   padding: 1rem;
+}
+
+.home-content-section {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-portrait-container {
@@ -37,32 +45,11 @@
   box-shadow: 0 0 15px var(--card-shadow);
 }
 
-.home-welcome-text {
+.home-intro-text {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
   text-align: left;
-}
-
-.home-contact-info {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.3rem;
-  margin: 1.5rem 0;
-  border-top: 1px solid var(--bg-accent);
-  padding-top: 1.5rem;
-}
-
-.home-contact-info p {
-  display: flex;
-  align-items: center;
-  color: var(--text-secondary);
-}
-
-.home-contact-info i {
-  margin-right: 0.5rem;
-  color: var(--accent-blue);
 }
 
 .home-social-links {
@@ -114,7 +101,28 @@
 }
 
 .home-degree-img:hover {
-  transform: scale(6); 
+  transform: scale(5); 
+}
+
+.home-contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.3rem;
+  margin: 1.5rem 0;
+  border-top: 1px solid var(--bg-accent);
+  padding-top: 1.5rem;
+}
+
+.home-contact-info p {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.home-contact-info i {
+  margin-right: 0.5rem;
+  color: var(--accent-blue);
 }
 
 @media (max-width: 768px) {

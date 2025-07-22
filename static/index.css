@@ -135,6 +135,7 @@ body {
     color: var(--text-primary);
     font-size: 1.5rem;
     cursor: pointer;
+    padding-right: 25px;
 }
 
 /* Toggle button (theme and language) */
@@ -163,6 +164,7 @@ body {
   display: flex;
   align-items: center;
   z-index: 200;
+  padding-right: 25px;
 }
 
 /* Hide French content by default */
