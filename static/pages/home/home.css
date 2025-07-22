@@ -1,128 +1,136 @@
 .home-main {
   flex: 1;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 2rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  padding: 1rem;
+  min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
 }
 
-.home-welcome-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  margin: 0rem 0;
-  max-width: 100%; 
+.home-card {
   background-color: var(--bg-secondary);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px var(--card-shadow);
-  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  padding: 1.0rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .home-portrait-container {
-  width: 300px;
-  height: 300px;
   margin: 0 auto 1.5rem;
-  position: relative;
 }
 
 .home-portrait-image {
-  width: 60%;
-  height: 100%;
+  width: 200px;
+  height: 300px;
   object-fit: cover;
-  border-radius: 100% / 50%;
-  box-shadow: 0 0 15px var(--card-shadow);
+  border-radius: 25%;
+  border: 4px solid var(--accent-blue);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
 }
 
-.home-welcome-text {
+.home-portrait-image:hover {
+  transform: scale(1.05);
+}
+
+.home-name {
+  font-size: 2rem;
+  color: var(--accent-blue);
+}
+
+.home-intro-text {
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.home-social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.social-hover-effect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--text-primary);
-  text-align: left;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100px;
+}
+
+.social-hover-effect i {
+  font-size: 2.5rem;
+  transition: all 0.3s ease;
+}
+
+.social-hover-effect:hover {
+  background-color: var(--bg-primary);
+  transform: translateY(-5px);
+}
+
+.social-hover-effect:hover i {
+  color: var(--accent-blue);
+  transform: scale(1.2);
 }
 
 .home-contact-info {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1.3rem;
-  margin: 1.5rem 0;
+  gap: 1rem 2rem;
   border-top: 1px solid var(--bg-accent);
-  padding-top: 1.5rem;
+  font-size: 0.9rem;
 }
 
-.home-contact-info p {
+.contact-item {
   display: flex;
   align-items: center;
   color: var(--text-secondary);
 }
 
-.home-contact-info i {
-  margin-right: 0.5rem;
+.contact-item i {
+  margin-right: 0.6rem;
   color: var(--accent-blue);
 }
 
-.home-social-links {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin: 0.8rem 0;
+/* Animation from resume.css */
+.animate-fade-in {
+  animation: fadeIn 1s ease forwards;
 }
 
-.home-social-links a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 100px;
-  border-radius: 4px;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.home-social-links a:hover {
-  transform: translateY(-2px);
-  background-color: green;
-  color: white;
-  box-shadow: 0 4px 8px var(--card-shadow);
-}
-
-.home-social-links i {
-  font-size: 4rem;
-}
-
-.home-degree-images {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.home-degree-img {
-  width: 100px;
-  transition: transform 1s ease;
-  border: 2px solid var(--bg-accent);
-  border-color: var(--accent-blue);
-  border-image-slice: 1 fill;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.home-degree-img:hover {
-  transform: scale(6); 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {
-  .home-welcome-section {
-    grid-template-columns: 1fr; /* Single column */
+  .home-main {
+    padding: 1rem;
   }
 
-  .home-degree-img:hover {
-    transform: scale(3);
+  .home-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .home-portrait-image {
+    width: 120px;
+    height: 120px;
+  }
+
+  .home-name {
+    font-size: 1.8rem;
+  }
+
+  .home-intro-text {
+    font-size: 1rem;
   }
 }

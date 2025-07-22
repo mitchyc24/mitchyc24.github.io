@@ -10,7 +10,7 @@
   <meta name="permissions-policy" content="geolocation=(), microphone=(), camera=()">
   <title>Mitchell Carroll</title>
   <link rel="icon" type="image/x-icon" href="images/favicon.png">
-  <link rel="stylesheet" href="static/styles.css">
+  <link rel="stylesheet" href="static/index.css">
   <link rel="stylesheet" id="page-styles" href=""> <!-- Placeholder for page-specific styles -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css" integrity="sha512-TU/clvRaSqKB43MX6dvJPEWV8tEGDTbmT4mdxTs6DSYsBY9zKmiw4Qeykp0nS10ndH14HRNG2VWN+IjiMfA17Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -142,11 +142,23 @@
             navRightContent.classList.remove('active');
           }
 
-          // Update page-specific stylesheet
+          // Get the page name
           const page = this.id.split('-')[1];
+          
+          // Update page-specific stylesheet
           const pageStyle = document.getElementById('page-styles');
           if (page === 'home' || page === 'resume' || page === 'blog' || page === 'chess') {
             pageStyle.setAttribute('href', `static/pages/${page}/${page}.css`);
+            
+            // Remove any previously loaded page scripts
+            const oldScripts = document.querySelectorAll('script.page-script');
+            oldScripts.forEach(script => script.remove());
+            
+            // Load page-specific JavaScript if it exists
+            const scriptElement = document.createElement('script');
+            scriptElement.src = `static/pages/${page}/${page}.js`;
+            scriptElement.className = 'page-script';
+            document.body.appendChild(scriptElement);
           } else {
             pageStyle.setAttribute('href', '');
           }
