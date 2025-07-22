@@ -353,7 +353,7 @@
 
 .skill-bar {
   height: 10px;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.26);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -363,7 +363,6 @@
   background-color: var(--accent-teal);
   border-radius: 5px;
   transition: width 1.5s ease;
-  width: 0;
 }
 
 /* Tech bubbles */
