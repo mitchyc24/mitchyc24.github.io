@@ -297,5 +297,17 @@
     ],
     "sources": [
     ]
+  },
+  {
+    "title": "4-bit Adder",
+    "date": "2025-07-13",
+    "content": [
+      {
+        "text": "Let's wire up a 4-bit adder. A circuit that can add two 4-bit numbers together. It uses a half adder for the least significant bit and  three full adders for the remaining bits. Now we can add two 4-bit numbers together and get a 4-bit sum and a carry bit. The carry bit is used to indicate if there was a carry from the addition of the most significant bits. The image shows the circuit adding 1011 and 0001, which results in 1100 with a carry of 0.",
+        "image": "static/pages/blog/images/017.svg",
+        "caption": "A 4-bit adder circuit. Adding 1011 and 0001 results in 1100 with a carry of 0."
+      }
+    ],
+    "sources": []
   }
 ]
