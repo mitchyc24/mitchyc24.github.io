@@ -1,0 +1,56 @@
+<div class="portfolio-main">
+    <div class="portfolio-header">
+        <h1 class="en">My Portfolio</h1>
+        <h1 class="fr">Mon Portfolio</h1>
+        <p class="en">A collection of projects I've worked on</p>
+        <p class="fr">Une collection de projets sur lesquels j'ai travaillé</p>
+    </div>
+    
+    <div class="projects-grid">
+        <div class="project-card" data-project-id="chess">
+            <div class="card-image">
+                <img src="static/pages/portfolio/chess/images/chess-preview.png" alt="Chess Game" onerror="this.src='static/images/placeholder.png'">
+            </div>
+            <div class="card-content">
+                <h3>Chess Game</h3>
+                <p>A fully functional chess game built with vanilla JavaScript. Features include move validation, check detection, and game state management.</p>
+                <div class="card-tags">
+                    <span class="tag">JavaScript</span>
+                    <span class="tag">Game Development</span>
+                    <span class="tag">Logic</span>
+                </div>
+            </div>
+            <div class="card-overlay">
+                <span class="view-project en">View Project</span>
+                <span class="view-project fr">Voir le Projet</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add click handlers for project cards
+    document.querySelectorAll('.project-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            
+            if (projectId === 'chess') {
+                // Load chess page
+                htmx.ajax('GET', 'static/pages/portfolio/chess/chess.html', {target: '#content-container'});
+                
+                // Update page styles
+                const pageStyle = document.getElementById('page-styles');
+                pageStyle.setAttribute('href', 'static/pages/portfolio/chess/chess.css');
+            }
+        });
+        
+        // Add hover effects
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+        });
+    });
+</script>

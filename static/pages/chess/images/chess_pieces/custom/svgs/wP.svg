@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <defs>
-    <style>
-      .white-piece { fill: #f0f0f0; stroke: #333; stroke-width: 1.5; }
-    </style>
-  </defs>
-  <!-- Pawn contiguous shape from head to base -->
-  <path class="white-piece" d="M50 18 C56 18, 62 24, 62 30 C62 36, 58 40, 58 42 L58 65 L65 70 C68 72, 70 74, 72 76 C72 78, 70 80, 68 82 C66 84, 62 85, 50 85 C38 85, 34 84, 32 82 C30 80, 28 78, 28 76 C30 74, 32 72, 35 70 L42 65 L42 42 C42 40, 38 36, 38 30 C38 24, 44 18, 50 18 Z"/>
-</svg>

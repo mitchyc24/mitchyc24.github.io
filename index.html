@@ -35,8 +35,8 @@
         <a href="#" class="fr" id="nav-resume-fr" hx-get="static/pages/resume/resume.html" hx-target="#content-container">CV</a>
         <a href="#" class="en" id="nav-blog-en" hx-get="static/pages/blog/blog.html" hx-target="#content-container">Blog</a>
         <a href="#" class="fr" id="nav-blog-fr" hx-get="static/pages/blog/blog.html" hx-target="#content-container">Blogue</a>
-        <a href="#" class="en" id="nav-chess-en" hx-get="static/pages/chess/chess.html" hx-target="#content-container">Chess</a>
-        <a href="#" class="fr" id="nav-chess-fr" hx-get="static/pages/chess/chess.html" hx-target="#content-container">Échecs</a>
+        <a href="#" class="en" id="nav-portfolio-en" hx-get="static/pages/portfolio/portfolio.html" hx-target="#content-container">Portfolio</a>
+        <a href="#" class="fr" id="nav-portfolio-fr" hx-get="static/pages/portfolio/portfolio.html" hx-target="#content-container">Portfolio</a>
       </div>
       <div class="nav-buttons">
         <button class="toggle-button" id="languageToggle">
@@ -147,7 +147,7 @@
           
           // Update page-specific stylesheet
           const pageStyle = document.getElementById('page-styles');
-          if (page === 'home' || page === 'resume' || page === 'blog' || page === 'chess') {
+          if (page === 'home' || page === 'resume' || page === 'blog' || page === 'portfolio') {
             pageStyle.setAttribute('href', `static/pages/${page}/${page}.css`);
             
             // Remove any previously loaded page scripts
