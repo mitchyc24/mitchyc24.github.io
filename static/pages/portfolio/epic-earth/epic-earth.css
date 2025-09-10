@@ -1,0 +1,52 @@
+.epic-earth {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.epic-earth h1 {
+  margin-bottom: 0.5rem;
+}
+
+.epic-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.epic-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.epic-controls .speed {
+  margin-left: auto;
+}
+
+.epic-viewer {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-height: 360px;
+  padding: 0.75rem;
+  background: #f9fafb;
+}
+
+.epic-status {
+  color: #555;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+#epic-frame {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  background: #000;
+}

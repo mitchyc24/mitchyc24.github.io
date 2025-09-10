@@ -25,32 +25,21 @@
                 <span class="view-project fr">Voir le Projet</span>
             </div>
         </div>
+        <div class="project-card" data-project-id="epic-earth">
+            <div class="card-image">
+                <img src="static/pages/portfolio/epic-earth/images/epic-earth-preview.png" alt="EPIC Earth" onerror="this.src='static/images/placeholder.png'">
+            </div>
+            <div class="card-content">
+                <h3>EPIC Earth</h3>
+                <p>A web-based application that visualizes Earth from Lagrange point 1</p>
+                <div class="card-tags">
+                    <span class="tag">Data Visualization</span>
+                    <span class="tag">Environmental Science</span>
+                    <span class="tag">🌍</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<script>
-    // Add click handlers for project cards
-    document.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const projectId = this.dataset.projectId;
-            
-            if (projectId === 'chess') {
-                // Load chess page
-                htmx.ajax('GET', 'static/pages/portfolio/chess/chess.html', {target: '#content-container'});
-                
-                // Update page styles
-                const pageStyle = document.getElementById('page-styles');
-                pageStyle.setAttribute('href', 'static/pages/portfolio/chess/chess.css');
-            }
-        });
-        
-        // Add hover effects
-        card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-5px)';
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'translateY(0)';
-        });
-    });
-</script>
+

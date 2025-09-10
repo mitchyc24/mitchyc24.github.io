@@ -1,0 +1,32 @@
+<div class="epic-earth">
+  <h1>EPIC Earth</h1>
+  <p>Welcome to the EPIC Earth project portfolio page!</p>
+
+  <div class="epic-controls">
+    <label>
+      Date:
+      <input type="date" id="epic-date" />
+    </label>
+    <label>
+      Collection:
+      <select id="epic-collection">
+        <option value="natural" selected>Natural</option>
+        <option value="enhanced">Enhanced</option>
+      </select>
+    </label>
+    <button id="epic-load" type="button">Load</button>
+    <button id="epic-play" type="button" disabled>Play</button>
+    <button id="epic-pause" type="button" disabled>Pause</button>
+    <label class="speed">
+      Speed:
+      <input type="range" id="epic-speed" min="50" max="1000" step="50" value="250" />
+      <span id="epic-speed-val">250ms</span>
+    </label>
+  </div>
+
+  <div class="epic-viewer">
+    <div id="epic-status" class="epic-status">Select a date and click Load.</div>
+    <img id="epic-frame" alt="EPIC Earth frame" />
+  </div>
+</div>
+<script src="epic_earth.js"></script>
