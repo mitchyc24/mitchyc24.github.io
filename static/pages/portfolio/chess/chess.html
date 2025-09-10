@@ -1,0 +1,410 @@
+<div id="chess-content" class="chess-main">
+  <div class="chess-description" style="max-width: 1200px; margin: 0 auto; padding: 20px; background-color: rgba(0,0,0,0.1); border-radius: 8px; box-sizing: border-box;">
+    <h3 style="margin-top: 0;">Welcome to My Chess Game!</h3>
+    <p>Chess has always been a fun passtime of mine. I've implemented this game by leveraging the public Chess.js, Chessboard.js libraries and piece images from Wikimedia Commons.</p>
+    <p>Currently there is no computer opponent, but I am working on training my own AI model based on my online lichess games to eventually play agaisnt my website visitors in a similar style and strength as me! Stay tuned and come back in the future to challenge AI Mitchell!</p>
+  </div>
+
+  <div class="chess-layout" style="display: flex; justify-content: center; max-width: 1200px; margin: 20px auto;">
+    <!-- Lichess Rating Display Section - Sidebar -->
+    <div class="lichess-rating" style="flex: 0 0 250px; max-width: 250px; margin-right: 20px; background-color: rgba(0,0,0,0.05); border-radius: 8px; padding: 15px; box-sizing: border-box;">
+      <!-- Lichess Logo -->
+      <div class="lichess-logo-container" style="text-align: center; margin-bottom: 15px;">
+        <a href="https://lichess.org/">
+          <img id="lichess-logo-light" src="static/pages/portfolio/chess/images/Landscape-Lichess-logo-black.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: block;">
+        </a>
+        <a href="https://lichess.org/">
+          <img id="lichess-logo-dark" src="static/pages/portfolio/chess/images/Landscape-Lichess-logo-white.svg" alt="Lichess Logo" style="height: 40px; width: auto; display: none;">
+        </a>
+      </div>
+      
+      <h4 style="margin-top: 0;">My Lichess Ratings: 
+        <a href="https://lichess.org/@/Simply_a_Pawn">Simply_A_Pawn</a>
+      </h4>
+      <div id="lichess-ratings" class="rating-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
+        <div id="loading-ratings" class="loading-text" style="grid-column: 1 / -1; text-align: center; color: #666;">
+          Loading ratings...
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Chess Game Area - Centered -->
+    <div class="chess-game-area">
+      <div id="myBoard" class="chess-board-container"></div>
+      <p>Status: <span id="status"></span></p>
+      <p>PGN: <span id="pgn"></span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var board = null;
+  var game = new Chess();
+  var selectedSquare = null; // For click-based moves
+  var $status = null; // Declare but don't assign yet
+  var $pgn = null;    // Declare but don't assign yet
+  var previouslySelectedElement = null;
+
+  // update the board position after the piece snap
+  // for castling, en passant, pawn promotion
+  function onSnapEnd() {
+    board.position(game.fen());
+  }
+
+  function updateStatus() {
+    var status = '';
+
+    var moveColor = 'White';
+    if (game.turn() === 'b') {
+      moveColor = 'Black';
+    }
+
+    // checkmate?
+    if (game.in_checkmate()) {
+      status = 'Game over, ' + moveColor + ' is in checkmate.';
+    }
+
+    // draw?
+    else if (game.in_draw()) {
+      status = 'Game over, drawn position';
+    }
+
+    // game still on
+    else {
+      status = moveColor + ' to move';
+
+      // check?
+      if (game.in_check()) {
+        status += ', ' + moveColor + ' is in check';
+      }
+    }
+
+    if ($status) $status.html(status); // Check if $status is initialized
+    if ($pgn) $pgn.html(game.pgn());   // Check if $pgn is initialized
+  }
+  
+  // Function to calculate responsive board size
+  function calculateBoardSize() {
+    return Math.min(Math.floor(window.innerWidth * 0.8), 512); 
+  }
+
+  var config = {
+    draggable: false, // Disable dragging
+    position: 'start',
+    pieceTheme: function(piece) {
+      return 'static/pages/portfolio/chess/images/chess_pieces/wikimedia_commons/' + piece + '.svg';
+    }
+  };
+
+  function initChessboard() {
+    var boardElement = document.getElementById('myBoard');
+    if (boardElement && typeof $ !== 'undefined') {
+      $status = $('#status');
+      $pgn = $('#pgn');
+      
+      // Set board size before initialization
+      const boardWidth = calculateBoardSize();
+      boardElement.style.width = `${boardWidth}px`;
+      boardElement.style.maxWidth = `${boardWidth}px`;
+      
+      // Initialize the board
+      board = Chessboard('myBoard', config);
+      
+      // Resize the board to ensure it matches our calculated dimensions
+      board.resize();
+            
+      // Apply custom board colors after initialization
+      setTimeout(function() {
+        applyCustomBoardColors();
+        initializeChessThemeWatcher(); // Initialize theme watcher and update logo
+      }, 100);
+      
+      updateStatus();
+    } else {
+      if (typeof $ === 'undefined') {
+        console.error("jQuery is not loaded. Chessboard cannot be initialized.");
+      }
+    }
+  }
+  
+  // Handle window resize events
+  function handleWindowResize() {
+    if (board) {
+      const boardWidth = calculateBoardSize();
+      const boardElement = document.getElementById('myBoard');
+      if (boardElement) {
+        boardElement.style.width = `${boardWidth}px`;
+        boardElement.style.maxWidth = `${boardWidth}px`;
+      }
+      board.resize();
+    }
+  }
+  
+  // Add resize event listener
+  window.addEventListener('resize', handleWindowResize);
+
+  // If this script is part of an HTMX loaded fragment,
+  // HTMX might execute scripts before the DOM is fully ready in some cases,
+  // or if jQuery is also loaded asynchronously.
+  // Using a small timeout or ensuring jQuery is loaded first can help.
+  if (typeof $ !== 'undefined') {
+    initChessboard();
+  } else {
+    // Fallback if jQuery is not immediately available (e.g. loaded async)
+    // This is less likely if jQuery is loaded in the head of index.html
+    // or before this script if all are at the end of body.
+    var jqueryCheckInterval = setInterval(function() {
+      if (typeof $ !== 'undefined') {
+        clearInterval(jqueryCheckInterval);
+        initChessboard();
+      }
+    }, 100); // Check every 100ms for jQuery
+  }
+  
+  // Listen for HTMX event if this content is loaded via htmx
+  // This is a more robust way to ensure the DOM is ready
+  document.body.addEventListener('htmx:afterSwap', function(evt) {
+    // Check if the swapped content contains #myBoard or if the target is the content container itself
+    var targetElement = evt.detail.target;
+    var myBoardElement = document.getElementById('myBoard');
+
+    if (myBoardElement && (targetElement.id === 'content-container' || targetElement.contains(myBoardElement) || targetElement === myBoardElement)) {
+      // Re-initialize or ensure chess board is set up if it's part of the swapped content
+      // Check if #myBoard is now in the DOM and not yet initialized or needs re-initialization
+      if (!board || board.fen() !== game.fen()) { // Re-init if board not there or FEN is different (e.g. after navigating away and back)
+        game = new Chess(); // Reset game state if needed
+        initChessboard();
+      } else if (board) {
+        // If board exists, perhaps just update status or re-render
+        board.position(game.fen()); // Ensure board position is current
+        updateStatus();
+      }
+    }
+
+    // Fetch Lichess ratings when chess page is loaded
+    var targetElement = evt.detail.target;
+    var chessContentElement = document.getElementById('chess-content');
+    
+    if (chessContentElement && (targetElement.id === 'content-container' || targetElement.contains(chessContentElement) || targetElement === chessContentElement)) {
+      fetchLichessRatings();
+      initializeChessThemeWatcher(); // Initialize theme watcher when chess page is loaded
+    }
+  });
+
+  // Also fetch ratings on initial load if this page is loaded directly
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('chess-content')) {
+      fetchLichessRatings();
+      initializeChessThemeWatcher(); // Initialize theme watcher on direct page load
+    }
+  });
+
+  // Function to fetch and display Lichess ratings
+  async function fetchLichessRatings() {
+    try {
+      // Call Lichess API directly from the frontend
+      const response = await fetch('https://lichess.org/api/user/Simply_A_Pawn', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const userData = await response.json();
+      const perfs = userData.perfs || {};
+      
+      // Extract relevant rating information
+      const ratings = {};
+      for (const [gameType, ratingInfo] of Object.entries(perfs)) {
+        if (ratingInfo && typeof ratingInfo === 'object' && 'rating' in ratingInfo) {
+          ratings[gameType] = {
+            rating: ratingInfo.rating,
+            games: ratingInfo.games || 0,
+            rd: ratingInfo.rd || 0
+          };
+        }
+      }
+      
+      const data = {
+        username: 'Simply_A_Pawn',
+        ratings: ratings,
+        profile: {
+          country: userData.profile?.country,
+          location: userData.profile?.location
+        }
+      };
+      
+      const ratingsContainer = document.getElementById('lichess-ratings');
+      const loadingElement = document.getElementById('loading-ratings');
+      
+      // Clear any existing content (loading element and/or previous ratings)
+      if (ratingsContainer) {
+        ratingsContainer.innerHTML = '';
+      }
+      
+      if (data.ratings && Object.keys(data.ratings).length > 0) {
+        // Display ratings
+        Object.entries(data.ratings).forEach(([gameType, ratingInfo]) => {
+          if (ratingInfo.games > 100) { // Only show game types with games played
+            const ratingDiv = document.createElement('div');
+            ratingDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; text-align: center;';
+            ratingDiv.innerHTML = `
+              <strong>${gameType.charAt(0).toUpperCase() + gameType.slice(1,10)}</strong><br>
+              <span style="font-size: 1.2em; color: #4a90e2;">${ratingInfo.rating}</span><br>
+              <small>${ratingInfo.games} games</small>
+            `;
+            ratingsContainer.appendChild(ratingDiv);
+          }
+        });
+      } else {
+        ratingsContainer.innerHTML = '<div style="text-align: center; color: #666;">No rating data available</div>';
+      }
+    } catch (error) {
+      console.error('Error fetching Lichess ratings:', error);
+      const ratingsContainer = document.getElementById('lichess-ratings');
+      
+      // Clear any existing content before showing error
+      if (ratingsContainer) {
+        ratingsContainer.innerHTML = '<div style="text-align: center; color: #e74c3c;">Failed to load ratings</div>';
+      }
+    }
+  }
+
+  // Function to apply custom board colors that match the website theme
+  function applyCustomBoardColors() {
+    // Get CSS custom properties from the document
+    const rootStyles = getComputedStyle(document.documentElement);
+    const bgSecondary = rootStyles.getPropertyValue('--bg-secondary').trim();
+    const bgAccent = rootStyles.getPropertyValue('--bg-accent').trim();
+    const accentBlue = rootStyles.getPropertyValue('--accent-blue').trim();
+    
+    // Default colors if CSS variables aren't available
+    const lightSquareColor = '#e9ecef';
+    const darkSquareColor =  '#5977a6';
+    const borderColor = accentBlue || '#6ba6ff';
+    
+    // Apply custom styles to the chessboard
+    const boardElement = document.querySelector('#myBoard');
+    if (boardElement) {
+      // Create a style element for custom chessboard colors
+      let customStyle = document.getElementById('chess-custom-styles');
+      if (!customStyle) {
+        customStyle = document.createElement('style');
+        customStyle.id = 'chess-custom-styles';
+        document.head.appendChild(customStyle);
+      }
+      
+      customStyle.textContent = `
+        /* Custom chessboard colors to match website theme */
+        .chessboard-63f37 {
+          border: 3px solid ${borderColor} !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .white-1e1d7 {
+          background-color: ${lightSquareColor} !important;
+        }
+        
+        .black-3c85d {
+          background-color: ${darkSquareColor} !important;
+        }
+        
+        .highlight1-32417, .highlight2-9c5d2 {
+          background-color: ${accentBlue}40 !important; /* 40 adds transparency */
+        }
+        
+        .notation-322f9 {
+          color: var(--text-secondary) !important;
+          font-weight: 600 !important;
+        }
+        
+        /* Style for when squares are highlighted during moves */
+        .square-55d63.highlight1-32417,
+        .square-55d63.highlight2-9c5d2 {
+          background-color: ${accentBlue}60 !important;
+          box-shadow: inset 0 0 3px ${accentBlue} !important;
+        }
+      `;
+    }
+  }
+
+  // Function to update Lichess logo based on theme
+  function updateLichessLogo() {
+    const lightLogo = document.getElementById('lichess-logo-light');
+    const darkLogo = document.getElementById('lichess-logo-dark');
+    
+    if (lightLogo && darkLogo) {
+      const isDarkTheme = document.body.classList.contains('dark-theme');
+      
+      if (isDarkTheme) {
+        lightLogo.style.display = 'none';
+        darkLogo.style.display = 'block';
+      } else {
+        lightLogo.style.display = 'block';
+        darkLogo.style.display = 'none';
+      }
+    }
+  }
+
+  // Watch for theme changes on the body element
+  function watchForThemeChanges() {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateLichessLogo();
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  // Initialize theme watcher when chess content is loaded
+  function initializeChessThemeWatcher() {
+    updateLichessLogo(); // Set initial state
+    watchForThemeChanges(); // Watch for changes
+  }
+
+  // Click-to-move event
+  document.getElementById('myBoard').addEventListener('click', function(event) {
+    var squareDiv = event.target.closest('.square-55d63');
+    if (!squareDiv) return;
+    var clickedSquare = squareDiv.getAttribute('data-square');
+    handleSquareClick(clickedSquare);
+  });
+
+  function handleSquareClick(square) {
+    // Remove highlight from old square
+    if (previouslySelectedElement) {
+      previouslySelectedElement.classList.remove('selected-square');
+    }
+    if (!selectedSquare) {
+      // Select if piece is correct color
+      var pieceOnSquare = game.get(square);
+      if (pieceOnSquare && pieceOnSquare.color === game.turn()) {
+        selectedSquare = square;
+        // Highlight new square
+        previouslySelectedElement = document.querySelector('.square-55d63[data-square="' + square + '"]');
+        if (previouslySelectedElement) {
+          previouslySelectedElement.classList.add('selected-square');
+        }
+      }
+    } else {
+      // Attempt move
+      var move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
+      if (move !== null) {
+        updateStatus();
+        board.position(game.fen());
+      }
+      selectedSquare = null;
+    }
+  }
+</script>
