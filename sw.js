@@ -2,6 +2,7 @@ const CACHE_VERSION = 'todo-app-v1';
 const APP_CACHE = `carroll-compute-${CACHE_VERSION}`;
 const NAVIGATION_FALLBACK = './todo.html';
 const ASSETS = [
+  './index.html',
   NAVIGATION_FALLBACK,
   './manifest.webmanifest',
   './icons/icon-192.png',
