@@ -156,7 +156,6 @@
             overflow: visible;
             box-shadow: 0 4px 12px var(--shadow);
             transition: all 0.3s ease;
-            cursor: pointer;
             position: relative;
             perspective: 1000px;
             height: 450px;
@@ -613,7 +612,7 @@
                                 <div class="card-back-actions">
                                     <div class="card-back-footer">
                                         <span class="version-badge">v${app.currentVersion}</span>
-                                        <button class="info-icon" onclick="showVersions(event, '${app.id}')" aria-label="View version history for ${app.title}">i</button>
+                                        <button class="info-icon" onclick="showVersions(event, '${app.id}')" aria-label="View version history">i</button>
                                     </div>
                                     <button class="download-btn" onclick="downloadApp('${currentVersion.file}', '${app.title}', event)">
                                         Download
