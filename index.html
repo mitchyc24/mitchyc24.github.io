@@ -21,6 +21,19 @@
             --shadow: rgba(0, 0, 0, 0.1);
         }
 
+        [data-theme="dark"] {
+            --primary: #00ABF2;
+            --secondary: #F4581B;
+            --accent: #0079CB;
+            --accent-orange: #EE3B0D;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -32,52 +45,88 @@
             background: var(--background);
             color: var(--text);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Header */
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 3rem 2rem;
+            padding: 4rem 2rem;
             text-align: center;
             box-shadow: 0 4px 6px var(--shadow);
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .theme-icon {
+            font-size: 1.25rem;
         }
 
         .logo-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
+            width: 150px;
+            height: 150px;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .subtitle {
-            font-size: 1.125rem;
-            opacity: 0.9;
+            font-size: 1.25rem;
+            opacity: 0.95;
             font-weight: 300;
         }
 
         /* Main Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 3rem 2rem;
+            padding: 4rem 3rem;
         }
 
         .intro {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px var(--shadow);
         }
 
         .intro h2 {
@@ -95,144 +144,173 @@
         /* Cards Grid */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 3rem;
             margin-top: 2rem;
         }
 
         /* Card */
         .card {
             background: var(--surface);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px var(--shadow);
+            border-radius: 16px;
+            overflow: visible;
+            box-shadow: 0 4px 12px var(--shadow);
             transition: all 0.3s ease;
-            cursor: pointer;
             position: relative;
+            perspective: 1000px;
+            height: 450px;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .card:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: var(--surface);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2rem;
+            color: white;
         }
 
         .card-image {
             width: 100%;
-            height: 200px;
+            height: 250px;
             object-fit: cover;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         }
 
         .card-content {
-            padding: 1.5rem;
-        }
-
-        .card-header {
+            padding: 2rem;
             display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 0.5rem;
+            flex-direction: column;
+            height: calc(100% - 250px);
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--text);
-            margin-bottom: 0.5rem;
-        }
-
-        .info-icon {
-            background: var(--primary);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .info-icon:hover {
-            background: var(--accent);
-            transform: scale(1.1);
+            margin-bottom: 1rem;
         }
 
         .card-description {
             color: var(--text-light);
-            font-size: 0.9375rem;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            flex-grow: 1;
         }
 
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .version-badge {
-            background: var(--background);
-            color: var(--primary);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .download-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .download-btn:hover {
-            background: var(--accent);
-        }
-
-        /* Detailed View (appears on hover) */
-        .card-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(37, 99, 235, 0.95);
-            color: white;
-            padding: 2rem;
+        /* Back of card */
+        .card-back-content {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
         }
 
-        .card:hover .card-overlay {
-            opacity: 1;
-        }
-
-        .overlay-title {
-            font-size: 1.5rem;
+        .card-back-title {
+            font-size: 1.75rem;
             font-weight: 800;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .overlay-description {
-            font-size: 0.9375rem;
-            line-height: 1.6;
+        .card-back-description {
+            font-size: 1rem;
+            line-height: 1.8;
             opacity: 0.95;
+            margin-bottom: 2rem;
+        }
+
+        .card-back-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-back-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .info-icon {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .info-icon:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.15);
+        }
+
+        .version-badge {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .download-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-grow: 1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .download-btn:hover {
+            background: var(--background);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         /* Version Modal */
@@ -385,14 +463,43 @@
                 font-size: 2rem;
             }
 
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .theme-toggle {
+                top: 1rem;
+                right: 1rem;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
             .cards-grid {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .card {
+                height: 400px;
+            }
+
+            .card-image {
+                height: 200px;
             }
         }
     </style>
 </head>
 <body>
     <header>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span class="theme-icon" id="theme-icon">🌙</span>
+            <span id="theme-text">Dark Mode</span>
+        </button>
         <div class="logo-container">
             <img src="branding/TransparentLogo.svg" alt="Carroll Compute Inc" class="logo">
             <div>
@@ -432,6 +539,37 @@
     <script>
         let appsData = null;
 
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            
+            setTheme(theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (theme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light Mode';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark Mode';
+            }
+        }
+
         // Load apps manifest
         async function loadApps() {
             try {
@@ -457,24 +595,30 @@
             container.innerHTML = apps.map(app => {
                 const currentVersion = app.versions.find(v => v.version === app.currentVersion) || app.versions[0];
                 return `
-                    <div class="card" onclick="downloadApp('${currentVersion.file}', '${app.title}')">
-                        <img src="${app.image}" alt="${app.title}" class="card-image">
-                        <div class="card-content">
-                            <div class="card-header">
-                                <h3 class="card-title">${app.title}</h3>
-                                <div class="info-icon" onclick="showVersions(event, '${app.id}')" title="View version history">i</div>
+                    <div class="card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="${app.image}" alt="${app.title}" class="card-image">
+                                <div class="card-content">
+                                    <h3 class="card-title">${app.title}</h3>
+                                    <p class="card-description">${app.description}</p>
+                                </div>
                             </div>
-                            <p class="card-description">${app.description}</p>
-                            <div class="card-footer">
-                                <span class="version-badge">v${app.currentVersion}</span>
-                                <button class="download-btn" onclick="downloadApp('${currentVersion.file}', '${app.title}', event)">
-                                    Download
-                                </button>
+                            <div class="card-back">
+                                <div class="card-back-content">
+                                    <h4 class="card-back-title">${app.title}</h4>
+                                    <p class="card-back-description">${app.detailedDescription || app.description}</p>
+                                </div>
+                                <div class="card-back-actions">
+                                    <div class="card-back-footer">
+                                        <span class="version-badge">v${app.currentVersion}</span>
+                                        <button class="info-icon" onclick="showVersions(event, '${app.id}')" aria-label="View version history">i</button>
+                                    </div>
+                                    <button class="download-btn" onclick="downloadApp('${currentVersion.file}', '${app.title}', event)">
+                                        Download
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-overlay">
-                            <h4 class="overlay-title">${app.title}</h4>
-                            <p class="overlay-description">${app.detailedDescription || app.description}</p>
                         </div>
                     </div>
                 `;
@@ -544,6 +688,7 @@
         });
 
         // Load apps on page load
+        initTheme();
         loadApps();
     </script>
 </body>
