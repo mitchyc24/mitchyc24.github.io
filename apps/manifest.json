@@ -15,6 +15,54 @@
         }
       ],
       "currentVersion": "1.0.0"
+    },
+    {
+      "id": "calculator",
+      "title": "Calculator",
+      "description": "A fully functional calculator app with keyboard support",
+      "detailedDescription": "A beautiful calculator application with basic arithmetic operations. Features keyboard support and a clean, modern interface. Perfect for quick calculations on the go.",
+      "image": "data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%2300ABF2'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='48' fill='white' text-anchor='middle' dy='.3em'%3E123%3C/text%3E%3C/svg%3E",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-02-17",
+          "file": "apps/calculator/calculator-v1.0.0.html",
+          "notes": "Initial release with basic operations and keyboard support"
+        }
+      ],
+      "currentVersion": "1.0.0"
+    },
+    {
+      "id": "todo-list",
+      "title": "To-Do List",
+      "description": "Organize your tasks with this simple to-do list app",
+      "detailedDescription": "A feature-rich to-do list application with filtering, local storage persistence, and statistics. Track your tasks, mark them as complete, and stay organized with this elegant task manager.",
+      "image": "data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%23667eea'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='64' fill='white' text-anchor='middle' dy='.3em'%3E%E2%9C%93%3C/text%3E%3C/svg%3E",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-02-17",
+          "file": "apps/todo-list/todo-list-v1.0.0.html",
+          "notes": "Initial release with filtering, local storage, and statistics"
+        }
+      ],
+      "currentVersion": "1.0.0"
+    },
+    {
+      "id": "timer",
+      "title": "Timer & Stopwatch",
+      "description": "A dual-purpose timer and stopwatch application",
+      "detailedDescription": "A versatile time-tracking application that combines both a countdown timer and a stopwatch. Features lap tracking for the stopwatch and audio alerts for the timer. Perfect for workouts, cooking, or productivity sessions.",
+      "image": "data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%23F4581B'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='64' fill='white' text-anchor='middle' dy='.3em'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-02-17",
+          "file": "apps/timer/timer-v1.0.0.html",
+          "notes": "Initial release with timer, stopwatch, and lap tracking"
+        }
+      ],
+      "currentVersion": "1.0.0"
     }
   ]
 }
