@@ -168,8 +168,8 @@
         <h1>⏱️ Timer & Stopwatch</h1>
         
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('stopwatch')">Stopwatch</div>
-            <div class="tab" onclick="switchTab('timer')">Timer</div>
+            <div class="tab active" onclick="switchTab('stopwatch', event)">Stopwatch</div>
+            <div class="tab" onclick="switchTab('timer', event)">Timer</div>
         </div>
 
         <!-- Stopwatch Tab -->
@@ -344,7 +344,7 @@
         }
 
         // Tab switching
-        function switchTab(tab) {
+        function switchTab(tab, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             

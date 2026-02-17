@@ -165,9 +165,9 @@
             <button class="add-btn" onclick="addTodo()">Add</button>
         </div>
         <div class="filters">
-            <button class="filter-btn active" onclick="filterTodos('all')">All</button>
-            <button class="filter-btn" onclick="filterTodos('active')">Active</button>
-            <button class="filter-btn" onclick="filterTodos('completed')">Completed</button>
+            <button class="filter-btn active" onclick="filterTodos('all', event)">All</button>
+            <button class="filter-btn" onclick="filterTodos('active', event)">Active</button>
+            <button class="filter-btn" onclick="filterTodos('completed', event)">Completed</button>
         </div>
         <ul class="todo-list" id="todoList"></ul>
         <div class="stats" id="stats"></div>
@@ -241,7 +241,7 @@
             renderTodos();
         }
 
-        function filterTodos(filter) {
+        function filterTodos(filter, event) {
             currentFilter = filter;
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
