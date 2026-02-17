@@ -613,7 +613,7 @@
                                 <div class="card-back-actions">
                                     <div class="card-back-footer">
                                         <span class="version-badge">v${app.currentVersion}</span>
-                                        <div class="info-icon" onclick="showVersions(event, '${app.id}')" title="View version history">i</div>
+                                        <button class="info-icon" onclick="showVersions(event, '${app.id}')" aria-label="View version history for ${app.title}">i</button>
                                     </div>
                                     <button class="download-btn" onclick="downloadApp('${currentVersion.file}', '${app.title}', event)">
                                         Download
