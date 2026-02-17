@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPACE - Single Page Apps Collectors Edition | Carroll Compute Inc</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --accent: #1e40af;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .intro h2 {
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .intro p {
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Card */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-icon {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .info-icon:hover {
+            background: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .card-description {
+            color: var(--text-light);
+            font-size: 0.9375rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .version-badge {
+            background: var(--background);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .download-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .download-btn:hover {
+            background: var(--accent);
+        }
+
+        /* Detailed View (appears on hover) */
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(37, 99, 235, 0.95);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        .overlay-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .overlay-description {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        /* Version Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .version-list {
+            list-style: none;
+        }
+
+        .version-item {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .version-item:hover {
+            border-color: var(--primary);
+            background: var(--background);
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .version-number {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .version-date {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .version-notes {
+            color: var(--text-light);
+            font-size: 0.9375rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .version-download {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .version-download:hover {
+            background: var(--accent);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--surface);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-light);
+            margin-top: 4rem;
+            border-top: 1px solid var(--border);
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-brand {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="branding/logo.svg" alt="Carroll Compute Inc" class="logo">
+            <div>
+                <h1>SPACE</h1>
+                <p class="subtitle">Single Page Apps Collectors Edition</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="intro">
+            <h2>Welcome to SPACE</h2>
+            <p>A curated collection of single page HTML applications. Each app is self-contained in a single HTML file that you can download and use offline.</p>
+        </div>
+
+        <div id="cards-container" class="cards-grid">
+            <div class="loading">Loading applications...</div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div id="version-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Version History</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <ul id="version-list" class="version-list"></ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 <span class="footer-brand">Carroll Compute Inc</span></p>
+        <p>All applications are provided as-is under their respective licenses.</p>
+    </footer>
+
+    <script>
+        let appsData = null;
+
+        // Load apps manifest
+        async function loadApps() {
+            try {
+                const response = await fetch('apps/manifest.json');
+                appsData = await response.json();
+                renderCards(appsData.apps);
+            } catch (error) {
+                console.error('Error loading apps:', error);
+                document.getElementById('cards-container').innerHTML = 
+                    '<div class="loading">Error loading applications. Please try again later.</div>';
+            }
+        }
+
+        // Render app cards
+        function renderCards(apps) {
+            const container = document.getElementById('cards-container');
+            
+            if (!apps || apps.length === 0) {
+                container.innerHTML = '<div class="loading">No applications available yet.</div>';
+                return;
+            }
+
+            container.innerHTML = apps.map(app => {
+                const currentVersion = app.versions.find(v => v.version === app.currentVersion) || app.versions[0];
+                return `
+                    <div class="card" onclick="downloadApp('${currentVersion.file}', '${app.title}')">
+                        <img src="${app.image}" alt="${app.title}" class="card-image">
+                        <div class="card-content">
+                            <div class="card-header">
+                                <h3 class="card-title">${app.title}</h3>
+                                <div class="info-icon" onclick="showVersions(event, '${app.id}')" title="View version history">i</div>
+                            </div>
+                            <p class="card-description">${app.description}</p>
+                            <div class="card-footer">
+                                <span class="version-badge">v${app.currentVersion}</span>
+                                <button class="download-btn" onclick="downloadApp('${currentVersion.file}', '${app.title}', event)">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-overlay">
+                            <h4 class="overlay-title">${app.title}</h4>
+                            <p class="overlay-description">${app.detailedDescription || app.description}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Download app function
+        function downloadApp(filePath, appName, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            fetch(filePath)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filePath.split('/').pop();
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    console.error('Error downloading app:', error);
+                    alert('Error downloading application. Please try again.');
+                });
+        }
+
+        // Show version history
+        function showVersions(event, appId) {
+            event.stopPropagation();
+            
+            const app = appsData.apps.find(a => a.id === appId);
+            if (!app) return;
+
+            document.getElementById('modal-title').textContent = `${app.title} - Version History`;
+            
+            const versionList = document.getElementById('version-list');
+            versionList.innerHTML = app.versions.map(version => `
+                <li class="version-item">
+                    <div class="version-header">
+                        <span class="version-number">Version ${version.version}</span>
+                        <span class="version-date">${version.date}</span>
+                    </div>
+                    <p class="version-notes">${version.notes}</p>
+                    <button class="version-download" onclick="downloadApp('${version.file}', '${app.title}')">
+                        Download v${version.version}
+                    </button>
+                </li>
+            `).join('');
+
+            document.getElementById('version-modal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('version-modal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('version-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Load apps on page load
+        loadApps();
+    </script>
+</body>
+</html>

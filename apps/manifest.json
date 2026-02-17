@@ -1,0 +1,20 @@
+{
+  "apps": [
+    {
+      "id": "example-app",
+      "title": "Example Single Page App",
+      "description": "A simple example single page application",
+      "detailedDescription": "This is a demo single page HTML application that showcases the SPACE repository format. It includes basic HTML, CSS, and JavaScript in a single file.",
+      "image": "data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%232563eb'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3EExample App%3C/text%3E%3C/svg%3E",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-02-17",
+          "file": "apps/example-app/example-app-v1.0.0.html",
+          "notes": "Initial release"
+        }
+      ],
+      "currentVersion": "1.0.0"
+    }
+  ]
+}
