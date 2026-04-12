@@ -49,6 +49,22 @@
       "currentVersion": "1.0.0"
     },
     {
+      "id": "mortgage-calculator",
+      "title": "Mortgage Calculator",
+      "description": "Calculate monthly payments, total interest, and view a full amortization schedule",
+      "detailedDescription": "A comprehensive mortgage calculator that estimates your monthly payment including principal, interest, property tax, and insurance. Displays a full yearly amortization schedule so you can see exactly how your balance decreases over the life of the loan.",
+      "image": "data:image/svg+xml,%3Csvg width='300' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='300' height='200' fill='%230079CB'/%3E%3Ctext x='50%25' y='42%25' font-family='Arial' font-size='56' fill='white' text-anchor='middle' dy='.3em'%3E%F0%9F%8F%A0%3C/text%3E%3Ctext x='50%25' y='78%25' font-family='Arial' font-size='18' fill='white' text-anchor='middle' dy='.3em'%3EMortgage%3C/text%3E%3C/svg%3E",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-04-12",
+          "file": "apps/mortgage-calculator/mortgage-calculator-v1.0.0.html",
+          "notes": "Initial release with monthly payment breakdown, amortization schedule, and tax/insurance support"
+        }
+      ],
+      "currentVersion": "1.0.0"
+    },
+    {
       "id": "timer",
       "title": "Timer & Stopwatch",
       "description": "A dual-purpose timer and stopwatch application",
