@@ -1,11 +1,11 @@
 {
-  "name": "Zenith Focus Timer",
-  "short_name": "Zenith",
-  "description": "A minimalist Pomodoro timer to boost productivity.",
+  "name": "Task Master",
+  "short_name": "TaskMaster",
+  "description": "A local-first Kanban board with 3D interactions.",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
