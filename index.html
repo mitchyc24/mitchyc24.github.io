@@ -1,49 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zenith Focus Timer</title>
-    <meta name="description" content="A minimalist Pomodoro timer to boost your productivity.">
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a2e">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Master</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- CDN Links for libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Zenith Focus</h1>
-            <p>Elevate your productivity</p>
-        </header>
-
-        <main>
-            <div class="timer-container">
-                <svg class="progress-ring" width="300" height="300">
-                    <circle class="progress-ring__circle-bg" stroke="rgba(255, 255, 255, 0.1)" stroke-width="8" fill="transparent" r="140" cx="150" cy="150"/>
-                    <circle class="progress-ring__circle" stroke="#e94560" stroke-width="8" fill="transparent" r="140" cx="150" cy="150"/>
-                </svg>
-                <div class="time-display" id="time-display">25:00</div>
-                <div class="mode-display" id="mode-display">Focus Mode</div>
-            </div>
-
-            <div class="controls">
-                <button id="start-btn" class="btn primary">Start</button>
-                <button id="pause-btn" class="btn secondary hidden">Pause</button>
-                <button id="reset-btn" class="btn secondary">Reset</button>
-            </div>
-
-            <div class="mode-selectors">
-                <button id="pomodoro-btn" class="mode-btn active" data-time="25">Pomodoro</button>
-                <button id="short-break-btn" class="mode-btn" data-time="5">Short Break</button>
-                <button id="long-break-btn" class="mode-btn" data-time="15">Long Break</button>
-            </div>
-        </main>
-
-        <footer>
-            <p>Built for Focus</p>
-        </footer>
+  <header>
+    <h1>Task Master</h1>
+    <div class="controls">
+      <button id="add-column-btn">Add Column</button>
+      <button id="show-analytics-btn">Analytics</button>
+      <button id="backup-btn">Backup DB</button>
+      <button id="restore-btn">Restore DB</button>
+      <input type="file" id="restore-input" style="display: none;" accept="application/json">
     </div>
-    <script src="app.js"></script>
+  </header>
+
+  <main id="board" class="board">
+    <!-- Columns will be injected here via JS -->
+  </main>
+
+  <!-- 3D Expanded Card Modal -->
+  <div id="card-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-content 3d-card-container">
+      <div id="expanded-card" class="expanded-card">
+        <!-- Expanded card content will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Modal -->
+  <div id="analytics-modal" class="modal-overlay hidden">
+    <div class="modal-content analytics-content">
+      <h2>Cumulative Flow Diagram</h2>
+      <canvas id="cfd-chart"></canvas>
+      <button id="close-analytics-btn">Close</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
