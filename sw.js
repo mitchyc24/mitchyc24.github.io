@@ -1,7 +1,7 @@
 // MiNotes service worker — caches the app shell so the app runs fully offline.
 // Notes themselves never pass through here; they live on the local file system.
 
-const CACHE_NAME = 'minotes-shell-v1';
+const CACHE_NAME = 'minotes-shell-v2';
 
 const SHELL = [
   './',
@@ -9,6 +9,7 @@ const SHELL = [
   './manifest.webmanifest',
   './css/app.css',
   './js/app.js',
+  './js/autocomplete.js',
   './js/db.js',
   './js/fs.js',
   './js/markdown.js',
