@@ -95,6 +95,18 @@ export async function readNote(dirHandle, path) {
   return { text: await file.text(), lastModified: file.lastModified };
 }
 
+/** Current on-disk mtime of a note, or null if it can't be read. */
+export async function statNote(dirHandle, path) {
+  try {
+    const { dir, base } = await resolveParent(dirHandle, path);
+    const fileHandle = await dir.getFileHandle(base);
+    const file = await fileHandle.getFile();
+    return file.lastModified;
+  } catch {
+    return null;
+  }
+}
+
 export async function writeNote(dirHandle, path, text) {
   const { dir, base } = await resolveParent(dirHandle, path, { create: true });
   const fileHandle = await dir.getFileHandle(base, { create: true });

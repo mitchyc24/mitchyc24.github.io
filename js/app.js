@@ -4,6 +4,7 @@ import * as db from './db.js';
 import * as fs from './fs.js';
 import { NoteIndex } from './search.js';
 import { parseFrontmatter, metaTags, renderMarkdown } from './markdown.js';
+import { attachWikilinkAutocomplete } from './autocomplete.js';
 
 // ------------------------------------------------------------------ state
 
@@ -14,7 +15,10 @@ const state = {
   index: new NoteIndex(),
   currentPath: null,
   currentText: '',
+  currentMtime: null,   // on-disk mtime when the note was last read/written
+  conflict: false,      // disk changed under a dirty editor; saves are blocked
   dirty: false,
+  tagFilter: null,      // active tag chip, or null for all notes
   blobUrls: [],         // object URLs owned by the current preview
   usingOpfs: false,
 };
@@ -28,6 +32,9 @@ const el = {
   fallbackNote: $('fallback-note'),
   workspaceName: $('workspace-name'), btnSwitch: $('btn-switch-workspace'),
   searchInput: $('search-input'), btnNew: $('btn-new-note'), btnRefresh: $('btn-refresh'),
+  btnDaily: $('btn-daily'), tagBar: $('tag-bar'),
+  conflictBar: $('conflict-bar'), btnConflictLoad: $('btn-conflict-load'),
+  btnConflictOverwrite: $('btn-conflict-overwrite'),
   noteList: $('note-list'), noteCount: $('note-count'), offlineBadge: $('offline-badge'),
   emptyState: $('empty-state'), editorPane: $('editor-pane'),
   noteTitle: $('note-title'), saveState: $('save-state'),
@@ -158,10 +165,18 @@ async function refreshWorkspace({ firstRun = false } = {}) {
     async (path) => (await fs.readNote(state.dirHandle, path)).text,
   );
   if (changed || firstRun) persistIndexSoon();
+  renderTagBar();
   renderNoteList();
-  if (state.currentPath && !state.notes.some((n) => n.path === state.currentPath)) {
+  const current = state.notes.find((n) => n.path === state.currentPath);
+  if (state.currentPath && !current) {
     closeNote();
-  } else if (state.currentPath) {
+  } else if (current) {
+    // The open note changed on disk (OS sync, another editor): follow it if the
+    // editor is clean, otherwise let the user pick a side.
+    if (state.currentMtime != null && current.lastModified !== state.currentMtime) {
+      if (state.dirty) setConflict(true);
+      else await reloadCurrentFromDisk();
+    }
     renderBacklinks();
   }
 }
@@ -195,9 +210,44 @@ Your notes are plain **Markdown** files.
 
 // ------------------------------------------------------------- note list
 
+function renderTagBar() {
+  const counts = new Map();
+  for (const doc of state.index.docs.values()) {
+    for (const t of doc.tags) counts.set(t, (counts.get(t) || 0) + 1);
+  }
+  if (state.tagFilter && !counts.has(state.tagFilter)) state.tagFilter = null;
+
+  el.tagBar.textContent = '';
+  el.tagBar.hidden = counts.size === 0;
+  const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  for (const [tag, count] of tags) {
+    const chip = document.createElement('button');
+    chip.className = 'tag-chip' + (tag === state.tagFilter ? ' active' : '');
+    chip.textContent = `#${tag}`;
+    const n = document.createElement('span');
+    n.className = 'tag-count';
+    n.textContent = count;
+    chip.appendChild(n);
+    chip.addEventListener('click', () => setTagFilter(tag === state.tagFilter ? null : tag));
+    el.tagBar.appendChild(chip);
+  }
+}
+
+function setTagFilter(tag) {
+  state.tagFilter = tag;
+  renderTagBar();
+  renderNoteList();
+}
+
 function renderNoteList() {
   el.noteList.textContent = '';
+  let shown = 0;
   for (const note of state.notes) {
+    if (state.tagFilter) {
+      const doc = state.index.docs.get(note.path);
+      if (!doc || !doc.tags.includes(state.tagFilter)) continue;
+    }
+    shown++;
     const btn = document.createElement('button');
     btn.className = 'note-item' + (note.path === state.currentPath ? ' active' : '');
     btn.dataset.path = note.path;
@@ -216,23 +266,27 @@ function renderNoteList() {
     btn.addEventListener('click', () => { openNote(note.path); closeSidebarOnMobile(); });
     el.noteList.appendChild(btn);
   }
-  el.noteCount.textContent = `${state.notes.length} note${state.notes.length === 1 ? '' : 's'}`;
+  el.noteCount.textContent = state.tagFilter
+    ? `${shown} of ${state.notes.length} · #${state.tagFilter}`
+    : `${state.notes.length} note${state.notes.length === 1 ? '' : 's'}`;
 }
 
 // ------------------------------------------------------------ note editing
 
 async function openNote(path) {
   await flushSave();
-  let text;
+  let text, lastModified;
   try {
-    ({ text } = await fs.readNote(state.dirHandle, path));
+    ({ text, lastModified } = await fs.readNote(state.dirHandle, path));
   } catch (err) {
     toast(`Could not open note: ${err.message}`, { error: true });
     return;
   }
   state.currentPath = path;
   state.currentText = text;
+  state.currentMtime = lastModified;
   state.dirty = false;
+  setConflict(false);
 
   const note = state.notes.find((n) => n.path === path);
   el.noteTitle.value = note ? note.title : path.replace(/\.md$/i, '');
@@ -248,31 +302,57 @@ async function openNote(path) {
 function closeNote() {
   state.currentPath = null;
   state.currentText = '';
+  state.currentMtime = null;
   state.dirty = false;
+  setConflict(false);
   el.editorPane.hidden = true;
   el.emptyState.hidden = false;
   renderNoteList();
 }
 
 function setSaveState(mode) {
-  el.saveState.classList.toggle('dirty', mode === 'dirty');
-  el.saveState.textContent = { saved: 'saved', dirty: 'unsaved…', saving: 'saving…' }[mode] || '';
+  el.saveState.classList.toggle('dirty', mode === 'dirty' || mode === 'conflict');
+  el.saveState.textContent = {
+    saved: 'saved', dirty: 'unsaved…', saving: 'saving…', conflict: 'conflict',
+  }[mode] || '';
 }
 
-async function saveCurrentNote() {
-  if (!state.currentPath || !state.dirty) return;
+function setConflict(active) {
+  state.conflict = active;
+  el.conflictBar.hidden = !active;
+  if (active) setSaveState('conflict');
+}
+
+/**
+ * Save the current note, refusing to clobber a file that changed on disk
+ * since we read it (another device syncing, another editor). A conflict
+ * blocks autosave until the user picks a side via the conflict bar.
+ */
+async function saveCurrentNote({ force = false } = {}) {
+  if (!state.currentPath || !state.dirty || (state.conflict && !force)) return;
   const path = state.currentPath;
   const text = el.editor.value;
+
+  if (!force && state.currentMtime != null) {
+    const diskMtime = await fs.statNote(state.dirHandle, path);
+    if (diskMtime != null && diskMtime !== state.currentMtime) {
+      setConflict(true);
+      return;
+    }
+  }
+
   setSaveState('saving');
   try {
     await fs.writeNote(state.dirHandle, path, text);
     state.currentText = text;
+    state.currentMtime = await fs.statNote(state.dirHandle, path);
     state.dirty = false;
+    setConflict(false);
     setSaveState('saved');
     const note = state.notes.find((n) => n.path === path);
     const title = note ? note.title : path.replace(/\.md$/i, '');
-    state.index.upsert(path, title, text, Date.now());
-    if (note) note.lastModified = Date.now();
+    state.index.upsert(path, title, text, state.currentMtime ?? Date.now());
+    if (note) note.lastModified = state.currentMtime ?? Date.now();
     persistIndexSoon();
     renderBacklinks();
   } catch (err) {
@@ -282,6 +362,25 @@ async function saveCurrentNote() {
 }
 
 const autoSave = debounce(saveCurrentNote, 800);
+
+/** Replace the editor with the on-disk version of the current note. */
+async function reloadCurrentFromDisk() {
+  const path = state.currentPath;
+  if (!path) return;
+  try {
+    const { text, lastModified } = await fs.readNote(state.dirHandle, path);
+    state.currentText = text;
+    state.currentMtime = lastModified;
+    state.dirty = false;
+    el.editor.value = text;
+    setConflict(false);
+    setSaveState('saved');
+    renderPreview();
+    renderBacklinks();
+  } catch (err) {
+    toast(`Could not reload note: ${err.message}`, { error: true });
+  }
+}
 
 async function flushSave() {
   if (state.dirty) await saveCurrentNote();
@@ -303,6 +402,24 @@ async function createNote(title = 'Untitled', body = '') {
   await openNote(name);
   el.noteTitle.focus();
   el.noteTitle.select();
+}
+
+/** Open today's daily note (YYYY-MM-DD.md), creating it on first use. */
+async function openDailyNote() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const title = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const path = fs.titleToFilename(title);
+  if (await fs.noteExists(state.dirHandle, path)) {
+    await openNote(path);
+    return;
+  }
+  const heading = now.toLocaleDateString(undefined, {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+  await createNote(title, `---\ntags: [daily]\n---\n\n# ${heading}\n\n`);
+  el.editor.focus();
+  el.editor.selectionStart = el.editor.selectionEnd = el.editor.value.length;
 }
 
 async function deleteCurrentNote() {
@@ -349,7 +466,8 @@ async function renameCurrentNote() {
   }
   state.index.remove(state.currentPath);
   state.currentPath = newPath;
-  state.index.upsert(newPath, newTitle.replace(/\.md$/i, ''), el.editor.value, Date.now());
+  state.currentMtime = await fs.statNote(state.dirHandle, newPath);
+  state.index.upsert(newPath, newTitle.replace(/\.md$/i, ''), el.editor.value, state.currentMtime ?? Date.now());
   persistIndexSoon();
   await refreshWorkspace();
   toast('Note renamed');
@@ -382,10 +500,12 @@ function renderMetaBar(meta) {
     return;
   }
   for (const t of tags) {
-    const span = document.createElement('span');
-    span.className = 'meta-tag';
-    span.textContent = `#${t}`;
-    el.metaBar.appendChild(span);
+    const btn = document.createElement('button');
+    btn.className = 'meta-tag';
+    btn.textContent = `#${t}`;
+    btn.title = `Show notes tagged #${t}`;
+    btn.addEventListener('click', () => setTagFilter(t));
+    el.metaBar.appendChild(btn);
   }
   for (const [k, v] of extra) {
     const span = document.createElement('span');
@@ -545,12 +665,29 @@ function wireEvents() {
     await openWorkspacePicker();
   });
   el.btnNew.addEventListener('click', () => createNote());
+  el.btnDaily.addEventListener('click', openDailyNote);
   el.btnRefresh.addEventListener('click', () => refreshWorkspace());
   el.btnDelete.addEventListener('click', deleteCurrentNote);
 
+  el.btnConflictLoad.addEventListener('click', reloadCurrentFromDisk);
+  el.btnConflictOverwrite.addEventListener('click', () => saveCurrentNote({ force: true }));
+
+  // [[wikilink]] autocomplete fed by the live title/alias map.
+  attachWikilinkAutocomplete(el.editor, () => {
+    const candidates = [];
+    for (const doc of state.index.docs.values()) {
+      candidates.push({ label: doc.title, insert: doc.title });
+      for (const a of doc.aliases) {
+        candidates.push({ label: a, insert: a, hint: `→ ${doc.title}` });
+      }
+    }
+    candidates.sort((a, b) => a.label.localeCompare(b.label));
+    return candidates;
+  });
+
   el.editor.addEventListener('input', () => {
     state.dirty = el.editor.value !== state.currentText;
-    setSaveState(state.dirty ? 'dirty' : 'saved');
+    setSaveState(state.conflict ? 'conflict' : state.dirty ? 'dirty' : 'saved');
     renderPreview();
     if (state.dirty) autoSave();
   });

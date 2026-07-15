@@ -58,8 +58,10 @@
         </div>
         <div class="sidebar-actions">
           <button id="btn-new-note" class="btn btn-primary btn-sm">+ New note</button>
+          <button id="btn-daily" class="btn btn-sm" title="Open today's daily note">📅 Today</button>
           <button id="btn-refresh" class="icon-btn" title="Rescan folder">↻</button>
         </div>
+        <div id="tag-bar" class="tag-bar" aria-label="Filter by tag" hidden></div>
       </header>
       <nav id="note-list" class="note-list" aria-label="Notes"></nav>
       <footer class="sidebar-footer">
@@ -86,6 +88,12 @@
             <button id="btn-delete-note" class="icon-btn danger" title="Delete note">🗑</button>
           </div>
         </header>
+
+        <div id="conflict-bar" class="conflict-bar" hidden>
+          <span>⚠️ This note changed on disk (edited elsewhere or synced). Which version do you want?</span>
+          <button id="btn-conflict-load" class="btn btn-sm">Load disk version</button>
+          <button id="btn-conflict-overwrite" class="btn btn-sm">Keep mine</button>
+        </div>
 
         <div id="meta-bar" class="meta-bar" hidden></div>
 
