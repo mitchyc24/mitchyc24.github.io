@@ -53,28 +53,36 @@ export async function listNotes(dirHandle) {
 }
 
 async function walk(dirHandle, prefix, out) {
+  // ⚡ Bolt: Parallelize directory traversal and file stat retrieval.
+  // Previously, awaiting `handle.getFile()` sequentially caused O(N) latency.
+  // Collecting them into an array and using `Promise.all()` reduces this
+  // to approx O(N / concurrency) * latency, speeding up workspace loads significantly.
+  const promises = [];
   for await (const [name, handle] of dirHandle.entries()) {
     if (name.startsWith('.')) continue;
     if (handle.kind === 'directory') {
       if (name.toLowerCase() === ASSETS_DIR) continue;
-      await walk(handle, `${prefix}${name}/`, out);
+      promises.push(walk(handle, `${prefix}${name}/`, out));
     } else if (/\.(md|markdown)$/i.test(name)) {
-      let lastModified = 0, size = 0;
-      try {
-        const f = await handle.getFile();
-        lastModified = f.lastModified;
-        size = f.size;
-      } catch { /* unreadable entry; keep it listed */ }
-      out.push({
-        path: `${prefix}${name}`,
-        name,
-        title: name.replace(/\.(md|markdown)$/i, ''),
-        handle,
-        lastModified,
-        size,
-      });
+      promises.push((async () => {
+        let lastModified = 0, size = 0;
+        try {
+          const f = await handle.getFile();
+          lastModified = f.lastModified;
+          size = f.size;
+        } catch { /* unreadable entry; keep it listed */ }
+        out.push({
+          path: `${prefix}${name}`,
+          name,
+          title: name.replace(/\.(md|markdown)$/i, ''),
+          handle,
+          lastModified,
+          size,
+        });
+      })());
     }
   }
+  await Promise.all(promises);
 }
 
 /** Resolve a slash-separated relative path to a parent dir handle + basename. */
