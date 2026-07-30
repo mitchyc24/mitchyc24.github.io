@@ -1,132 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="MiNotes — a serverless, local-first Markdown note-taking PWA. Your files, your disk, your notes.">
-  <meta name="theme-color" content="#12141c">
-  <title>MiNotes</title>
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./css/app.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>miApps | Mitchell's Collection</title>
+    <style>
+        :root {
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --card-bg: #fff;
+            --card-border: #eee;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #12141c;
+                --text-color: #f1f1f1;
+                --card-bg: #1e212b;
+                --card-border: #2a2e3a;
+                --primary-color: #4da3ff;
+                --primary-hover: #7bb5ff;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            padding: 40px 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        h1 span {
+            color: var(--primary-color);
+        }
+        .intro {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        @media (prefers-color-scheme: dark) {
+            .intro { color: #aaa; }
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        @media (prefers-color-scheme: dark) {
+            .app-card:hover {
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            }
+        }
+        .app-card h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-card p {
+            flex-grow: 1;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        @media (prefers-color-scheme: dark) {
+            .app-card p { color: #bbb; }
+        }
+        .app-card .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            transition: background 0.2s;
+            margin-top: auto;
+        }
+        .app-card:hover .btn {
+            background: var(--primary-hover);
+        }
+        .coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .coming-soon:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .coming-soon .btn {
+            background: #ccc;
+            color: #666;
+        }
+        @media (prefers-color-scheme: dark) {
+            .coming-soon .btn { background: #444; color: #888; }
+        }
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-  <!-- ============ Welcome / workspace picker ============ -->
-  <div id="welcome" class="welcome" hidden>
-    <div class="welcome-card">
-      <div class="welcome-logo" aria-hidden="true">
-        <svg viewBox="0 0 64 64" width="72" height="72"><rect x="8" y="6" width="48" height="52" rx="8" fill="#6c8cff"/><rect x="8" y="6" width="48" height="52" rx="8" fill="url(#g)" opacity=".35"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M18 22h28M18 32h28M18 42h18" stroke="#0e1018" stroke-width="5" stroke-linecap="round"/></svg>
-      </div>
-      <h1>MiNotes</h1>
-      <p class="tagline">Local-first Markdown notes. Your files stay on <em>your</em> disk &mdash; no server, no account, fully offline.</p>
-
-      <div id="welcome-actions">
-        <button id="btn-open-workspace" class="btn btn-primary btn-lg">Open a notes folder…</button>
-        <button id="btn-reconnect" class="btn btn-primary btn-lg" hidden>Reconnect “<span id="reconnect-name"></span>”</button>
-        <button id="btn-open-other" class="btn btn-ghost" hidden>Open a different folder…</button>
-      </div>
-
-      <p id="fallback-note" class="fallback-note" hidden>
-        This browser doesn't support opening folders from disk
-        (<a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API" target="_blank" rel="noopener">File System Access API</a>),
-        so MiNotes will keep your notes in a private browser-managed workspace instead.
-        For direct access to <code>.md</code> files on disk, use Chrome or Edge on desktop.
-      </p>
-
-      <ul class="welcome-points">
-        <li><strong>Markdown files</strong> — plain <code>.md</code> you can open anywhere</li>
-        <li><strong>[[Wikilinks]]</strong> — bidirectional links between notes</li>
-        <li><strong>Instant search</strong> — fuzzy, phrase and boolean, all on-device</li>
-        <li><strong>Sync via your OS</strong> — pick a Drive/Dropbox/OneDrive folder and it syncs itself</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ============ Main app shell ============ -->
-  <div id="app" class="app" hidden>
-    <aside id="sidebar" class="sidebar">
-      <header class="sidebar-header">
-        <div class="workspace-row">
-          <span class="workspace-icon" aria-hidden="true">🗂</span>
-          <span id="workspace-name" class="workspace-name" title="">workspace</span>
-          <button id="btn-switch-workspace" class="icon-btn" title="Switch workspace">⇄</button>
-        </div>
-        <div class="search-row">
-          <input id="search-input" type="search" placeholder='Search…  ("phrase", AND, OR, -not)'
-                 autocomplete="off" spellcheck="false" aria-label="Search notes">
-        </div>
-        <div class="sidebar-actions">
-          <button id="btn-new-note" class="btn btn-primary btn-sm">+ New note</button>
-          <button id="btn-daily" class="btn btn-sm" title="Open today's daily note">📅 Today</button>
-          <button id="btn-refresh" class="icon-btn" title="Rescan folder">↻</button>
-        </div>
-        <div id="tag-bar" class="tag-bar" aria-label="Filter by tag" hidden></div>
-      </header>
-      <nav id="note-list" class="note-list" aria-label="Notes"></nav>
-      <footer class="sidebar-footer">
-        <span id="note-count"></span>
-        <span id="offline-badge" class="offline-badge" hidden>offline</span>
-      </footer>
-    </aside>
-
-    <main class="main">
-      <div id="empty-state" class="empty-state">
-        <p>Select a note, or press <kbd>Ctrl</kbd>+<kbd>N</kbd> to create one.</p>
-      </div>
-
-      <div id="editor-pane" class="editor-pane" hidden>
-        <header class="editor-header">
-          <input id="note-title" class="note-title" spellcheck="false" aria-label="Note title">
-          <div class="editor-tools">
-            <span id="save-state" class="save-state" title="Save state"></span>
-            <div class="view-toggle" role="group" aria-label="View mode">
-              <button id="mode-edit" class="toggle-btn" title="Editor only (Ctrl+1)">Edit</button>
-              <button id="mode-split" class="toggle-btn active" title="Split view (Ctrl+2)">Split</button>
-              <button id="mode-preview" class="toggle-btn" title="Preview only (Ctrl+3)">Read</button>
-            </div>
-            <button id="btn-delete-note" class="icon-btn danger" title="Delete note">🗑</button>
-          </div>
+    <div class="container">
+        <header>
+            <h1><span>mi</span>Apps</h1>
+            <p class="intro">A collection of local-first Progressive Web Applications by Mitchell. Pronounced "my", spelled "mi". Build without boundaries, right in your browser.</p>
         </header>
 
-        <div id="conflict-bar" class="conflict-bar" hidden>
-          <span>⚠️ This note changed on disk (edited elsewhere or synced). Which version do you want?</span>
-          <button id="btn-conflict-load" class="btn btn-sm">Load disk version</button>
-          <button id="btn-conflict-overwrite" class="btn btn-sm">Keep mine</button>
+        <div class="app-grid">
+            <a href="./miNotes/" class="app-card">
+                <h2>📝 miNotes</h2>
+                <p>A serverless, local-first Markdown note-taking app. Your notes live as plain .md files on your own disk — no backend, no account, fully offline.</p>
+                <span class="btn">Open App</span>
+            </a>
+
+            <div class="app-card coming-soon">
+                <h2>💼 miWork</h2>
+                <p>A comprehensive workspace application currently in development. Will feature task management, time tracking, and seamless integration.</p>
+                <span class="btn">Coming Soon</span>
+            </div>
         </div>
 
-        <div id="meta-bar" class="meta-bar" hidden></div>
-
-        <div id="editor-split" class="editor-split mode-split">
-          <div class="editor-col">
-            <textarea id="editor" class="editor" spellcheck="false"
-                      placeholder="Write Markdown here… Use [[Note Title]] to link notes. Drop images to attach them."></textarea>
-          </div>
-          <div class="preview-col">
-            <article id="preview" class="preview markdown-body" aria-live="polite"></article>
-          </div>
-        </div>
-
-        <footer class="editor-footer">
-          <span id="backlinks-label"></span>
-          <span id="backlinks" class="backlinks"></span>
+        <footer>
+            <p>&copy; Mitchell. All apps are installable PWAs running purely on the client side.</p>
         </footer>
-      </div>
-    </main>
-  </div>
-
-  <!-- ============ Search results overlay ============ -->
-  <div id="search-results" class="search-results" hidden>
-    <div class="search-results-inner">
-      <header><span id="search-summary"></span><button id="btn-close-search" class="icon-btn" title="Close (Esc)">✕</button></header>
-      <ul id="search-hits"></ul>
     </div>
-  </div>
-
-  <button id="btn-menu" class="menu-btn" title="Toggle note list" aria-label="Toggle note list">☰</button>
-
-  <div id="toast" class="toast" hidden></div>
-
-  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
