@@ -3,5 +3,8 @@
   "type": "module",
   "scripts": {
     "test": "node --import ./miNotes/tests/test_hook.js --test miNotes/tests/*.test.js"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5"
   }
 }

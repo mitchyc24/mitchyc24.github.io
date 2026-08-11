@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>miWork</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer></script>
+    <!-- Main application logic -->
+    <script type="module" src="js/app.js" defer></script>
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <div id="breadcrumb-container">
+                <!-- Breadcrumbs will be dynamically generated here -->
+            </div>
+            <div id="header-controls">
+                <button id="btn-toggle-view">Switch to Simplified View</button>
+                <button id="btn-stats">Stats</button>
+                <button id="btn-settings">Settings</button>
+            </div>
+        </header>
+
+        <main id="board-container">
+            <div class="column" data-status="todo">
+                <div class="column-header">
+                    <h2>To Do</h2>
+                    <button class="btn-add-task" data-status="todo">+</button>
+                </div>
+                <div class="task-list" id="list-todo"></div>
+            </div>
+            <div class="column" data-status="in-progress">
+                <div class="column-header">
+                    <h2>In Progress</h2>
+                    <button class="btn-add-task" data-status="in-progress">+</button>
+                </div>
+                <div class="task-list" id="list-in-progress"></div>
+            </div>
+            <div class="column" data-status="done">
+                <div class="column-header">
+                    <h2>Done</h2>
+                    <button class="btn-add-task" data-status="done">+</button>
+                </div>
+                <div class="task-list" id="list-done"></div>
+            </div>
+        </main>
+
+        <!-- Task Editor Modal -->
+        <dialog id="task-modal">
+            <form id="task-form" method="dialog">
+                <h2>Task Details</h2>
+                <input type="text" id="task-title" placeholder="Task Title" required>
+                <textarea id="task-description" placeholder="Description"></textarea>
+                <textarea id="task-notes" placeholder="Notes/Comments"></textarea>
+                <input type="url" id="task-url" placeholder="Reference URL">
+                <div class="modal-actions">
+                    <button type="button" id="btn-cancel-task">Cancel</button>
+                    <button type="submit" id="btn-save-task">Save</button>
+                </div>
+            </form>
+        </dialog>
+
+        <!-- Stats Modal -->
+        <dialog id="stats-modal">
+            <h2>Metrics & Analytics</h2>
+            <div class="stats-content">
+                <canvas id="stats-chart"></canvas>
+            </div>
+            <button class="btn-close" id="btn-close-stats">Close</button>
+        </dialog>
+
+        <!-- Settings Modal -->
+        <dialog id="settings-modal">
+            <h2>Settings</h2>
+            <div class="settings-content">
+                <label>
+                    <input type="checkbox" id="setting-show-notes" checked>
+                    Show Notes in Detailed View
+                </label>
+                <label>
+                    <input type="checkbox" id="setting-show-url" checked>
+                    Show URL in Detailed View
+                </label>
+                <button id="btn-export-data">Export Data (JSON)</button>
+            </div>
+            <button class="btn-close" id="btn-close-settings">Close</button>
+        </dialog>
+    </div>
+</body>
+</html>
