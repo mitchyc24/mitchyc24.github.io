@@ -4,46 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>miWork</title>
+    <meta name="description" content="A local-first hierarchical Kanban task tracker with analytics.">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Chart.js for analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-    <!-- SortableJS for drag-and-drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer></script>
-    <!-- Main application logic -->
+    <script src="vendor/Sortable.min.js" defer></script>
     <script type="module" src="js/app.js" defer></script>
 </head>
 <body>
     <div id="app-container">
-        <header>
-            <div id="breadcrumb-container">
-                <!-- Breadcrumbs will be dynamically generated here -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="app-logo" title="miWork">
+                    <svg viewBox="0 0 512 512" width="26" height="26" aria-hidden="true">
+                        <rect width="512" height="512" rx="112" fill="var(--accent)"/>
+                        <rect x="96" y="128" width="88" height="256" rx="24" fill="#fff" opacity="0.95"/>
+                        <rect x="212" y="128" width="88" height="176" rx="24" fill="#fff" opacity="0.75"/>
+                        <rect x="328" y="128" width="88" height="112" rx="24" fill="#fff" opacity="0.55"/>
+                    </svg>
+                    <span class="app-name">mi<strong>Work</strong></span>
+                </span>
+                <nav id="breadcrumb-container" aria-label="Task hierarchy"></nav>
             </div>
             <div id="header-controls">
-                <button id="btn-toggle-view">Switch to Simplified View</button>
-                <button id="btn-stats">Stats</button>
-                <button id="btn-settings">Settings</button>
+                <button id="btn-toggle-view" class="ghost-btn" title="Toggle between detailed and simplified cards">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span id="view-toggle-label">Simplified</span>
+                </button>
+                <button id="btn-stats" class="ghost-btn" title="Analytics">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span>Analytics</span>
+                </button>
+                <button id="btn-settings" class="ghost-btn" title="Settings">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings</span>
+                </button>
             </div>
         </header>
+
+        <div id="parent-progress-banner" class="parent-progress-banner" hidden>
+            <div class="banner-info">
+                <span id="parent-progress-label"></span>
+                <span id="parent-progress-pct" class="banner-pct"></span>
+            </div>
+            <div class="progress-track"><div id="parent-progress-fill" class="progress-fill"></div></div>
+        </div>
 
         <main id="board-container">
             <div class="column" data-status="todo">
                 <div class="column-header">
-                    <h2>To Do</h2>
-                    <button class="btn-add-task" data-status="todo">+</button>
+                    <h2><span class="status-dot dot-todo"></span>To Do <span class="count-badge" id="count-todo">0</span></h2>
+                    <button class="btn-add-task" data-status="todo" title="Add task">+</button>
                 </div>
                 <div class="task-list" id="list-todo"></div>
             </div>
             <div class="column" data-status="in-progress">
                 <div class="column-header">
-                    <h2>In Progress</h2>
-                    <button class="btn-add-task" data-status="in-progress">+</button>
+                    <h2><span class="status-dot dot-in-progress"></span>In Progress <span class="count-badge" id="count-in-progress">0</span></h2>
+                    <button class="btn-add-task" data-status="in-progress" title="Add task">+</button>
                 </div>
                 <div class="task-list" id="list-in-progress"></div>
             </div>
             <div class="column" data-status="done">
                 <div class="column-header">
-                    <h2>Done</h2>
-                    <button class="btn-add-task" data-status="done">+</button>
+                    <h2><span class="status-dot dot-done"></span>Done <span class="count-badge" id="count-done">0</span></h2>
+                    <button class="btn-add-task" data-status="done" title="Add task">+</button>
                 </div>
                 <div class="task-list" id="list-done"></div>
             </div>
@@ -52,42 +78,133 @@
         <!-- Task Editor Modal -->
         <dialog id="task-modal">
             <form id="task-form" method="dialog">
-                <h2>Task Details</h2>
-                <input type="text" id="task-title" placeholder="Task Title" required>
-                <textarea id="task-description" placeholder="Description"></textarea>
-                <textarea id="task-notes" placeholder="Notes/Comments"></textarea>
-                <input type="url" id="task-url" placeholder="Reference URL">
+                <h2 id="task-modal-title">New Task</h2>
+                <div class="field">
+                    <label for="task-title">Title</label>
+                    <input type="text" id="task-title" placeholder="What needs doing?" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="task-status">Status</label>
+                    <div class="segmented" id="task-status" role="radiogroup" aria-label="Status">
+                        <button type="button" class="seg-option" data-value="todo">To Do</button>
+                        <button type="button" class="seg-option" data-value="in-progress">In Progress</button>
+                        <button type="button" class="seg-option" data-value="done">Done</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" rows="2" placeholder="Optional details"></textarea>
+                </div>
+                <div class="field">
+                    <label for="task-notes">Notes</label>
+                    <textarea id="task-notes" rows="2" placeholder="Working notes, comments…"></textarea>
+                </div>
+                <div class="field">
+                    <label for="task-url">Reference URL</label>
+                    <input type="url" id="task-url" placeholder="https://…">
+                </div>
+                <div id="task-modal-subtasks" class="modal-subtask-summary" hidden>
+                    <div class="banner-info">
+                        <span id="modal-subtask-label"></span>
+                        <span id="modal-subtask-pct" class="banner-pct"></span>
+                    </div>
+                    <div class="progress-track"><div id="modal-subtask-fill" class="progress-fill"></div></div>
+                </div>
                 <div class="modal-actions">
-                    <button type="button" id="btn-cancel-task">Cancel</button>
-                    <button type="submit" id="btn-save-task">Save</button>
+                    <button type="button" class="ghost-btn" id="btn-cancel-task">Cancel</button>
+                    <button type="submit" class="primary-btn" id="btn-save-task">Save</button>
                 </div>
             </form>
         </dialog>
 
-        <!-- Stats Modal -->
-        <dialog id="stats-modal">
-            <h2>Metrics & Analytics</h2>
-            <div class="stats-content">
-                <canvas id="stats-chart"></canvas>
+        <!-- Analytics Modal -->
+        <dialog id="stats-modal" class="wide-modal">
+            <div class="modal-header">
+                <h2>Analytics</h2>
+                <button class="btn-close ghost-btn" id="btn-close-stats" aria-label="Close">✕</button>
             </div>
-            <button class="btn-close" id="btn-close-stats">Close</button>
+            <div class="stats-content" id="stats-content">
+                <!-- Populated by charts.js -->
+            </div>
         </dialog>
 
         <!-- Settings Modal -->
         <dialog id="settings-modal">
-            <h2>Settings</h2>
-            <div class="settings-content">
-                <label>
-                    <input type="checkbox" id="setting-show-notes" checked>
-                    Show Notes in Detailed View
-                </label>
-                <label>
-                    <input type="checkbox" id="setting-show-url" checked>
-                    Show URL in Detailed View
-                </label>
-                <button id="btn-export-data">Export Data (JSON)</button>
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="btn-close ghost-btn" id="btn-close-settings" aria-label="Close">✕</button>
             </div>
-            <button class="btn-close" id="btn-close-settings">Close</button>
+            <div class="settings-content">
+                <section>
+                    <h3>Appearance</h3>
+                    <div class="setting-row">
+                        <span class="setting-label">Theme</span>
+                        <div class="segmented" id="setting-theme">
+                            <button type="button" class="seg-option" data-value="system">System</button>
+                            <button type="button" class="seg-option" data-value="light">Light</button>
+                            <button type="button" class="seg-option" data-value="dark">Dark</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Accent</span>
+                        <div class="swatch-row" id="setting-accent">
+                            <button type="button" class="swatch" data-value="indigo" style="--sw:#6366f1" title="Indigo"></button>
+                            <button type="button" class="swatch" data-value="blue" style="--sw:#2a78d6" title="Blue"></button>
+                            <button type="button" class="swatch" data-value="teal" style="--sw:#0d9488" title="Teal"></button>
+                            <button type="button" class="swatch" data-value="green" style="--sw:#16a34a" title="Green"></button>
+                            <button type="button" class="swatch" data-value="amber" style="--sw:#d97706" title="Amber"></button>
+                            <button type="button" class="swatch" data-value="rose" style="--sw:#e11d48" title="Rose"></button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Font</span>
+                        <div class="segmented" id="setting-font">
+                            <button type="button" class="seg-option" data-value="sans">Sans</button>
+                            <button type="button" class="seg-option" data-value="serif">Serif</button>
+                            <button type="button" class="seg-option" data-value="mono">Mono</button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Density</span>
+                        <div class="segmented" id="setting-density">
+                            <button type="button" class="seg-option" data-value="comfortable">Comfortable</button>
+                            <button type="button" class="seg-option" data-value="compact">Compact</button>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <h3>Board</h3>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="setting-show-desc" checked>
+                        <span>Show descriptions in detailed view</span>
+                    </label>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="setting-show-notes" checked>
+                        <span>Show notes in detailed view</span>
+                    </label>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="setting-show-url" checked>
+                        <span>Show URLs in detailed view</span>
+                    </label>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="setting-show-progress" checked>
+                        <span>Show sub-task progress bars on cards</span>
+                    </label>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="setting-confirm-delete" checked>
+                        <span>Confirm before deleting tasks</span>
+                    </label>
+                </section>
+                <section>
+                    <h3>Data</h3>
+                    <div class="data-actions">
+                        <button type="button" class="ghost-btn" id="btn-export-data">Export JSON</button>
+                        <button type="button" class="ghost-btn" id="btn-import-data">Import JSON</button>
+                        <input type="file" id="import-file-input" accept="application/json,.json" hidden>
+                    </div>
+                    <p class="hint">Import merges by task id — existing tasks with matching ids are overwritten, everything else is kept.</p>
+                </section>
+            </div>
         </dialog>
     </div>
 </body>

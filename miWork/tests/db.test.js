@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { initDB, addTask, getTasksByParentId, updateTask, getTaskById, deleteTask, deleteTasksRecursive, saveSetting, getSetting } from '../js/db.js';
+import { initDB, addTask, getTasksByParentId, updateTask, getTaskById, deleteTask, deleteTasksRecursive, saveSetting, getSetting, bulkPutTasks, getAllTasks, importData, getAllData } from '../js/db.js';
 
 // Setup IndexedDB mock for Node.js
 import 'fake-indexeddb/auto';
@@ -63,5 +63,43 @@ test('miWork IndexedDB Tests', async (t) => {
         await saveSetting('theme', 'dark');
         const theme = await getSetting('theme');
         assert.strictEqual(theme, 'dark');
+    });
+
+    await t.test('Bulk Put Tasks upserts in one transaction', async () => {
+        await bulkPutTasks([
+            { id: 'bulk1', parentId: 'root', title: 'Bulk 1', status: 'todo', order: 0 },
+            { id: 'bulk2', parentId: 'root', title: 'Bulk 2', status: 'done', order: 1 }
+        ]);
+        await bulkPutTasks([
+            { id: 'bulk1', parentId: 'root', title: 'Bulk 1 updated', status: 'done', order: 1 }
+        ]);
+
+        const t1 = await getTaskById('bulk1');
+        assert.strictEqual(t1.title, 'Bulk 1 updated');
+        assert.strictEqual((await getAllTasks()).filter(t => t.id.startsWith('bulk')).length, 2);
+
+        await deleteTask('bulk1');
+        await deleteTask('bulk2');
+    });
+
+    await t.test('Import merges tasks by id and settings by key', async () => {
+        const result = await importData({
+            tasks: [
+                { id: 'imp1', parentId: 'root', title: 'Imported', status: 'todo' },
+                { title: 'invalid, no id' }
+            ],
+            settings: { accent: 'teal' }
+        });
+
+        assert.strictEqual(result.taskCount, 1);
+        assert.strictEqual(result.settingCount, 1);
+        assert.strictEqual((await getTaskById('imp1')).title, 'Imported');
+        assert.strictEqual(await getSetting('accent'), 'teal');
+
+        const all = await getAllData();
+        assert.ok(Array.isArray(all.tasks));
+        assert.strictEqual(all.settings.accent, 'teal');
+
+        await deleteTask('imp1');
     });
 });
