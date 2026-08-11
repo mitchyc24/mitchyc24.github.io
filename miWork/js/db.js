@@ -57,12 +57,36 @@ export const updateTask = (task) => {
     });
 };
 
+// Upsert many tasks in a single transaction (drag reorders, imports).
+export const bulkPutTasks = (tasks) => {
+    return new Promise((resolve, reject) => {
+        if (!tasks.length) return resolve([]);
+        const transaction = db.transaction(['tasks'], 'readwrite');
+        const objectStore = transaction.objectStore('tasks');
+        tasks.forEach(task => objectStore.put(task));
+
+        transaction.oncomplete = () => resolve(tasks);
+        transaction.onerror = (event) => reject(event.target.error);
+    });
+};
+
 export const getTasksByParentId = (parentId) => {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['tasks'], 'readonly');
         const objectStore = transaction.objectStore('tasks');
         const index = objectStore.index('parentId');
         const request = index.getAll(parentId);
+
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(event.target.error);
+    });
+};
+
+export const getAllTasks = () => {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['tasks'], 'readonly');
+        const objectStore = transaction.objectStore('tasks');
+        const request = objectStore.getAll();
 
         request.onsuccess = (event) => resolve(event.target.result);
         request.onerror = (event) => reject(event.target.error);
@@ -122,32 +146,34 @@ export const getSetting = (key) => {
     });
 };
 
-export const getAllData = () => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const data = { tasks: [], settings: {} };
+export const getAllData = async () => {
+    const tasks = await getAllTasks();
 
-            // Get all tasks
-            const taskTx = db.transaction(['tasks'], 'readonly');
-            const taskStore = taskTx.objectStore('tasks');
-            const taskReq = taskStore.getAll();
+    const settings = await new Promise((resolve, reject) => {
+        const transaction = db.transaction(['settings'], 'readonly');
+        const objectStore = transaction.objectStore('settings');
+        const request = objectStore.getAll();
 
-            taskReq.onsuccess = (event) => {
-                data.tasks = event.target.result;
-
-                // Get all settings
-                const settingsTx = db.transaction(['settings'], 'readonly');
-                const settingsStore = settingsTx.objectStore('settings');
-                const settingsReq = settingsStore.getAll();
-
-                settingsReq.onsuccess = (e) => {
-                    const settingsArr = e.target.result;
-                    settingsArr.forEach(s => data.settings[s.key] = s.value);
-                    resolve(data);
-                };
-            };
-        } catch (e) {
-            reject(e);
-        }
+        request.onsuccess = (event) => {
+            const out = {};
+            event.target.result.forEach(s => out[s.key] = s.value);
+            resolve(out);
+        };
+        request.onerror = (event) => reject(event.target.error);
     });
+
+    return { tasks, settings };
+};
+
+// Merge an exported payload back in: tasks upsert by id, settings by key.
+export const importData = async (data) => {
+    const tasks = Array.isArray(data?.tasks) ? data.tasks.filter(t => t && t.id) : [];
+    await bulkPutTasks(tasks);
+
+    const settings = data?.settings && typeof data.settings === 'object' ? data.settings : {};
+    for (const [key, value] of Object.entries(settings)) {
+        await saveSetting(key, value);
+    }
+
+    return { taskCount: tasks.length, settingCount: Object.keys(settings).length };
 };
