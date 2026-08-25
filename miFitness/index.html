@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MiFitness</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Load sql.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+</head>
+<body>
+    <header>
+        <h1>MiFitness</h1>
+        <button id="settingsBtn">⚙️</button>
+    </header>
+
+    <main id="app">
+        <!-- View: Home / Sessions -->
+        <div id="homeView" class="view active">
+            <button id="startSessionBtn" class="btn primary-btn btn-large">Start Workout</button>
+            <div id="recentSessions">
+                <h2>Recent Workouts</h2>
+                <ul id="sessionList" class="card-list"></ul>
+            </div>
+        </div>
+
+        <!-- View: Active Session -->
+        <div id="activeSessionView" class="view">
+            <div class="session-header">
+                <h2>Active Workout</h2>
+                <span id="sessionTimer">00:00</span>
+                <button id="endSessionBtn" class="btn danger-btn">Finish</button>
+            </div>
+
+            <div id="exerciseSelection">
+                <select id="exerciseSelect" class="form-control">
+                    <option value="">Select an exercise...</option>
+                </select>
+                <button id="addExerciseBtn" class="btn primary-btn">Add Exercise</button>
+            </div>
+
+            <div id="activeWorkoutSets" class="workout-sets-container">
+                <!-- Sets will be dynamically injected here -->
+            </div>
+
+            <!-- Modal for Rest Timer -->
+            <div id="restTimerBanner" class="hidden">
+                <span>Rest Timer: <span id="restTimerDisplay">0</span>s</span>
+                <button id="closeRestTimerBtn" class="btn small-btn">Close</button>
+            </div>
+        </div>
+
+        <!-- View: Settings -->
+        <div id="settingsView" class="view">
+            <h2>Settings</h2>
+            <button id="backToHomeBtn" class="btn">Back</button>
+            <div class="settings-group">
+                <h3>Data Sync</h3>
+                <button id="syncDriveBtn" class="btn" disabled>Sync to Google Drive (Coming Soon)</button>
+                <button id="exportLocalBtn" class="btn">Export Local .sqlite</button>
+                <button id="importLocalBtn" class="btn">Import Local .sqlite</button>
+                <input type="file" id="importFileInput" style="display:none" accept=".sqlite">
+            </div>
+        </div>
+    </main>
+
+    <!-- UI Templates -->
+    <template id="exerciseSetTemplate">
+        <div class="exercise-group card" data-exercise-id="">
+            <h3 class="exercise-title">Exercise Name</h3>
+            <div class="sets-header row">
+                <span class="col set-col">Set</span>
+                <span class="col weight-col">kg</span>
+                <span class="col reps-col">Reps</span>
+                <span class="col action-col"></span>
+            </div>
+            <ul class="sets-list">
+                <!-- Set items -->
+            </ul>
+            <div class="add-set-controls row">
+                <input type="number" class="set-input weight-input" placeholder="Weight" step="1.25">
+                <input type="number" class="set-input reps-input" placeholder="Reps">
+                <button class="btn primary-btn add-set-btn">Log Set</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="setItemTemplate">
+        <li class="set-item row" data-set-id="">
+            <span class="col set-col set-number">1</span>
+            <span class="col weight-col set-weight">100</span>
+            <span class="col reps-col set-reps">10</span>
+            <span class="col action-col">
+                <button class="btn icon-btn delete-set-btn">❌</button>
+            </span>
+        </li>
+    </template>
+
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log("Service Worker Registered"))
+                .catch(err => console.error("Service Worker registration failed:", err));
+        }
+    </script>
+</body>
+</html>
