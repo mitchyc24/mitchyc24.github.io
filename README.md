@@ -9,7 +9,8 @@ This repository hosts a collection of Progressive Web Applications (PWAs) by Mit
 Currently, the collection includes:
 
 - **[miNotes](./miNotes/)**: A serverless, local-first Markdown note-taking PWA. Your files, your disk, your notes.
-- **miWork** (Coming Soon): A future workspace application.
+- **[miWork](./miWork/)**: A hierarchical Kanban task tracker with drag-and-drop, sub-tasks and analytics.
+- **[miFitness](./miFitness/)**: A strength training log — routines, rest timers, personal records and progress charts, backed by SQLite in the browser.
 
 ## Architecture
 

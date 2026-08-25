@@ -5,7 +5,7 @@
     "test": "npm run test:minotes && npm run test:miwork && npm run test:mifitness",
     "test:minotes": "node --import ./miNotes/tests/test_hook.js --test miNotes/tests/*.test.js",
     "test:miwork": "node --test miWork/tests/*.test.js",
-    "test:mifitness": "node --import ./miFitness/tests/test_hook.js --test miFitness/tests/*.test.js"
+    "test:mifitness": "node --test miFitness/tests/*.test.js"
   },
   "devDependencies": {
     "fake-indexeddb": "^6.2.5",
