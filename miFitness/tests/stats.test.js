@@ -191,3 +191,18 @@ test('suggestProgression applies double progression', () => {
     assert.strictEqual(addWeight.weightKg, 102.5);
     assert.strictEqual(addWeight.reps, 6);
 });
+
+test('formatDuration takes its unit words from the caller', () => {
+    const fr = { h: ' h', m: ' min', s: ' s' };
+    assert.strictEqual(formatDuration(45 * 1000, fr), '45 s');
+    assert.strictEqual(formatDuration(48 * 60 * 1000, fr), '48 min');
+    assert.strictEqual(formatDuration((72 * 60 + 30) * 1000, fr), '1 h 12 min');
+});
+
+test('relativeDay takes its labels and locale from the caller', () => {
+    const now = new Date('2026-03-04T09:00:00');
+    const fr = { today: 'Aujourd’hui', yesterday: 'Hier', locale: 'fr' };
+    assert.strictEqual(relativeDay('2026-03-04T20:00:00', now, fr), 'Aujourd’hui');
+    assert.strictEqual(relativeDay('2026-03-03T20:00:00', now, fr), 'Hier');
+    assert.match(relativeDay('2026-02-20T20:00:00', now, fr), /févr/, 'older days use the given locale');
+});

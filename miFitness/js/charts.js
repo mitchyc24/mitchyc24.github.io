@@ -125,9 +125,13 @@ export const renderStatTiles = (container, tiles) => {
  * [{ label, value, tooltip }]; the newest bar is highlighted, the rest dimmed
  * only when `dimPast` is set.
  */
-export const renderBarChart = (container, data, { height = 150, formatValue = String, labelEvery = 1 } = {}) => {
+export const renderBarChart = (container, data, {
+    height = 150, formatValue = String, labelEvery = 1,
+    emptyMessage = 'No data in this window yet.',
+    ariaLabel = `Bar chart, ${data.length} periods`
+} = {}) => {
     if (!data.length || data.every((d) => d.value === 0)) {
-        emptyState(container, 'No volume logged in this window yet.');
+        emptyState(container, emptyMessage);
         return;
     }
 
@@ -140,7 +144,7 @@ export const renderBarChart = (container, data, { height = 150, formatValue = St
     const svg = el('svg', {
         viewBox: `0 0 ${width} ${height}`,
         role: 'img',
-        'aria-label': `Bar chart, ${data.length} periods`
+        'aria-label': ariaLabel
     }, container);
     svg.style.height = `${height}px`;
 
@@ -200,10 +204,14 @@ export const renderBarChart = (container, data, { height = 150, formatValue = St
  * Categorical share (sets per muscle group). Legend rows carry direct labels,
  * which is also the relief the light-mode palette requires.
  */
-export const renderDonut = (container, slices, { size = 150, centerLabel = '', centerValue = '' } = {}) => {
+export const renderDonut = (container, slices, {
+    size = 150, centerLabel = '', centerValue = '',
+    emptyMessage = 'Nothing logged in this window yet.',
+    ariaLabel = `Donut chart of ${slices.length} categories`
+} = {}) => {
     const total = slices.reduce((sum, s) => sum + s.value, 0);
     if (total === 0) {
-        emptyState(container, 'Nothing logged in this window yet.');
+        emptyState(container, emptyMessage);
         return;
     }
 
@@ -218,7 +226,7 @@ export const renderDonut = (container, slices, { size = 150, centerLabel = '', c
         viewBox: `0 0 ${size} ${size}`,
         width: size, height: size,
         role: 'img',
-        'aria-label': `Donut chart of ${slices.length} categories`
+        'aria-label': ariaLabel
     }, wrap);
     svg.style.width = `${size}px`;
     svg.style.flex = '0 0 auto';
@@ -281,9 +289,14 @@ export const renderDonut = (container, slices, { size = 150, centerLabel = '', c
  * Single-series trend (estimated 1RM, body weight) with a crosshair. `points`
  * is [{ date, value, tooltip }], oldest first.
  */
-export const renderLineChart = (container, points, { height = 160, formatValue = String } = {}) => {
+export const renderLineChart = (container, points, {
+    height = 160, formatValue = String,
+    emptyMessage = 'Not enough history to chart yet.',
+    ariaLabel = `Line chart, ${points.length} points`,
+    locale
+} = {}) => {
     if (points.length === 0) {
-        emptyState(container, 'Not enough history to chart yet.');
+        emptyState(container, emptyMessage);
         return;
     }
 
@@ -308,7 +321,7 @@ export const renderLineChart = (container, points, { height = 160, formatValue =
     const svg = el('svg', {
         viewBox: `0 0 ${width} ${height}`,
         role: 'img',
-        'aria-label': `Line chart, ${points.length} points`
+        'aria-label': ariaLabel
     }, container);
     svg.style.height = `${height}px`;
 
@@ -360,12 +373,12 @@ export const renderLineChart = (container, points, { height = 160, formatValue =
     const first = el('text', {
         x: padding.left, y: height - 6, 'text-anchor': 'start', class: 'chart-axis-text'
     }, svg);
-    first.textContent = points[0].date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    first.textContent = points[0].date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
     if (points.length > 1) {
         const last = el('text', {
             x: width - padding.right, y: height - 6, 'text-anchor': 'end', class: 'chart-axis-text'
         }, svg);
-        last.textContent = points.at(-1).date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+        last.textContent = points.at(-1).date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
     }
 };
 

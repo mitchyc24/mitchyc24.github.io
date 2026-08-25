@@ -104,15 +104,21 @@ export const sessionDurationMs = (session) => {
     return Math.max(0, end - new Date(session.start_time));
 };
 
-/** "1h 12m" / "48m" / "35s" */
-export const formatDuration = (ms) => {
+/**
+ * "1h 12m" / "48m" / "35s". `units` carries the locale's abbreviations and is
+ * appended straight after each number, so French passes { h: ' h', m: ' min' }
+ * to get "1 h 12 min".
+ */
+export const DURATION_UNITS_EN = { h: 'h', m: 'm', s: 's' };
+
+export const formatDuration = (ms, units = DURATION_UNITS_EN) => {
     const totalSeconds = Math.max(0, Math.round(ms / 1000));
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    if (minutes > 0) return `${minutes}m`;
-    return `${seconds}s`;
+    if (hours > 0) return `${hours}${units.h} ${minutes}${units.m}`;
+    if (minutes > 0) return `${minutes}${units.m}`;
+    return `${seconds}${units.s}`;
 };
 
 /** "12:34" — for the live session and rest clocks. */
@@ -156,14 +162,18 @@ export const startOfWeek = (date = new Date()) => {
     return d;
 };
 
-/** "Today" / "Yesterday" / "Mon 4 Mar" */
-export const relativeDay = (date, now = new Date()) => {
+/**
+ * "Today" / "Yesterday" / "Mon 4 Mar". The two relative labels and the Intl
+ * locale are passed in, keeping this module free of UI strings.
+ */
+export const relativeDay = (date, now = new Date(), labels = {}) => {
+    const { today = 'Today', yesterday: yesterdayLabel = 'Yesterday', locale } = labels;
     const key = dayKey(date);
-    if (key === dayKey(now)) return 'Today';
+    if (key === dayKey(now)) return today;
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    if (key === dayKey(yesterday)) return 'Yesterday';
-    return new Date(date).toLocaleDateString(undefined, {
+    if (key === dayKey(yesterday)) return yesterdayLabel;
+    return new Date(date).toLocaleDateString(locale, {
         weekday: 'short', day: 'numeric', month: 'short'
     });
 };
