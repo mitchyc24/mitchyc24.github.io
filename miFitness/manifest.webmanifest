@@ -1,12 +1,21 @@
 {
-  "name": "MiFitness",
-  "short_name": "MiFitness",
-  "description": "A local-first lightweight bodybuilding tracker.",
-  "start_url": "./index.html",
+  "name": "miFitness",
+  "short_name": "miFitness",
+  "description": "A local-first strength training log — routines, rest timers, personal records and progress charts, fully offline.",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#1e88e5",
+  "orientation": "portrait",
+  "background_color": "#0f1116",
+  "theme_color": "#e2542c",
+  "categories": ["health", "fitness", "productivity"],
   "icons": [
+    {
+      "src": "icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192x192.png",
       "sizes": "192x192",
@@ -16,6 +25,13 @@
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start an empty workout",
+      "short_name": "Train",
+      "url": "./index.html"
     }
   ]
 }
