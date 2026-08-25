@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mifitness-v2';
+const CACHE_NAME = 'mifitness-v3';
 
 const APP_SHELL = [
     './',
@@ -9,6 +9,7 @@ const APP_SHELL = [
     './js/stats.js',
     './js/charts.js',
     './js/ui.js',
+    './js/i18n.js',
     './vendor/sql-wasm.js',
     './vendor/sql-wasm.wasm',
     './manifest.webmanifest',

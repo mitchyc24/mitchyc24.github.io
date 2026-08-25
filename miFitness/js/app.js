@@ -10,10 +10,15 @@ import {
     wireDialogs, openDialog, confirmDialog, promptDialog, sheetDialog,
     initials, downloadBlob
 } from './ui.js';
+import {
+    t, tn, tGroup, tEquipment, seedName, seedDescription,
+    setLocale, intlLocale, detectLocale, applyStaticStrings
+} from './i18n.js';
 
 // --- State ----------------------------------------------------------------
 
 const settings = {
+    locale: 'en',
     units: 'kg',
     restSeconds: 90,
     autoRest: true,
@@ -55,6 +60,8 @@ const HISTORY_PAGE_SIZE = 20;
 
 const loadSettings = () => {
     const stored = db.getAllSettings();
+    // First run (or after a reset): follow the browser's language if we speak it.
+    settings.locale = stored.locale || detectLocale();
     for (const key of Object.keys(settings)) {
         if (!(key in stored)) continue;
         const value = stored[key];
@@ -67,6 +74,28 @@ const loadSettings = () => {
 const setSetting = async (key, value) => {
     settings[key] = value;
     await db.saveSetting(key, value);
+};
+
+/** Point the catalog at the chosen locale and refill the static markup. */
+const applyLocale = () => {
+    settings.locale = setLocale(settings.locale);
+    applyStaticStrings();
+};
+
+/**
+ * Re-render whatever is on screen. Every view builds itself from the database
+ * on each render, so switching language needs nothing more than this.
+ */
+const rerenderAll = () => {
+    renderHome();
+    renderSettings();
+    if (state.sessionId) renderWorkout();
+    if (state.view === 'history') renderHistory();
+    if (state.view === 'session') renderSessionDetail();
+    if (state.view === 'exercises') renderExerciseList();
+    if (state.view === 'exercise') renderExerciseDetail();
+    if (state.view === 'progress') renderProgress();
+    updateHeader();
 };
 
 const applyAppearance = () => {
@@ -83,6 +112,43 @@ const units = () => settings.units;
 const showWeight = (kg, withUnit = false) => S.formatWeight(kg, units(), { withUnit });
 const showVolume = (kg) => S.formatVolume(kg, units());
 const weightStep = () => S.stepFor(units());
+
+// Display names for seeded rows; a row the user renamed keeps their wording.
+const exName = (id, name) => seedName(id, name, db.SEED_EXERCISE_NAMES);
+
+/** Fold case and accents, so "elevation" finds "Élévation latérale". */
+const searchKey = (text) => String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+/**
+ * Exercise search runs here rather than in SQL because it has to match the
+ * name the user can actually see — a French reader searching "traction" must
+ * find the row stored as "Pull-Up".
+ */
+const matchesSearch = (exercise, query) => {
+    if (!query) return true;
+    const needle = searchKey(query);
+    return searchKey(exercise.name).includes(needle)
+        || searchKey(exName(exercise.id, exercise.name)).includes(needle);
+};
+const routineTitle = (routine) => seedName(routine.id, routine.name, db.SEED_ROUTINE_NAMES);
+const routineBlurb = (routine) =>
+    seedDescription(routine.id, routine.description, db.SEED_ROUTINE_DESCRIPTIONS);
+
+const durationUnits = () => ({
+    h: t('duration.hours'), m: t('duration.minutes'), s: t('duration.seconds')
+});
+const showDuration = (ms) => S.formatDuration(ms, durationUnits());
+
+const dayLabels = () => ({
+    today: t('history.today'), yesterday: t('history.yesterday'), locale: intlLocale()
+});
+const showDay = (date) => S.relativeDay(date, new Date(), dayLabels());
+
+const showDate = (date, options = { dateStyle: 'medium' }) =>
+    new Date(date).toLocaleDateString(intlLocale(), options);
 
 /** Axis-friendly magnitude: 12500 -> "12.5k". */
 const compactNumber = (value) => (value >= 10000
@@ -118,10 +184,10 @@ const updateHeader = () => {
     if (state.view === 'workout') {
         actions.appendChild(createEl('button.btn.sm', {
             onclick: () => showView('home'),
-            title: 'Leave the workout running and come back later'
-        }, ['Minimise']));
+            title: t('workout.minimiseHint')
+        }, [t('workout.minimise')]));
         actions.appendChild(createEl('button.icon-btn', {
-            title: 'Workout options',
+            title: t('workout.options'),
             onclick: openWorkoutMenu
         }, [icon('more')]));
     }
@@ -153,11 +219,14 @@ const renderHome = () => {
     renderRecentSessions();
 
     const totals = db.getLifetimeTotals();
-    $('#hero-eyebrow').textContent = totals.sessions > 0 ? 'Ready when you are' : 'Welcome';
-    $('#hero-title').textContent = totals.sessions > 0 ? 'Start training' : 'Log your first workout';
-    $('#hero-sub').textContent = totals.sessions > 0
-        ? `${totals.sessions} workouts logged · ${showVolume(totals.volume_kg)} ${units()} lifted all time.`
-        : 'Pick a routine or start empty. Everything stays on this device.';
+    const trained = totals.sessions > 0;
+    $('#hero-eyebrow').textContent = t(trained ? 'home.eyebrowReady' : 'home.eyebrowWelcome');
+    $('#hero-title').textContent = t(trained ? 'home.titleReady' : 'home.titleFirst');
+    $('#hero-sub').textContent = trained
+        ? t('home.subReady', {
+            count: totals.sessions, volume: showVolume(totals.volume_kg), unit: units()
+        })
+        : t('home.subFirst');
 };
 
 const renderResumeBanner = () => {
@@ -169,12 +238,15 @@ const renderResumeBanner = () => {
     slot.appendChild(createEl('div.resume-banner', {}, [
         icon('flame', 22),
         createEl('div.body', {}, [
-            createEl('div.title', { text: active.name || 'Workout in progress' }),
+            createEl('div.title', { text: active.name || t('home.inProgress') }),
             createEl('div.meta', {
-                text: `Started ${S.relativeDay(active.start_time).toLowerCase()} · ${sets.length} sets logged`
+                text: t('home.resumeMeta', {
+                    when: showDay(active.start_time).toLocaleLowerCase(intlLocale()),
+                    count: sets.length
+                })
             })
         ]),
-        createEl('button.btn.sm', { onclick: () => resumeSession(active) }, ['Resume'])
+        createEl('button.btn.sm', { onclick: () => resumeSession(active) }, [t('home.resume')])
     ]));
 };
 
@@ -186,10 +258,10 @@ const renderWeekStats = () => {
     const sessionsThisWeek = new Set(sets.map((s) => s.session_id)).size;
 
     renderStatTiles(host, [
-        { value: String(sessionsThisWeek), label: 'Workouts' },
-        { value: showVolume(S.totalVolume(sets)), unit: units(), label: 'Volume' },
-        { value: String(sets.filter(S.isWorkingSet).length), label: 'Work sets' },
-        { value: String(S.weekStreak(dates)), label: 'Week streak' }
+        { value: String(sessionsThisWeek), label: t('stat.workouts') },
+        { value: showVolume(S.totalVolume(sets)), unit: units(), label: t('stat.volume') },
+        { value: String(sets.filter(S.isWorkingSet).length), label: t('stat.workSets') },
+        { value: String(S.weekStreak(dates)), label: t('stat.weekStreak') }
     ]);
 };
 
@@ -197,7 +269,7 @@ const renderRoutines = () => {
     const host = clear($('#routine-list'));
     const routines = db.listRoutines();
     if (routines.length === 0) {
-        host.appendChild(emptyState('No routines yet', 'Save a workout as a routine, or build one from scratch.'));
+        host.appendChild(emptyState(t('home.noRoutines'), t('home.noRoutinesHint')));
         return;
     }
     for (const routine of routines) {
@@ -205,14 +277,14 @@ const renderRoutines = () => {
             type: 'button',
             onclick: () => startFromRoutine(routine)
         }, [
-            createEl('div.name', { text: routine.name }),
-            routine.description ? createEl('div.desc', { text: routine.description }) : null,
+            createEl('div.name', { text: routineTitle(routine) }),
+            routine.description ? createEl('div.desc', { text: routineBlurb(routine) }) : null,
             createEl('div.foot', {}, [
-                createEl('span.badge', { text: `${routine.exercise_count} exercises` }),
+                createEl('span.badge', { text: tn('common.exercisesCount', routine.exercise_count) }),
                 createEl('span.icon-btn', {
                     role: 'button',
                     tabindex: '0',
-                    title: 'Edit routine',
+                    title: t('routine.edit'),
                     onclick: (event) => { event.stopPropagation(); openRoutineDialog(routine.id); },
                     onkeydown: (event) => {
                         if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -227,18 +299,19 @@ const renderRoutines = () => {
 };
 
 const sessionListItem = (session) => {
-    const summary = `${session.exercise_count} exercises · ${session.set_count} sets`;
+    const name = session.name || t('workout.title');
     return createEl('button.list-item', {
         type: 'button',
         onclick: () => openSessionDetail(session.id)
     }, [
-        createEl('div.avatar', { text: initials(session.name || 'Workout') }),
+        createEl('div.avatar', { text: initials(name) }),
         createEl('div.body', {}, [
-            createEl('div.title', { text: session.name || 'Workout' }),
+            createEl('div.title', { text: name }),
             createEl('div.meta', {}, [
-                createEl('span', { text: S.relativeDay(session.start_time) }),
-                createEl('span', { text: S.formatDuration(S.sessionDurationMs(session)) }),
-                createEl('span', { text: summary }),
+                createEl('span', { text: showDay(session.start_time) }),
+                createEl('span', { text: showDuration(S.sessionDurationMs(session)) }),
+                createEl('span', { text: tn('common.exercisesCount', session.exercise_count) }),
+                createEl('span', { text: tn('common.sets', session.set_count) }),
                 createEl('span', { text: `${showVolume(session.volume_kg)} ${units()}` })
             ])
         ]),
@@ -250,7 +323,7 @@ const renderRecentSessions = () => {
     const host = clear($('#recent-sessions'));
     const sessions = db.listSessions({ limit: 3 });
     if (sessions.length === 0) {
-        host.appendChild(emptyState('No workouts yet', 'Finished workouts show up here.'));
+        host.appendChild(emptyState(t('home.noWorkouts'), t('home.noWorkoutsHint')));
         return;
     }
     for (const session of sessions) host.appendChild(sessionListItem(session));
@@ -261,7 +334,7 @@ const renderRecentSessions = () => {
 // ==========================================================================
 
 const startEmptyWorkout = async () => {
-    const id = await db.startSession({ name: 'Workout' });
+    const id = await db.startSession({ name: t('workout.title') });
     await enterSession(id);
     openExercisePicker();
 };
@@ -269,14 +342,14 @@ const startEmptyWorkout = async () => {
 const startFromRoutine = async (routine) => {
     if (db.getActiveSession()) {
         const proceed = await confirmDialog({
-            title: 'A workout is already running',
-            message: 'Finish or discard it before starting another.',
-            confirmLabel: 'Open it'
+            title: t('home.alreadyRunning'),
+            message: t('home.alreadyRunningHint'),
+            confirmLabel: t('home.openIt')
         });
         if (proceed) resumeSession(db.getActiveSession());
         return;
     }
-    const id = await db.startSession({ name: routine.name, routineId: routine.id });
+    const id = await db.startSession({ name: routineTitle(routine), routineId: routine.id });
     await enterSession(id);
 };
 
@@ -301,9 +374,9 @@ const renderWorkout = () => {
 
     if (entries.length === 0) {
         host.appendChild(emptyState(
-            'Nothing added yet',
-            'Add the first exercise to start logging sets.',
-            createEl('button.btn.primary', { onclick: openExercisePicker }, ['Add exercise'])
+            t('workout.nothingAdded'),
+            t('workout.nothingAddedHint'),
+            createEl('button.btn.primary', { onclick: openExercisePicker }, [t('workout.addExercise')])
         ));
     }
 
@@ -321,12 +394,14 @@ const renderExerciseCard = (entry, index, total) => {
                 createEl('button.name', {
                     style: { background: 'none', border: 'none', padding: '0', textAlign: 'left', font: 'inherit', fontWeight: '680' },
                     onclick: () => openExerciseDetail(entry.exercise_id, { backTo: 'workout' }),
-                    text: entry.name
+                    text: exName(entry.exercise_id, entry.name)
                 }),
-                createEl('div.sub', { text: `${entry.target_group} · ${entry.primary_equipment}` })
+                createEl('div.sub', {
+                    text: `${tGroup(entry.target_group)} · ${tEquipment(entry.primary_equipment)}`
+                })
             ]),
             createEl('button.icon-btn', {
-                title: 'Exercise options',
+                title: t('workout.exerciseOptions'),
                 onclick: () => openExerciseMenu(entry, index, total)
             }, [icon('more')])
         ])
@@ -335,16 +410,16 @@ const renderExerciseCard = (entry, index, total) => {
     if (previous) {
         card.appendChild(createEl('div.previous-note', {}, [
             icon('history', 14),
-            createEl('span', { text: `${S.relativeDay(previous.startTime)}:` }),
+            createEl('span', { text: `${showDay(previous.startTime)}:` }),
             createEl('span.sets', { text: previous.sets.map(setLabel).join(', ') })
         ]));
     }
 
     const grid = createEl('div.set-grid', {}, [
-        createEl('div.head-cell', { text: 'Set' }),
+        createEl('div.head-cell', { text: t('workout.colSet') }),
         createEl('div.head-cell', { text: units() }),
-        createEl('div.head-cell', { text: 'Reps' }),
-        createEl('div.head-cell', { text: 'RPE' }),
+        createEl('div.head-cell', { text: t('workout.colReps') }),
+        createEl('div.head-cell', { text: t('workout.colRpe') }),
         createEl('div.head-cell', { text: '' })
     ]);
     entry.sets.forEach((set, setIndex) => {
@@ -355,10 +430,10 @@ const renderExerciseCard = (entry, index, total) => {
     card.appendChild(createEl('div.set-actions', {}, [
         createEl('button.btn.sm', {
             onclick: () => addSetTo(entry, { isWarmup: 1 })
-        }, ['+ Warm-up']),
+        }, [t('workout.addWarmup')]),
         createEl('button.btn.sm', {
             onclick: () => addSetTo(entry)
-        }, [icon('plus', 15), 'Add set'])
+        }, [icon('plus', 15), t('workout.addSet')])
     ]));
 
     return card;
@@ -369,8 +444,8 @@ const renderSetRow = (entry, set, setIndex, previous) => {
     if (set.is_complete) row.classList.add('done');
 
     const indexButton = createEl(`button.set-index${set.is_warmup ? '.warmup' : ''}`, {
-        title: set.is_warmup ? 'Warm-up set — tap to make it a working set' : 'Tap to mark as a warm-up',
-        text: set.is_warmup ? 'W' : String(setIndex + 1),
+        title: t(set.is_warmup ? 'workout.unmarkWarmup' : 'workout.markWarmup'),
+        text: set.is_warmup ? t('workout.warmupShort') : String(setIndex + 1),
         onclick: async () => {
             await db.updateSet(set.id, { isWarmup: !set.is_warmup });
             renderWorkout();
@@ -385,7 +460,7 @@ const renderSetRow = (entry, set, setIndex, previous) => {
         min: '0',
         value: set.weight_kg > 0 ? showWeight(set.weight_kg) : '',
         placeholder: priorSet ? showWeight(priorSet.weight_kg) : '0',
-        'aria-label': `Weight for set ${setIndex + 1}`
+        'aria-label': t('workout.weightAria', { index: setIndex + 1 })
     });
     const repsInput = createEl('input.set-input', {
         type: 'number',
@@ -394,7 +469,7 @@ const renderSetRow = (entry, set, setIndex, previous) => {
         min: '0',
         value: set.reps > 0 ? String(set.reps) : '',
         placeholder: priorSet ? String(priorSet.reps) : '0',
-        'aria-label': `Reps for set ${setIndex + 1}`
+        'aria-label': t('workout.repsAria', { index: setIndex + 1 })
     });
 
     const persist = async () => {
@@ -414,13 +489,13 @@ const renderSetRow = (entry, set, setIndex, previous) => {
 
     const rpeButton = createEl(`button.rpe-btn${set.rpe ? '.set' : ''}`, {
         text: set.rpe ? String(set.rpe) : '–',
-        title: 'Rate of perceived exertion',
+        title: t('workout.rpeTitle'),
         onclick: () => pickRpe(set)
     });
 
     const checkButton = createEl('button.check-btn', {
-        title: set.is_complete ? 'Undo this set' : 'Complete this set',
-        'aria-label': set.is_complete ? 'Undo set' : 'Complete set',
+        title: t(set.is_complete ? 'workout.undoSet' : 'workout.completeSet'),
+        'aria-label': t(set.is_complete ? 'workout.undoSet' : 'workout.completeSet'),
         onclick: () => toggleSetComplete(entry, set, weightInput, repsInput, priorSet)
     }, [icon('check', 19)]);
 
@@ -442,7 +517,7 @@ const toggleSetComplete = async (entry, set, weightInput, repsInput, priorSet) =
     const reps = Number.isFinite(rawReps) ? rawReps : (priorSet?.reps ?? 0);
 
     if (reps <= 0) {
-        toast('Enter the reps first', { type: 'error' });
+        toast(t('workout.needReps'), { type: 'error' });
         repsInput.focus();
         return;
     }
@@ -454,30 +529,33 @@ const toggleSetComplete = async (entry, set, weightInput, repsInput, priorSet) =
             .filter((s) => s.session_id !== state.sessionId);
         const records = S.detectPRs({ weight_kg: weightKg, reps, is_complete: 1, is_warmup: 0 }, history);
         if (records.length > 0 && history.length > 0) {
-            const names = { weight: 'heaviest set', '1rm': 'best estimated 1RM', volume: 'best set volume' };
-            toast(`${entry.name}: ${names[records[0]]}!`, { type: 'pr', duration: 3200 });
+            const names = { weight: 'workout.prWeight', '1rm': 'workout.pr1rm', volume: 'workout.prVolume' };
+            toast(t('workout.prToast', {
+                name: exName(entry.exercise_id, entry.name),
+                record: t(names[records[0]])
+            }), { type: 'pr', duration: 3200 });
         }
     }
 
     renderWorkout();
     if (settings.autoRest && !set.is_warmup) {
-        startRest(entry.rest_seconds || settings.restSeconds, entry.name);
+        startRest(entry.rest_seconds || settings.restSeconds, exName(entry.exercise_id, entry.name));
     }
 };
 
 const pickRpe = async (set) => {
-    const options = [{ label: 'Clear', value: 'clear', sub: 'No RPE recorded' }].concat(
+    const options = [{ label: t('workout.rpeClear'), value: 'clear', sub: t('workout.rpeNone') }].concat(
         [10, 9.5, 9, 8.5, 8, 7.5, 7, 6].map((value) => ({
             label: String(value),
             value: String(value),
-            sub: value >= 10 ? 'No reps left in the tank'
-                : value >= 9 ? 'One rep in reserve'
-                : value >= 8 ? 'Two reps in reserve'
-                : 'Comfortably short of failure'
+            sub: t(value >= 10 ? 'workout.rpeFailure'
+                : value >= 9 ? 'workout.rpeOne'
+                : value >= 8 ? 'workout.rpeTwo'
+                : 'workout.rpeEasy')
         }))
     );
     // sheetDialog resolves null when dismissed, so "Clear" carries its own value.
-    const chosen = await sheetDialog({ title: 'Rate of perceived exertion', options });
+    const chosen = await sheetDialog({ title: t('workout.rpeTitle'), options });
     if (chosen === null) return;
     await db.updateSet(set.id, { rpe: chosen === 'clear' ? null : Number(chosen) });
     renderWorkout();
@@ -505,13 +583,13 @@ const updateSessionTotals = () => {
 
 const openExerciseMenu = async (entry, index, total) => {
     const choice = await sheetDialog({
-        title: entry.name,
+        title: exName(entry.exercise_id, entry.name),
         options: [
-            { label: 'View history & records', value: 'detail' },
-            entry.primary_equipment === 'Barbell' ? { label: 'Plate calculator', value: 'plates' } : null,
-            index > 0 ? { label: 'Move up', value: 'up' } : null,
-            index < total - 1 ? { label: 'Move down', value: 'down' } : null,
-            { label: 'Remove from workout', value: 'remove', danger: true }
+            { label: t('workout.viewHistory'), value: 'detail' },
+            entry.primary_equipment === 'Barbell' ? { label: t('workout.plateCalculator'), value: 'plates' } : null,
+            index > 0 ? { label: t('workout.moveUp'), value: 'up' } : null,
+            index < total - 1 ? { label: t('workout.moveDown'), value: 'down' } : null,
+            { label: t('workout.removeExercise'), value: 'remove', danger: true }
         ].filter(Boolean)
     });
     if (!choice) return;
@@ -524,9 +602,9 @@ const openExerciseMenu = async (entry, index, total) => {
     }
     if (choice === 'remove') {
         const ok = await confirmDialog({
-            title: `Remove ${entry.name}?`,
-            message: 'Its sets in this workout will be deleted.',
-            confirmLabel: 'Remove',
+            title: t('workout.removeConfirm', { name: exName(entry.exercise_id, entry.name) }),
+            message: t('workout.removeConfirmHint'),
+            confirmLabel: t('common.remove'),
             danger: true
         });
         if (!ok) return;
@@ -538,29 +616,30 @@ const openExerciseMenu = async (entry, index, total) => {
 const showPlateCalculator = (entry) => {
     const heaviest = entry.sets.reduce((max, set) => Math.max(max, set.weight_kg), 0);
     const { perSide, remainderKg } = S.plateBreakdown(heaviest || 60);
-    const perSideText = perSide.length
+    const plates = perSide.length
         ? perSide.map((plate) => S.formatWeight(plate, units())).join(' + ')
-        : 'just the bar';
-    toast(`${showWeight(heaviest || 60, true)} → ${perSideText} per side${remainderKg ? ` (${showWeight(remainderKg, true)} short)` : ''}`,
+        : t('common.justTheBar');
+    const params = { load: showWeight(heaviest || 60, true), plates, short: showWeight(remainderKg, true) };
+    toast(t(remainderKg ? 'common.perSideShort' : 'common.perSide', params),
         { type: 'success', duration: 5000, iconName: 'scale' });
 };
 
 const openWorkoutMenu = async () => {
     const choice = await sheetDialog({
-        title: 'Workout',
+        title: t('workout.title'),
         options: [
-            { label: 'Rename workout', value: 'rename' },
-            { label: 'Add exercise', value: 'add' },
-            { label: 'Finish workout', value: 'finish' },
-            { label: 'Discard workout', value: 'discard', danger: true }
+            { label: t('workout.renameWorkout'), value: 'rename' },
+            { label: t('workout.addExercise'), value: 'add' },
+            { label: t('workout.finish'), value: 'finish' },
+            { label: t('workout.discard'), value: 'discard', danger: true }
         ]
     });
     if (choice === 'rename') {
         const session = db.getSession(state.sessionId);
-        const name = await promptDialog({ title: 'Workout name', value: session.name || '' });
+        const name = await promptDialog({ title: t('workout.workoutName'), value: session.name || '' });
         if (name) {
             await db.updateSession(state.sessionId, { name });
-            toast('Renamed');
+            toast(t('workout.renamed'));
         }
     }
     if (choice === 'add') openExercisePicker();
@@ -572,9 +651,9 @@ const finishWorkout = async () => {
     const sets = db.getSetsForSession(state.sessionId).filter((s) => s.is_complete);
     if (sets.length === 0) {
         const discard = await confirmDialog({
-            title: 'Nothing logged',
-            message: 'This workout has no completed sets. Discard it?',
-            confirmLabel: 'Discard',
+            title: t('workout.nothingLogged'),
+            message: t('workout.nothingLoggedHint'),
+            confirmLabel: t('workout.discardAction'),
             danger: true
         });
         if (discard) await discardWorkout({ skipConfirm: true });
@@ -583,10 +662,14 @@ const finishWorkout = async () => {
 
     const summary = S.summarizeSession(db.getSetsForSession(state.sessionId));
     const ok = await confirmDialog({
-        title: 'Finish workout?',
-        message: `${summary.setCount} working sets · ${showVolume(summary.volumeKg)} ${units()} of volume · `
-            + `${S.formatDuration(Date.now() - state.sessionStart)}.`,
-        confirmLabel: 'Finish'
+        title: t('workout.finishConfirm'),
+        message: t('workout.finishConfirmHint', {
+            sets: tn('common.workingSets', summary.setCount),
+            volume: showVolume(summary.volumeKg),
+            unit: units(),
+            duration: showDuration(Date.now() - state.sessionStart)
+        }),
+        confirmLabel: t('workout.finishAction')
     });
     if (!ok) return;
 
@@ -595,16 +678,16 @@ const finishWorkout = async () => {
     stopRest();
     releaseWakeLock();
     state.sessionId = null;
-    toast('Workout saved');
+    toast(t('workout.saved'));
     goToTab('home');
 };
 
 const discardWorkout = async ({ skipConfirm = false } = {}) => {
     if (!skipConfirm) {
         const ok = await confirmDialog({
-            title: 'Discard this workout?',
-            message: 'Every set logged in it will be deleted. This cannot be undone.',
-            confirmLabel: 'Discard',
+            title: t('workout.discardConfirm'),
+            message: t('workout.discardConfirmHint'),
+            confirmLabel: t('workout.discardAction'),
             danger: true
         });
         if (!ok) return;
@@ -614,7 +697,7 @@ const discardWorkout = async ({ skipConfirm = false } = {}) => {
     stopRest();
     releaseWakeLock();
     state.sessionId = null;
-    toast('Workout discarded');
+    toast(t('workout.discarded'));
     goToTab('home');
 };
 
@@ -685,7 +768,7 @@ const restFinished = () => {
     stopRest();
     if (settings.vibrate && navigator.vibrate) navigator.vibrate([220, 90, 220]);
     if (settings.sound) beep();
-    toast('Rest over — next set', { type: 'success', iconName: 'clock' });
+    toast(t('rest.done'), { type: 'success', iconName: 'clock' });
 };
 
 const beep = () => {
@@ -728,17 +811,17 @@ const renderHistory = () => {
     const host = clear($('#history-list'));
     const total = db.countSessions();
     const sessions = db.listSessions({ limit: HISTORY_PAGE_SIZE * (state.historyPage + 1) });
-    $('#history-count').textContent = total ? `${total} workout${total === 1 ? '' : 's'}` : '';
+    $('#history-count').textContent = total ? tn('common.workoutsCount', total) : '';
 
     if (sessions.length === 0) {
-        host.appendChild(emptyState('No history yet', 'Finish a workout and it will be filed here.'));
+        host.appendChild(emptyState(t('history.empty'), t('history.emptyHint')));
         return;
     }
 
     let currentMonth = '';
     let list = null;
     for (const session of sessions) {
-        const month = new Date(session.start_time).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+        const month = showDate(session.start_time, { month: 'long', year: 'numeric' });
         if (month !== currentMonth) {
             currentMonth = month;
             host.appendChild(createEl('div.month-label', { text: month }));
@@ -752,7 +835,7 @@ const renderHistory = () => {
         host.appendChild(createEl('button.btn.block', {
             style: { marginTop: 'var(--sp-4)' },
             onclick: () => { state.historyPage += 1; renderHistory(); }
-        }, ['Load more']));
+        }, [t('common.loadMore')]));
     }
 };
 
@@ -770,19 +853,19 @@ const renderSessionDetail = () => {
     const sets = db.getSetsForSession(session.id);
     const summary = S.summarizeSession(sets);
 
-    $('#session-detail-title').textContent = session.name || 'Workout';
+    $('#session-detail-title').textContent = session.name || t('workout.title');
     $('#session-detail-sub').textContent = [
-        new Date(session.start_time).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
-        S.formatDuration(S.sessionDurationMs(session))
+        new Date(session.start_time).toLocaleString(intlLocale(), { dateStyle: 'medium', timeStyle: 'short' }),
+        showDuration(S.sessionDurationMs(session))
     ].join(' · ');
 
     const body = clear($('#session-detail-body'));
 
     renderStatTiles(body, [
-        { value: showVolume(summary.volumeKg), unit: units(), label: 'Volume' },
-        { value: String(summary.setCount), label: 'Work sets' },
-        { value: String(summary.reps), label: 'Reps' },
-        { value: String(summary.exerciseCount), label: 'Exercises' }
+        { value: showVolume(summary.volumeKg), unit: units(), label: t('stat.volume') },
+        { value: String(summary.setCount), label: t('stat.workSets') },
+        { value: String(summary.reps), label: t('stat.reps') },
+        { value: String(summary.exerciseCount), label: t('stat.exercises') }
     ]);
 
     const list = createEl('div.list', { style: { marginTop: 'var(--sp-4)' } });
@@ -794,14 +877,18 @@ const renderSessionDetail = () => {
             createEl('div.name', {}, [
                 createEl('button', {
                     style: { background: 'none', border: 'none', padding: '0', font: 'inherit', fontWeight: '650', textAlign: 'left' },
-                    text: entry.name,
+                    text: exName(entry.exercise_id, entry.name),
                     onclick: () => openExerciseDetail(entry.exercise_id, { backTo: 'session' })
                 }),
-                createEl('span.group', { text: entry.target_group })
+                createEl('span.group', { text: tGroup(entry.target_group) })
             ]),
             createEl('div.set-pill-row', {}, performed.map((set) => createEl(
                 `span.set-pill${top && set.id === top.id ? '.top' : ''}`,
-                { text: `${setLabel(set)}${set.is_warmup ? ' · W' : ''}${set.rpe ? ` @${set.rpe}` : ''}` }
+                {
+                    text: `${setLabel(set)}`
+                        + `${set.is_warmup ? ` · ${t('workout.warmupShort')}` : ''}`
+                        + `${set.rpe ? ` @${set.rpe}` : ''}`
+                }
             ))),
             entry.notes ? createEl('div', {
                 style: { marginTop: 'var(--sp-2)', fontSize: '0.8rem', color: 'var(--text-muted)' },
@@ -823,24 +910,24 @@ const renderSessionDetail = () => {
     }, [
         createEl('button.btn.block', {
             onclick: async () => {
-                const name = await promptDialog({ title: 'Rename workout', value: session.name || '' });
+                const name = await promptDialog({ title: t('workout.renameWorkout'), value: session.name || '' });
                 if (!name) return;
                 await db.updateSession(session.id, { name });
                 renderSessionDetail();
-                toast('Renamed');
+                toast(t('workout.renamed'));
             }
-        }, ['Rename']),
+        }, [t('common.rename')]),
         createEl('button.btn.block', {
             onclick: async () => {
                 const name = await promptDialog({
-                    title: 'Save as routine',
-                    value: session.name || 'New routine'
+                    title: t('session.saveAsRoutine'),
+                    value: session.name || t('routine.newTitle')
                 });
                 if (!name) return;
                 await db.routineFromSession(session.id, name);
-                toast('Routine saved');
+                toast(t('workout.routineSaved'));
             }
-        }, ['Save as routine'])
+        }, [t('session.saveAsRoutine')])
     ]));
 };
 
@@ -855,7 +942,7 @@ const renderExerciseFilters = (host, current, onPick) => {
         host.appendChild(createEl('button.chip', {
             type: 'button',
             'aria-pressed': String(current === group),
-            text: group || 'All',
+            text: group ? tGroup(group) : t('common.all'),
             onclick: () => onPick(group)
         }));
     }
@@ -868,30 +955,29 @@ const renderExerciseList = () => {
     });
 
     const host = clear($('#exercise-list'));
-    const exercises = db.listExercises({
-        search: state.exerciseFilter.search,
-        group: state.exerciseFilter.group
-    });
+    const exercises = db.listExercises({ group: state.exerciseFilter.group })
+        .filter((exercise) => matchesSearch(exercise, state.exerciseFilter.search));
 
     if (exercises.length === 0) {
-        host.appendChild(emptyState('Nothing matches', 'Try a different search, or add a custom exercise.'));
+        host.appendChild(emptyState(t('common.nothingMatches'), t('exercises.noMatchHint')));
         return;
     }
 
     for (const exercise of exercises) {
+        const name = exName(exercise.id, exercise.name);
         host.appendChild(createEl('button.list-item', {
             type: 'button',
             onclick: () => openExerciseDetail(exercise.id, { backTo: 'exercises' })
         }, [
-            createEl('div.avatar', { text: initials(exercise.name) }),
+            createEl('div.avatar', { text: initials(name) }),
             createEl('div.body', {}, [
-                createEl('div.title', { text: exercise.name }),
+                createEl('div.title', { text: name }),
                 createEl('div.meta', {}, [
-                    createEl('span', { text: exercise.target_group }),
-                    createEl('span', { text: exercise.primary_equipment }),
+                    createEl('span', { text: tGroup(exercise.target_group) }),
+                    createEl('span', { text: tEquipment(exercise.primary_equipment) }),
                     exercise.set_count > 0
-                        ? createEl('span', { text: `${exercise.set_count} sets logged` })
-                        : createEl('span', { text: 'never trained' })
+                        ? createEl('span', { text: tn('exercises.setsLogged', exercise.set_count) })
+                        : createEl('span', { text: t('exercises.neverTrained') })
                 ])
             ]),
             exercise.is_favorite ? createEl('span.badge.accent', { text: '★' }) : null,
@@ -911,9 +997,9 @@ const renderExerciseDetail = () => {
     if (!exercise) { goBack(); return; }
     const history = db.getExerciseHistory(exercise.id);
 
-    $('#exercise-detail-title').textContent = exercise.name;
-    $('#exercise-detail-sub').textContent = `${exercise.target_group} · ${exercise.primary_equipment}`
-        + (exercise.is_custom ? ' · custom' : '');
+    $('#exercise-detail-title').textContent = exName(exercise.id, exercise.name);
+    $('#exercise-detail-sub').textContent = `${tGroup(exercise.target_group)} · ${tEquipment(exercise.primary_equipment)}`
+        + (exercise.is_custom ? ` · ${t('exercises.custom')}` : '');
     $('#btn-fav-exercise').style.color = exercise.is_favorite ? 'var(--accent)' : '';
 
     const body = clear($('#exercise-detail-body'));
@@ -926,38 +1012,44 @@ const renderExerciseDetail = () => {
     }
 
     if (history.length === 0) {
-        body.appendChild(emptyState('No history yet', 'Log this exercise in a workout and its records appear here.'));
+        body.appendChild(emptyState(t('exercises.noHistory'), t('exercises.noHistoryHint')));
         return;
     }
 
     const records = S.personalRecords(history);
     renderStatTiles(body, [
-        { value: showWeight(records.heaviest.weight_kg), unit: units(), label: 'Heaviest' },
-        { value: showWeight(records.oneRepMaxKg), unit: units(), label: 'Est. 1RM' },
-        { value: showVolume(S.setVolume(records.bestVolume)), unit: units(), label: 'Best set' },
-        { value: String(history.length), label: 'Sets logged' }
+        { value: showWeight(records.heaviest.weight_kg), unit: units(), label: t('stat.heaviest') },
+        { value: showWeight(records.oneRepMaxKg), unit: units(), label: t('stat.oneRepMax') },
+        { value: showVolume(S.setVolume(records.bestVolume)), unit: units(), label: t('stat.bestSet') },
+        { value: String(history.length), label: t('stat.setsLogged') }
     ]);
 
     const trend = S.oneRepMaxTrend(history);
     if (trend.length >= 2) {
         const chart = createEl('div.card.chart-card', { style: { marginTop: 'var(--sp-4)' } }, [
-            createEl('div.chart-title', { text: 'Estimated 1RM' }),
-            createEl('div.chart-sub', { text: `Best set of each session, ${units()} (Epley estimate).` })
+            createEl('div.chart-title', { text: t('progress.oneRepMax') }),
+            createEl('div.chart-sub', { text: t('progress.oneRepMaxSub', { unit: units() }) })
         ]);
         body.appendChild(chart);
         renderLineChart(chart, trend.map((point) => ({
             date: point.date,
             value: S.fromKg(point.oneRepMaxKg, units()),
-            tooltip: `<strong>${showWeight(point.oneRepMaxKg, true)} est. 1RM</strong><br>`
-                + `${showWeight(point.weightKg)} × ${point.reps} · ${point.date.toLocaleDateString()}`
-        })), { formatValue: (value) => S.formatNumber(value, 0) });
+            tooltip: `<strong>${t('progress.tooltip1rm', { value: showWeight(point.oneRepMaxKg, true) })}</strong><br>`
+                + `${showWeight(point.weightKg)} × ${point.reps} · ${showDate(point.date)}`
+        })), {
+            formatValue: (value) => S.formatNumber(value, 0),
+            emptyMessage: t('progress.notEnough'),
+            ariaLabel: t('progress.lineChartAria', { count: trend.length }),
+            locale: intlLocale()
+        });
         renderDataTable(chart,
-            ['Date', 'Top set', `Est. 1RM (${units()})`],
+            [t('progress.colDate'), t('progress.colTopSet'), t('progress.col1rm', { unit: units() })],
             trend.slice().reverse().map((point) => [
-                point.date.toLocaleDateString(),
+                showDate(point.date),
                 `${showWeight(point.weightKg)} × ${point.reps}`,
                 S.formatNumber(S.fromKg(point.oneRepMaxKg, units()), 0)
-            ])
+            ]),
+            t('progress.showNumbers')
         );
     }
 
@@ -970,7 +1062,7 @@ const renderExerciseDetail = () => {
     }
 
     body.appendChild(createEl('div.section-head', { style: { marginTop: 'var(--sp-5)' } }, [
-        createEl('h3', { text: 'Session history' })
+        createEl('h3', { text: t('exercises.sessionHistory') })
     ]));
 
     const list = createEl('div.list');
@@ -981,7 +1073,7 @@ const renderExerciseDetail = () => {
             createEl('div.day-head', {}, [
                 createEl('button.date', {
                     style: { background: 'none', border: 'none', padding: '0', font: 'inherit', fontWeight: '650' },
-                    text: S.relativeDay(group.date),
+                    text: showDay(group.date),
                     onclick: () => openSessionDetail(sessionId)
                 }),
                 createEl('span.vol', { text: `${showVolume(S.totalVolume(group.sets))} ${units()}` })
@@ -996,20 +1088,24 @@ const renderExerciseDetail = () => {
 
 // --- Exercise editor ------------------------------------------------------
 
-const fillSelect = (select, values) => {
+/** Options keep their canonical English value; only the label is translated. */
+const fillSelect = (select, values, label) => {
     clear(select);
-    for (const value of values) select.appendChild(createEl('option', { value, text: value }));
+    for (const value of values) select.appendChild(createEl('option', { value, text: label(value) }));
 };
 
 const openExerciseEditor = (exerciseId = null) => {
     const dialog = $('#exercise-dialog');
     const exercise = exerciseId ? db.getExercise(exerciseId) : null;
 
-    $('#exercise-dialog-title').textContent = exercise ? 'Edit exercise' : 'New exercise';
-    fillSelect($('#exercise-group'), db.MUSCLE_GROUPS);
-    fillSelect($('#exercise-equipment'), db.EQUIPMENT_TYPES);
+    $('#exercise-dialog-title').textContent = t(exercise ? 'exercises.editTitle' : 'exercises.newTitle');
+    fillSelect($('#exercise-group'), db.MUSCLE_GROUPS, tGroup);
+    fillSelect($('#exercise-equipment'), db.EQUIPMENT_TYPES, tEquipment);
 
-    $('#exercise-name').value = exercise?.name || '';
+    // Show the name on screen. If it comes back unchanged we keep the stored
+    // canonical name, so opening and saving the dialog is not a rename.
+    const shownName = exercise ? exName(exercise.id, exercise.name) : '';
+    $('#exercise-name').value = shownName;
     $('#exercise-group').value = exercise?.target_group || db.MUSCLE_GROUPS[0];
     $('#exercise-equipment').value = exercise?.primary_equipment || db.EQUIPMENT_TYPES[0];
     $('#exercise-rest').value = exercise?.rest_seconds ?? '';
@@ -1019,15 +1115,15 @@ const openExerciseEditor = (exerciseId = null) => {
     deleteButton.hidden = !exercise;
     deleteButton.onclick = async () => {
         const outcome = await confirmDialog({
-            title: `Delete ${exercise.name}?`,
-            message: 'Exercises with logged sets are archived instead, so your history stays intact.',
-            confirmLabel: 'Delete',
+            title: t('exercises.deleteConfirm', { name: exName(exercise.id, exercise.name) }),
+            message: t('exercises.deleteConfirmHint'),
+            confirmLabel: t('common.delete'),
             danger: true
         });
         if (!outcome) return;
         const result = await db.deleteExercise(exercise.id);
         dialog.close();
-        toast(result === 'archived' ? 'Archived — history kept' : 'Deleted');
+        toast(t(result === 'archived' ? 'exercises.archived' : 'exercises.deleted'));
         goToTab('exercises');
     };
 
@@ -1035,14 +1131,15 @@ const openExerciseEditor = (exerciseId = null) => {
     form.onsubmit = async (event) => {
         event.preventDefault();
         const rest = parseInt($('#exercise-rest').value, 10);
+        const typedName = $('#exercise-name').value.trim();
         const fields = {
-            name: $('#exercise-name').value.trim(),
+            name: exercise && typedName === shownName ? exercise.name : typedName,
             target_group: $('#exercise-group').value,
             primary_equipment: $('#exercise-equipment').value,
             notes: $('#exercise-notes').value.trim(),
             rest_seconds: Number.isFinite(rest) ? rest : null
         };
-        if (!fields.name) return;
+        if (!typedName) return;
 
         if (exercise) {
             await db.updateExercise(exercise.id, fields);
@@ -1051,7 +1148,7 @@ const openExerciseEditor = (exerciseId = null) => {
             state.detailExerciseId = id;
         }
         dialog.close();
-        toast(exercise ? 'Exercise updated' : 'Exercise added');
+        toast(t(exercise ? 'exercises.updated' : 'exercises.added'));
         if (state.view === 'exercise') renderExerciseDetail();
         else renderExerciseList();
     };
@@ -1067,18 +1164,17 @@ let pickerOnConfirm = null;
 
 const renderPickerList = () => {
     const host = clear($('#picker-list'));
-    const exercises = db.listExercises({
-        search: $('#picker-search').value.trim(),
-        group: pickerGroup
-    });
+    const exercises = db.listExercises({ group: pickerGroup })
+        .filter((exercise) => matchesSearch(exercise, $('#picker-search').value.trim()));
 
     if (exercises.length === 0) {
-        host.appendChild(emptyState('Nothing matches', 'Add it as a custom exercise from the Exercises tab.'));
+        host.appendChild(emptyState(t('common.nothingMatches'), t('exercises.pickerNoMatchHint')));
         return;
     }
 
     for (const exercise of exercises) {
         const selected = pickerSelection.has(exercise.id);
+        const name = exName(exercise.id, exercise.name);
         host.appendChild(createEl('button.picker-item', {
             type: 'button',
             'aria-selected': String(selected),
@@ -1089,10 +1185,12 @@ const renderPickerList = () => {
                 updatePickerConfirm();
             }
         }, [
-            createEl('div.avatar', { text: initials(exercise.name) }),
+            createEl('div.avatar', { text: initials(name) }),
             createEl('div.body', {}, [
-                createEl('div.name', { text: exercise.name }),
-                createEl('div.sub', { text: `${exercise.target_group} · ${exercise.primary_equipment}` })
+                createEl('div.name', { text: name }),
+                createEl('div.sub', {
+                    text: `${tGroup(exercise.target_group)} · ${tEquipment(exercise.primary_equipment)}`
+                })
             ]),
             selected ? icon('check', 18) : null
         ]));
@@ -1102,7 +1200,9 @@ const renderPickerList = () => {
 const updatePickerConfirm = () => {
     const button = $('#picker-confirm');
     button.disabled = pickerSelection.size === 0;
-    button.textContent = pickerSelection.size > 1 ? `Add ${pickerSelection.size}` : 'Add';
+    button.textContent = pickerSelection.size > 1
+        ? t('common.addCount', { count: pickerSelection.size })
+        : t('common.add');
 };
 
 const renderPickerFilters = () => {
@@ -1127,7 +1227,7 @@ const openPicker = (title, onConfirm) => {
 
 const openExercisePicker = () => {
     if (!state.sessionId) return;
-    openPicker('Add exercise', async (ids) => {
+    openPicker(t('workout.addExercise'), async (ids) => {
         for (const id of ids) {
             await db.addExerciseToSession(state.sessionId, id);
             // Give every newly added exercise one blank set, so logging is a
@@ -1148,32 +1248,32 @@ let routineDraft = { id: null, exercises: [] };
 const renderRoutineDraft = () => {
     const host = clear($('#routine-exercise-list'));
     if (routineDraft.exercises.length === 0) {
-        host.appendChild(emptyState('No exercises yet', 'Add the movements this routine should prompt you for.'));
+        host.appendChild(emptyState(t('routine.noExercises'), t('routine.noExercisesHint')));
         return;
     }
 
     routineDraft.exercises.forEach((item, index) => {
         host.appendChild(createEl('div.list-item', {}, [
             createEl('div.body', {}, [
-                createEl('div.title', { text: item.name }),
-                createEl('div.meta', {}, [createEl('span', { text: item.target_group })])
+                createEl('div.title', { text: exName(item.exercise_id, item.name) }),
+                createEl('div.meta', {}, [createEl('span', { text: tGroup(item.target_group) })])
             ]),
             createEl('input.set-input', {
                 type: 'number', min: '1', max: '20', value: String(item.target_sets),
                 style: { width: '46px' },
-                'aria-label': `Sets for ${item.name}`,
+                'aria-label': t('routine.setsAria', { name: exName(item.exercise_id, item.name) }),
                 onchange: (event) => { item.target_sets = parseInt(event.target.value, 10) || 3; }
             }),
             createEl('span', { text: '×', style: { color: 'var(--text-muted)' } }),
             createEl('input.set-input', {
                 type: 'number', min: '1', max: '100', value: String(item.target_reps),
                 style: { width: '46px' },
-                'aria-label': `Reps for ${item.name}`,
+                'aria-label': t('routine.repsAria', { name: exName(item.exercise_id, item.name) }),
                 onchange: (event) => { item.target_reps = parseInt(event.target.value, 10) || 10; }
             }),
             createEl('button.icon-btn', {
                 type: 'button',
-                title: 'Move up',
+                title: t('workout.moveUp'),
                 onclick: () => {
                     if (index === 0) return;
                     const list = routineDraft.exercises;
@@ -1183,7 +1283,7 @@ const renderRoutineDraft = () => {
             }, [icon('up', 16)]),
             createEl('button.icon-btn.danger', {
                 type: 'button',
-                title: 'Remove',
+                title: t('common.remove'),
                 onclick: () => {
                     routineDraft.exercises.splice(index, 1);
                     renderRoutineDraft();
@@ -1208,24 +1308,24 @@ const openRoutineDialog = (routineId = null) => {
         }))
     };
 
-    $('#routine-dialog-title').textContent = routine ? 'Edit routine' : 'New routine';
-    $('#routine-name').value = routine?.name || '';
-    $('#routine-desc').value = routine?.description || '';
+    $('#routine-dialog-title').textContent = t(routine ? 'routine.editTitle' : 'routine.newTitle');
+    $('#routine-name').value = routine ? routineTitle(routine) : '';
+    $('#routine-desc').value = routine ? routineBlurb(routine) : '';
     renderRoutineDraft();
 
     const deleteButton = $('#routine-delete');
     deleteButton.hidden = !routine;
     deleteButton.onclick = async () => {
         const ok = await confirmDialog({
-            title: `Delete ${routine.name}?`,
-            message: 'Workouts already logged from it are not affected.',
-            confirmLabel: 'Delete',
+            title: t('routine.deleteConfirm', { name: routineTitle(routine) }),
+            message: t('routine.deleteConfirmHint'),
+            confirmLabel: t('common.delete'),
             danger: true
         });
         if (!ok) return;
         await db.deleteRoutine(routine.id);
         dialog.close();
-        toast('Routine deleted');
+        toast(t('routine.deleted'));
         renderRoutines();
     };
 
@@ -1234,7 +1334,7 @@ const openRoutineDialog = (routineId = null) => {
         const name = $('#routine-name').value.trim();
         if (!name) return;
         if (routineDraft.exercises.length === 0) {
-            toast('Add at least one exercise', { type: 'error' });
+            toast(t('routine.needExercise'), { type: 'error' });
             return;
         }
         await db.saveRoutine({
@@ -1244,7 +1344,7 @@ const openRoutineDialog = (routineId = null) => {
             exercises: routineDraft.exercises
         });
         dialog.close();
-        toast(routineDraft.id ? 'Routine updated' : 'Routine created');
+        toast(t(routineDraft.id ? 'routine.updated' : 'routine.created'));
         renderRoutines();
     };
 
@@ -1268,17 +1368,14 @@ const renderProgress = () => {
     const dates = db.getSessionDates();
 
     renderStatTiles(body, [
-        { value: String(sessionIds.size), label: 'Workouts' },
-        { value: showVolume(S.totalVolume(working)), unit: units(), label: 'Volume' },
-        { value: String(working.length), label: 'Work sets' },
-        { value: String(S.weekStreak(dates)), label: 'Week streak' }
+        { value: String(sessionIds.size), label: t('stat.workouts') },
+        { value: showVolume(S.totalVolume(working)), unit: units(), label: t('stat.volume') },
+        { value: String(working.length), label: t('stat.workSets') },
+        { value: String(S.weekStreak(dates)), label: t('stat.weekStreak') }
     ]);
 
     if (working.length === 0) {
-        body.appendChild(emptyState(
-            'Nothing in this window',
-            'Log a workout, or widen the range, to see your trends.'
-        ));
+        body.appendChild(emptyState(t('progress.empty'), t('progress.emptyHint')));
         return;
     }
 
@@ -1286,26 +1383,29 @@ const renderProgress = () => {
     const weeks = Math.min(26, Math.max(4, Math.round(days / 7)));
     const byWeek = S.volumeByWeek(sets, weeks);
     const volumeCard = createEl('div.card.chart-card', { style: { marginTop: 'var(--sp-4)' } }, [
-        createEl('div.chart-title', { text: 'Weekly volume' }),
-        createEl('div.chart-sub', { text: `Working-set tonnage per week, in ${units()}.` })
+        createEl('div.chart-title', { text: t('progress.weeklyVolume') }),
+        createEl('div.chart-sub', { text: t('progress.weeklyVolumeSub', { unit: units() }) })
     ]);
     body.appendChild(volumeCard);
     renderBarChart(volumeCard, byWeek.map((week) => ({
-        label: week.date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+        label: showDate(week.date, { day: 'numeric', month: 'short' }),
         value: S.fromKg(week.volumeKg, units()),
-        tooltip: `<strong>${showVolume(week.volumeKg)} ${units()}</strong><br>`
-            + `${week.sets} sets · week of ${week.date.toLocaleDateString()}`
+        tooltip: `<strong>${t('progress.tooltipVolume', { volume: showVolume(week.volumeKg), unit: units() })}</strong><br>`
+            + t('progress.tooltipWeek', { sets: tn('common.sets', week.sets), date: showDate(week.date) })
     })), {
         formatValue: compactNumber,
-        labelEvery: Math.ceil(weeks / 4)
+        labelEvery: Math.ceil(weeks / 4),
+        emptyMessage: t('progress.noVolume'),
+        ariaLabel: t('progress.barChartAria', { count: byWeek.length })
     });
     renderDataTable(volumeCard,
-        ['Week of', `Volume (${units()})`, 'Sets'],
+        [t('progress.colWeekOf'), t('progress.colVolume', { unit: units() }), t('progress.colSets')],
         byWeek.slice().reverse().map((week) => [
-            week.date.toLocaleDateString(),
+            showDate(week.date),
             showVolume(week.volumeKg),
             String(week.sets)
-        ])
+        ]),
+        t('progress.showNumbers')
     );
 
     // --- Muscle group split
@@ -1320,17 +1420,19 @@ const renderProgress = () => {
         });
     }
     const splitCard = createEl('div.card.chart-card', { style: { marginTop: 'var(--sp-3)' } }, [
-        createEl('div.chart-title', { text: 'Muscle group split' }),
-        createEl('div.chart-sub', { text: 'Share of working sets — the balance check.' })
+        createEl('div.chart-title', { text: t('progress.muscleSplit') }),
+        createEl('div.chart-sub', { text: t('progress.muscleSplitSub') })
     ]);
     body.appendChild(splitCard);
     renderDonut(splitCard, shown.map((group) => ({
-        label: group.group,
+        label: group.group === 'Other' ? t('progress.other') : tGroup(group.group),
         value: group.sets,
-        display: `${group.sets} set${group.sets === 1 ? '' : 's'}`
+        display: tn('common.sets', group.sets)
     })), {
         centerValue: String(working.length),
-        centerLabel: 'sets'
+        centerLabel: t('common.setsWord'),
+        emptyMessage: t('progress.nothingLogged'),
+        ariaLabel: t('progress.donutAria', { count: shown.length })
     });
 
     // --- Most trained
@@ -1345,7 +1447,7 @@ const renderProgress = () => {
     const top = [...byExercise.values()].sort((a, b) => b.volumeKg - a.volumeKg).slice(0, 5);
 
     body.appendChild(createEl('div.section-head', { style: { marginTop: 'var(--sp-5)' } }, [
-        createEl('h3', { text: 'Most trained' })
+        createEl('h3', { text: t('progress.mostTrained') })
     ]));
     const list = createEl('div.list');
     body.appendChild(list);
@@ -1355,9 +1457,9 @@ const renderProgress = () => {
             onclick: () => openExerciseDetail(exercise.id, { backTo: 'progress' })
         }, [
             createEl('div.body', {}, [
-                createEl('div.title', { text: exercise.name }),
+                createEl('div.title', { text: exName(exercise.id, exercise.name) }),
                 createEl('div.meta', {}, [
-                    createEl('span', { text: `${exercise.sets} sets` }),
+                    createEl('span', { text: tn('common.sets', exercise.sets) }),
                     createEl('span', { text: `${showVolume(exercise.volumeKg)} ${units()}` })
                 ])
             ]),
@@ -1371,15 +1473,20 @@ const renderProgress = () => {
         .reverse();
     if (bodyWeights.length >= 2) {
         const card = createEl('div.card.chart-card', { style: { marginTop: 'var(--sp-4)' } }, [
-            createEl('div.chart-title', { text: 'Body weight' }),
-            createEl('div.chart-sub', { text: `Logged from Settings, in ${units()}.` })
+            createEl('div.chart-title', { text: t('progress.bodyWeight') }),
+            createEl('div.chart-sub', { text: t('progress.bodyWeightSub', { unit: units() }) })
         ]);
         body.appendChild(card);
         renderLineChart(card, bodyWeights.map((entry) => ({
             date: new Date(entry.logged_at),
             value: S.fromKg(entry.weight_kg, units()),
-            tooltip: `<strong>${showWeight(entry.weight_kg, true)}</strong><br>${new Date(entry.logged_at).toLocaleDateString()}`
-        })), { formatValue: (value) => S.formatNumber(value) });
+            tooltip: `<strong>${showWeight(entry.weight_kg, true)}</strong><br>${showDate(entry.logged_at)}`
+        })), {
+            formatValue: (value) => S.formatNumber(value),
+            emptyMessage: t('progress.notEnough'),
+            ariaLabel: t('progress.lineChartAria', { count: bodyWeights.length }),
+            locale: intlLocale()
+        });
     }
 };
 
@@ -1396,6 +1503,7 @@ const syncSegmented = (host, value) => {
 const syncSwitch = (node, value) => node.setAttribute('aria-checked', String(!!value));
 
 const renderSettings = () => {
+    syncSegmented($('#set-locale'), settings.locale);
     syncSegmented($('#set-units'), settings.units);
     syncSegmented($('#set-rest'), settings.restSeconds);
     syncSegmented($('#set-theme'), settings.theme);
@@ -1409,7 +1517,7 @@ const renderSettings = () => {
         swatches.appendChild(createEl('button.accent-swatch', {
             type: 'button',
             title: name,
-            'aria-label': `${name} accent`,
+            'aria-label': t('settings.accentAria', { name }),
             'aria-pressed': String(settings.accent === name),
             style: { background: color },
             onclick: async () => {
@@ -1423,9 +1531,12 @@ const renderSettings = () => {
     renderBodyWeightList();
 
     const totals = db.getLifetimeTotals();
-    $('#about-storage').textContent =
-        `${totals.sessions} workouts · ${totals.sets} sets · ${showVolume(totals.volume_kg)} ${units()} lifted, `
-        + 'all stored in this browser.';
+    $('#about-storage').textContent = t('settings.aboutStorage', {
+        workouts: tn('common.workoutsCount', totals.sessions),
+        sets: tn('common.sets', totals.sets),
+        volume: showVolume(totals.volume_kg),
+        unit: units()
+    });
 };
 
 const renderBodyWeightList = () => {
@@ -1434,7 +1545,7 @@ const renderBodyWeightList = () => {
     if (entries.length === 0) {
         host.appendChild(createEl('p', {
             style: { fontSize: '0.82rem', color: 'var(--text-muted)' },
-            text: 'No entries yet. Logging weight adds a trend chart to Progress.'
+            text: t('settings.noWeightEntries')
         }));
         return;
     }
@@ -1442,10 +1553,10 @@ const renderBodyWeightList = () => {
         host.appendChild(createEl('div.switch-row', {}, [
             createEl('div', {}, [
                 createEl('div.label', { text: showWeight(entry.weight_kg, true) }),
-                createEl('div.hint', { text: new Date(entry.logged_at).toLocaleDateString() })
+                createEl('div.hint', { text: showDate(entry.logged_at) })
             ]),
             createEl('button.icon-btn.danger', {
-                title: 'Delete entry',
+                title: t('settings.deleteEntry'),
                 onclick: async () => {
                     await db.deleteBodyWeight(entry.id);
                     renderBodyWeightList();
@@ -1458,13 +1569,13 @@ const renderBodyWeightList = () => {
 const handleExportSqlite = async () => {
     await db.flush();
     downloadBlob(db.exportDatabase(), `mifitness-${S.dayKey(new Date())}.sqlite`);
-    toast('Backup downloaded');
+    toast(t('data.backupDownloaded'));
 };
 
 const handleExportJson = () => {
     const blob = new Blob([JSON.stringify(db.exportJson(), null, 2)], { type: 'application/json' });
     downloadBlob(blob, `mifitness-${S.dayKey(new Date())}.json`);
-    toast('JSON exported');
+    toast(t('data.jsonExported'));
 };
 
 const handleImport = async (event) => {
@@ -1473,9 +1584,9 @@ const handleImport = async (event) => {
     if (!file) return;
 
     const ok = await confirmDialog({
-        title: 'Replace your data?',
-        message: `Importing ${file.name} replaces everything currently stored on this device.`,
-        confirmLabel: 'Import',
+        title: t('data.importConfirm'),
+        message: t('data.importConfirmHint', { name: file.name }),
+        confirmLabel: t('data.import'),
         danger: true
     });
     if (!ok) return;
@@ -1484,20 +1595,21 @@ const handleImport = async (event) => {
         await db.importDatabase(await file.arrayBuffer());
         loadSettings();
         applyAppearance();
+        applyLocale();
         state.sessionId = null;
         stopSessionTimer();
-        toast('Backup restored');
+        toast(t('data.restored'));
         goToTab('home');
     } catch (error) {
-        toast(`Import failed: ${error.message}`, { type: 'error', duration: 5000 });
+        toast(t('data.importFailed', { error: error.message }), { type: 'error', duration: 5000 });
     }
 };
 
 const handleReset = async () => {
     const ok = await confirmDialog({
-        title: 'Reset everything?',
-        message: 'Every workout, routine and custom exercise is deleted, and the seed library comes back. Export a backup first if you might want it.',
-        confirmLabel: 'Delete everything',
+        title: t('data.resetConfirm'),
+        message: t('data.resetConfirmHint'),
+        confirmLabel: t('data.resetAction'),
         danger: true
     });
     if (!ok) return;
@@ -1506,7 +1618,8 @@ const handleReset = async () => {
     stopSessionTimer();
     loadSettings();
     applyAppearance();
-    toast('Reset complete');
+    applyLocale();
+    toast(t('data.resetDone'));
     goToTab('home');
 };
 
@@ -1533,10 +1646,10 @@ const bindEvents = () => {
         const routines = db.listRoutines();
         if (routines.length === 0) { openRoutineDialog(); return; }
         const choice = await sheetDialog({
-            title: 'Start from a routine',
+            title: t('home.startFromRoutine'),
             options: routines.map((routine) => ({
-                label: routine.name,
-                sub: `${routine.exercise_count} exercises`,
+                label: routineTitle(routine),
+                sub: tn('common.exercisesCount', routine.exercise_count),
                 value: routine.id
             }))
         });
@@ -1545,7 +1658,7 @@ const bindEvents = () => {
     });
     $('#btn-new-routine').addEventListener('click', () => openRoutineDialog());
     $('#routine-add-exercise').addEventListener('click', () => {
-        openPicker('Add to routine', (ids) => {
+        openPicker(t('routine.addToRoutine'), (ids) => {
             for (const id of ids) {
                 const exercise = db.getExercise(id);
                 if (routineDraft.exercises.some((item) => item.exercise_id === id)) continue;
@@ -1592,14 +1705,14 @@ const bindEvents = () => {
     // Session detail
     $('#btn-delete-session').addEventListener('click', async () => {
         const ok = await confirmDialog({
-            title: 'Delete this workout?',
-            message: 'Its sets are removed from your history and records.',
-            confirmLabel: 'Delete',
+            title: t('session.deleteConfirm'),
+            message: t('session.deleteConfirmHint'),
+            confirmLabel: t('common.delete'),
             danger: true
         });
         if (!ok) return;
         await db.deleteSession(state.detailSessionId);
-        toast('Workout deleted');
+        toast(t('session.deleted'));
         goToTab('history');
     });
 
@@ -1613,6 +1726,14 @@ const bindEvents = () => {
     }
 
     // Settings
+    for (const button of $$('#set-locale button')) {
+        button.addEventListener('click', async () => {
+            if (button.dataset.value === settings.locale) return;
+            await setSetting('locale', button.dataset.value);
+            applyLocale();
+            rerenderAll();
+        });
+    }
     for (const button of $$('#set-units button')) {
         button.addEventListener('click', async () => {
             await setSetting('units', button.dataset.value);
@@ -1656,13 +1777,13 @@ const bindEvents = () => {
         const input = $('#bodyweight-input');
         const value = parseFloat(input.value);
         if (!Number.isFinite(value) || value <= 0) {
-            toast('Enter a weight first', { type: 'error' });
+            toast(t('settings.needWeight'), { type: 'error' });
             return;
         }
         await db.logBodyWeight(S.toKg(value, units()));
         input.value = '';
         renderBodyWeightList();
-        toast('Body weight logged');
+        toast(t('settings.weightLogged'));
     });
 
     $('#btn-export-sqlite').addEventListener('click', handleExportSqlite);
@@ -1697,12 +1818,13 @@ const init = async () => {
     } catch (error) {
         $('#loading').innerHTML =
             `<div style="text-align:center;padding:24px;max-width:34ch">
-                <strong>miFitness could not start.</strong><br>${error.message}
+                <strong>${t('app.failed')}</strong><br>${error.message}
              </div>`;
         return;
     }
 
     loadSettings();
+    applyLocale();
     applyAppearance();
     wireDialogs();
     bindEvents();

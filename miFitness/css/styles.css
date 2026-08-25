@@ -502,6 +502,18 @@ textarea.input { resize: vertical; min-height: 68px; }
     border-bottom: 1px solid var(--border);
 }
 .switch-row:last-child { border-bottom: none; }
+.switch-row > div:first-child { min-width: 0; }
+
+/* A wide control (four rest presets, wider still once translated) squeezes the
+   label to one word per line on a phone — give it its own row instead. */
+@media (max-width: 520px) {
+    .switch-row.stack {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--sp-2);
+    }
+    .switch-row.stack .segmented { width: 100%; }
+}
 .switch-row .label { font-size: 0.92rem; font-weight: 550; }
 .switch-row .hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
 
@@ -539,6 +551,7 @@ textarea.input { resize: vertical; min-height: 68px; }
 }
 
 .card + .card { margin-top: var(--sp-3); }
+.card a { color: var(--accent); }
 
 .list { display: flex; flex-direction: column; gap: var(--sp-2); }
 

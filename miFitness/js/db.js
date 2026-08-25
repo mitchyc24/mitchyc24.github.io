@@ -333,22 +333,24 @@ const seedExercises = () => {
     stmt.free();
 };
 
+// Stable ids here too, so the UI can offer a translated display name for a
+// starter routine the user has not renamed.
 const DEFAULT_ROUTINES = [
-    ['Push Day', 'Chest, shoulders and triceps.', [
+    ['routine-push', 'Push Day', 'Chest, shoulders and triceps.', [
         ['flat-barbell-bench-press', 4, 8],
         ['seated-dumbbell-overhead-press', 3, 10],
         ['incline-dumbbell-press', 3, 10],
         ['standing-cable-lateral-raise', 3, 15],
         ['dual-rope-cable-triceps-pushdown', 3, 12]
     ]],
-    ['Pull Day', 'Back and biceps.', [
+    ['routine-pull', 'Pull Day', 'Back and biceps.', [
         ['barbell-bent-over-row', 4, 8],
         ['neutral-grip-lat-pulldown', 3, 10],
         ['single-arm-dumbbell-row', 3, 10],
         ['incline-rear-delt-dumbbell-flye', 3, 15],
         ['ez-bar-preacher-curl', 3, 12]
     ]],
-    ['Leg Day', 'Quads, hamstrings and calves.', [
+    ['routine-legs', 'Leg Day', 'Quads, hamstrings and calves.', [
         ['barbell-high-bar-back-squat', 4, 6],
         ['romanian-deadlift', 3, 8],
         ['leg-press', 3, 12],
@@ -357,10 +359,26 @@ const DEFAULT_ROUTINES = [
     ]]
 ];
 
+/**
+ * The English names the seed wrote. Display code compares against these to
+ * tell an untouched seed row from one the user has renamed — only the former
+ * may be shown under a translated name.
+ */
+export const SEED_EXERCISE_NAMES = Object.fromEntries(
+    SEED_EXERCISES.map(([name]) => [slug(name), name])
+);
+
+export const SEED_ROUTINE_NAMES = Object.fromEntries(
+    DEFAULT_ROUTINES.map(([id, name]) => [id, name])
+);
+
+export const SEED_ROUTINE_DESCRIPTIONS = Object.fromEntries(
+    DEFAULT_ROUTINES.map(([id, , description]) => [id, description])
+);
+
 const seedRoutines = () => {
     const createdAt = now();
-    for (const [name, description, exercises] of DEFAULT_ROUTINES) {
-        const routineId = uuid();
+    for (const [routineId, name, description, exercises] of DEFAULT_ROUTINES) {
         run(
             'INSERT INTO routines (id, name, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
             [routineId, name, description, createdAt, createdAt]

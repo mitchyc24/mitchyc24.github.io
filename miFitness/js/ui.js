@@ -2,6 +2,8 @@
 // icons from the sprite, toasts, and promise-based dialogs so callers can
 // `await` a confirmation instead of nesting callbacks.
 
+import { t } from './i18n.js';
+
 export const $ = (selector, root = document) => root.querySelector(selector);
 export const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -89,13 +91,13 @@ export const openDialog = (dialog) => {
     if (!dialog.open) dialog.showModal();
 };
 
-export const confirmDialog = ({ title, message, confirmLabel = 'Confirm', danger = false }) =>
+export const confirmDialog = ({ title, message, confirmLabel, danger = false }) =>
     new Promise((resolve) => {
         const dialog = $('#confirm-dialog');
-        $('#confirm-title').textContent = title;
+        $('#confirm-title').textContent = title || t('common.areYouSure');
         $('#confirm-message').textContent = message || '';
         const ok = $('#confirm-ok');
-        ok.textContent = confirmLabel;
+        ok.textContent = confirmLabel || t('common.confirm');
         ok.className = danger ? 'btn solid-danger' : 'btn primary';
 
         const finish = (value) => {
