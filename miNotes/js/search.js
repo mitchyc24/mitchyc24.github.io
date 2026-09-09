@@ -187,7 +187,7 @@ export class NoteIndex {
   }
 }
 
-function parseQuery(query) {
+export function parseQuery(query) {
   const phrases = [];
   const rest = query.replace(/"([^"]+)"/g, (_, p) => {
     phrases.push(p.trim());
