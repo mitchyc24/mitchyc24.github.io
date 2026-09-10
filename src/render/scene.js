@@ -8,6 +8,7 @@
  */
 
 import { windFrom, gustAt } from '../core/wind.js';
+import { flowRotation, flowScreenDir, windFromName, windToName } from '../shared/compass.js';
 import { msToKn } from '../shared/units.js';
 
 const LEVELS = {
@@ -91,6 +92,55 @@ export function drawWater(s, wind) {
     for (let y = y0; y < s.camera.y + H / s.ppm; y += G) { ctx.moveTo(0, sy(s, y)); ctx.lineTo(W, sy(s, y)); }
     ctx.stroke();
   }
+}
+
+/* Wind streaks.
+ *
+ * The most unambiguous wind cue there is, because it MOVES. An arrow can be
+ * read backwards — sailors name a wind by where it comes from, arrows show
+ * where it goes — but a field of streaks blowing across the water can only be
+ * read one way. Everything else on screen is a caption for this.
+ */
+export function drawWindStreaks(s, wind, tSeconds) {
+  const { ctx, W, H } = s;
+  const dir = flowScreenDir(windFrom(wind));
+  const speed = wind.baseSpeed * s.ppm;            // px per second
+  const len = Math.max(14, Math.min(46, wind.baseSpeed * 3.4));
+  const count = s.fidelity === 'lite' ? 34 : 70;
+  const span = Math.max(W, H) * 1.6;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (let i = 0; i < count; i++) {
+    /* Deterministic scatter, drifting downwind and wrapping. */
+    const seed = i * 2654435761 % 10007;
+    const ox = (seed % 997) / 997, oy = ((seed / 997) % 991) / 991;
+    const travel = ((tSeconds * speed) / span + ox) % 1;
+    const across = (oy - 0.5) * span;
+
+    const cx = W / 2 + dir.x * (travel - 0.5) * span - dir.y * across;
+    const cy = H / 2 + dir.y * (travel - 0.5) * span + dir.x * across;
+    if (cx < -60 || cx > W + 60 || cy < -60 || cy > H + 60) continue;
+
+    /* Fade in and out so they do not pop at the edges. */
+    const fade = Math.sin(travel * Math.PI);
+    const gust = gustAt(wind, {
+      x: s.camera.x + (cx - W / 2) / s.ppm,
+      y: s.camera.y - (cy - H / 2) / s.ppm
+    });
+    ctx.strokeStyle = 'rgba(150,200,232,' + (0.05 + fade * 0.16 * gust).toFixed(3) + ')';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + dir.x * len, cy + dir.y * len);
+    ctx.stroke();
+    /* A head on the leading end, so a single streak also reads directionally. */
+    ctx.fillStyle = 'rgba(180,220,244,' + (fade * 0.22).toFixed(3) + ')';
+    ctx.beginPath();
+    ctx.arc(cx + dir.x * len, cy + dir.y * len, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 export function drawWakes(s, boats) {
@@ -183,26 +233,46 @@ export function drawBoat(s, b, opts) {
 export function drawWindIndicator(s, wind, inset) {
   const { ctx } = s;
   const right = (inset && inset.right) || 0;
-  const r = 44, cx = s.W - right - r - 24, cy = r + 24;
+  const r = 46, cx = s.W - right - r - 26, cy = r + 30;
   const from = windFrom(wind);
 
   ctx.save();
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(9,20,28,.85)'; ctx.fill();
+  ctx.fillStyle = 'rgba(9,20,28,.9)'; ctx.fill();
   ctx.strokeStyle = 'rgba(120,173,206,.35)'; ctx.lineWidth = 1; ctx.stroke();
 
+  /* North mark, so the compass names on the labels mean something. */
+  ctx.fillStyle = 'rgba(150,200,232,.55)';
+  ctx.font = '600 9px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('N', cx, cy - r + 11);
+
   ctx.translate(cx, cy);
-  ctx.rotate(-from + Math.PI);         // arrow points where the wind is going
-  ctx.strokeStyle = '#78ADCE'; ctx.lineWidth = 2.4;
-  ctx.beginPath(); ctx.moveTo(0, -r * 0.62); ctx.lineTo(0, r * 0.48); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-6, r * 0.26); ctx.lineTo(0, r * 0.48); ctx.lineTo(6, r * 0.26);
-  ctx.fillStyle = '#78ADCE'; ctx.fill();
+  /* flowRotation aims a shape drawn along local +y the way the wind TRAVELS.
+   * This was 90 degrees out once and it made the whole game unreadable. */
+  ctx.rotate(flowRotation(from));
+
+  const grad = ctx.createLinearGradient(0, -r * 0.66, 0, r * 0.52);
+  grad.addColorStop(0, 'rgba(120,173,206,.25)');
+  grad.addColorStop(1, '#9ED2F0');
+  ctx.strokeStyle = grad; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, -r * 0.66); ctx.lineTo(0, r * 0.42); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-8, r * 0.2); ctx.lineTo(0, r * 0.52); ctx.lineTo(8, r * 0.2);
+  ctx.fillStyle = '#9ED2F0'; ctx.fill();
   ctx.restore();
 
-  ctx.fillStyle = 'rgba(180,200,215,.9)';
-  ctx.font = '500 10px "IBM Plex Mono", monospace';
+  /* Both facts, in words. Sailors name a wind by where it comes FROM; the
+   * arrow and the streaks show where it GOES. Saying only one invites the
+   * reader to assume the other. */
   ctx.textAlign = 'center';
-  ctx.fillText(msToKn(wind.baseSpeed * gustAt(wind, s.camera)).toFixed(1) + ' kn', cx, cy + r + 14);
+  ctx.fillStyle = '#9ED2F0';
+  ctx.font = '700 13px Archivo, sans-serif';
+  ctx.fillText(windFromName(from) + 'ERLY  ' + msToKn(wind.baseSpeed * gustAt(wind, s.camera)).toFixed(0) + ' kn',
+               cx, cy + r + 16);
+  ctx.fillStyle = 'rgba(150,200,232,.75)';
+  ctx.font = '500 10px "IBM Plex Mono", monospace';
+  ctx.fillText('from ' + windFromName(from) + ' → blowing ' + windToName(from), cx, cy + r + 30);
 }
 
 export function forgetBoat(s, id) { s.wakes.delete(id); }

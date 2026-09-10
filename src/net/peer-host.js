@@ -10,6 +10,7 @@
 
 import { loadPeerJS, basePath } from '../shared/peer-loader.js';
 import { T, welcome, telemetry, event, isValidHello, sanitizeInput } from './protocol.js';
+import { LEVELS } from '../shared/assists.js';
 
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I O 0 1
 const cfg = () => window.SS_CONFIG;
@@ -128,6 +129,11 @@ export class PeerHost {
         player.lastSeen = Date.now();
         player.msgs++;
         if (this.h.onInput) this.h.onInput(player, s);
+      } else if (m && m.t === T.ASSIST) {
+        const lvl = LEVELS.indexOf(m.a) >= 0 ? m.a : 'strict';
+        player.assist = lvl;
+        if (this.h.onAssist) this.h.onAssist(player, lvl);
+        if (this.h.onPlayers) this.h.onPlayers(this.list());
       } else if (m && m.t === T.BYE) {
         this._drop(player, 'said goodbye');
       }
@@ -164,6 +170,7 @@ export class PeerHost {
       pid: m.pid,
       name: String(m.name || 'Sailor').slice(0, 16),
       hull: typeof m.hull === 'string' ? m.hull.slice(0, 12) : '#B3117A',
+      assist: LEVELS.indexOf(m.assist) >= 0 ? m.assist : 'strict',
       slot: this.slots++,
       conn,
       last: { r: 0, s: 0.25, h: 0, seq: 0, ts: 0 },
@@ -224,7 +231,8 @@ export class PeerHost {
   list() {
     const now = Date.now();
     return Array.from(this.players.values()).map((p) => ({
-      pid: p.pid, name: p.name, hull: p.hull, slot: p.slot, boatId: p.boatId,
+      pid: p.pid, name: p.name, hull: p.hull, assist: p.assist,
+      slot: p.slot, boatId: p.boatId,
       r: p.last.r, s: p.last.s, h: p.last.h, seq: p.last.seq, msgs: p.msgs,
       connected: !!(p.conn && p.conn.open) && !p.droppedAt,
       stale: now - p.lastSeen > 2000

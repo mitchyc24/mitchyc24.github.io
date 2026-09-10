@@ -37,6 +37,28 @@ body {
 .hulls button { width: 34px; height: 34px; border: 2px solid transparent; cursor: pointer; padding: 0; }
 .hulls button[aria-pressed="true"] { border-color: var(--ink); }
 
+/* assist picker — per player, so a beginner sails alongside an expert */
+.levels { display: flex; flex-direction: column; gap: 6px; }
+.levels button {
+  text-align: left; background: var(--surface); border: 1px solid var(--rule);
+  color: var(--ink-2); padding: 9px 12px; cursor: pointer; font-family: inherit;
+}
+.levels button[aria-pressed="true"] { border-color: var(--magenta); background: #1E1420; color: var(--ink); }
+.levels b { display: block; font-family: var(--f-display); font-size: 14px; color: var(--ink); }
+.levels span { font-size: 11px; line-height: 1.45; }
+.levels button[aria-pressed="true"] b { color: var(--magenta); }
+
+/* the same choice, reachable while sailing — scanning the QR skips the join
+   form entirely, so the join-screen picker alone would never be seen by the
+   people who most need it */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule); }
+.seg button {
+  background: var(--surface); border: 0; color: var(--muted); padding: 7px 4px;
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+}
+.seg button[aria-pressed="true"] { background: var(--magenta); color: var(--paper); font-weight: 600; }
+
 /* ── controller ─────────────────────────────────────────────────── */
 #ctl { display: none; flex-direction: column; flex: 1; gap: 8px; min-height: 0; }
 #ctl.live { display: flex; }
@@ -71,6 +93,12 @@ body {
 #tt.over, #tt.stalled { border-color: var(--err); background: #2A1210; }
 #tt.over .title, #tt.stalled .title { color: var(--err); }
 #tt.over .ribbons i, #tt.stalled .ribbons i { background: var(--err); animation: churn .5s infinite alternate ease-in-out; }
+#tt.running { border-color: var(--shoal); background: #10202B; }
+#tt.running .title { color: var(--shoal); }
+#tt.running .ribbons i { background: var(--shoal); }
+#tt.auto { border-color: var(--magenta); background: #1E1420; }
+#tt.auto .title { color: var(--magenta); }
+#tt.auto .ribbons i { background: var(--magenta); }
 #tt.capsized { border-color: var(--err); background: #2A1210; }
 #tt.capsized .title { color: var(--err); }
 #tt .ribbons i:nth-child(2) { animation-delay: .05s }
@@ -90,6 +118,16 @@ body {
 }
 #plane[data-state="onthehump"] { color: var(--warn); border-color: var(--warn); }
 #plane[data-state="planing"] { background: var(--magenta); color: var(--paper); border-color: var(--magenta); font-weight: 600; }
+
+/* orientation: where the wind is, drawn BOAT-UP so it matches what you are
+   steering rather than the map on the TV */
+.orient { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center;
+  background: var(--surface); border: 1px solid var(--rule); padding: 8px 12px 8px 8px; }
+.orient .dial svg { display: block; width: 92px; height: 92px; }
+.orient .pos .name { font-family: var(--f-display); font-weight: 800; font-size: 16px; line-height: 1.15; }
+.orient .pos .sub { font-size: 11px; color: var(--ink-2); margin-top: 3px; line-height: 1.4; }
+.orient.nogo { border-color: var(--err); }
+.orient.nogo .pos .name { color: var(--err); }
 
 /* instruments */
 .readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
@@ -126,6 +164,9 @@ body {
   position: absolute; left: 0; right: 0; text-align: center; pointer-events: none;
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
 }
+
+#sheet.auto { opacity: .4; }
+#sheet.auto .grip { background: var(--muted); }
 
 /* mainsheet: vertical, stays where you put it */
 #sheet { --s: .25; }
@@ -204,6 +245,10 @@ body {
     <label>Hull</label>
     <div class="hulls" id="hulls"></div>
   </div>
+  <div class="field">
+    <label>How much help?</label>
+    <div class="levels" id="levels"></div>
+  </div>
   <button class="btn" id="go">Join</button>
 </div>
 
@@ -218,6 +263,14 @@ body {
     <div class="ribbons"><i></i><i></i><i></i><i></i><i></i></div>
     <div class="title" id="tt-title">WAITING</div>
     <div class="hint" id="tt-hint">connecting to the boat</div>
+  </div>
+
+  <div class="orient">
+    <div class="dial" id="dial"></div>
+    <div class="pos">
+      <div class="name" id="r-pos">—</div>
+      <div class="sub" id="r-tack">finding the wind…</div>
+    </div>
   </div>
 
   <dl class="readout">
@@ -246,6 +299,8 @@ body {
 
   <div id="hike">HIKE OUT <small>hold</small></div>
 
+  <div class="seg" id="levels2" aria-label="How much help"></div>
+
   <button class="tog" id="tog">diagnostics</button>
   <div class="diagwrap" id="diagwrap" hidden>
     <div class="probe" id="probe"></div>
@@ -260,6 +315,8 @@ import { PeerClient } from '../src/net/peer-client.js';
 import { loadProfile, saveProfile } from '../src/shared/profile.js';
 import { makeTiller, makeSheet, makeHold } from '../src/controller/surfaces.js';
 import { EVENTS } from '../src/net/protocol.js';
+import { ASSISTS, LEVELS } from '../src/shared/assists.js';
+import { dialMarkup, updateDial } from '../src/controller/dial.js';
 
 const D = window.SSDiag; D.booted();
 const $ = (id) => document.getElementById(id);
@@ -279,6 +336,40 @@ HULLS.forEach((c) => {
   });
   $('hulls').appendChild(b);
 });
+
+/* ── assist picker ──────────────────────────────────────────────── */
+function paintLevels() {
+  for (const box of [$('levels'), $('levels2')]) {
+    [...box.children].forEach((b) =>
+      b.setAttribute('aria-pressed', String(b.dataset.level === profile.assist)));
+  }
+}
+function chooseLevel(id) {
+  profile.assist = id;
+  saveProfile(profile);
+  paintLevels();
+  if (client) {
+    client.setAssist(id);          // switch mid-game without losing the boat
+    banner(ASSISTS[id].name + ' — ' + ASSISTS[id].blurb, 2600);
+  }
+}
+LEVELS.forEach((id) => {
+  const a = ASSISTS[id];
+  const full = document.createElement('button');
+  full.dataset.level = id;
+  full.innerHTML = '<b>' + a.name + '</b><span>' + a.blurb + '</span>';
+  full.addEventListener('click', () => chooseLevel(id));
+  $('levels').appendChild(full);
+
+  const mini = document.createElement('button');
+  mini.dataset.level = id;
+  mini.textContent = a.name;
+  mini.addEventListener('click', () => chooseLevel(id));
+  $('levels2').appendChild(mini);
+});
+paintLevels();
+
+$('dial').innerHTML = dialMarkup();
 
 let client = null;
 
@@ -341,6 +432,13 @@ function paint(m) {
   $('r-vmg').innerHTML = m.vmg.toFixed(1) + ' <small>kn</small>';
   $('r-heel').innerHTML = Math.abs(m.heel) + '<small>°</small>';
 
+  /* Where the wind is, boat-up. The single cue that stops a beginner losing
+   * track of the wind while they are busy steering. */
+  updateDial($('dial'), m.twa);
+  $('r-pos').textContent = m.pos || '—';
+  $('r-tack').textContent = m.tk ? 'wind over the ' + m.tk + ' side' : 'wind dead ahead or astern';
+  document.querySelector('.orient').classList.toggle('nogo', Math.abs(m.twa) < 40);
+
   const bar = $('heelbar'), fill = bar.querySelector('.fill');
   const pct = Math.min(1, Math.abs(m.heel) / 60) * 50;
   if (m.heel >= 0) { fill.style.left = '50%'; fill.style.right = (50 - pct) + '%'; }
@@ -351,6 +449,9 @@ function paint(m) {
 
   setTelltale(m);
   setPlaning(m.pl);
+  /* On arcade the mainsheet is not the player's to move; dim it rather than
+   * leaving a live-looking control that does nothing. */
+  $('sheet').classList.toggle('auto', m.tt === 'auto');
 }
 
 const PLANE_COPY = {
@@ -376,6 +477,8 @@ const COPY = {
   good:     ['DRAWING WELL', 'that is the groove — hold it'],
   over:     ['OVER-TRIMMED', 'ease until she stops slowing'],
   stalled:  ['STALLED', 'way over-trimmed — ease out'],
+  running:  ['RUNNING', 'squared right off'],
+  auto:     ['TRIMMED FOR YOU', 'just steer — the sail looks after itself'],
   capsized: ['CAPSIZED', 'hold on — she is coming up']
 };
 

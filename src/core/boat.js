@@ -6,8 +6,9 @@
  */
 
 import { v2, add, scale, dot } from '../shared/vec2.js';
-import { wrap, clamp, approach } from '../shared/angles.js';
-import { BOATS, DEFAULT_BOAT } from '../shared/boats.js';
+import { wrap, clamp, approach, rad } from '../shared/angles.js';
+import { BOATS, DEFAULT_BOAT, withOverrides } from '../shared/boats.js';
+import { levelOf, AUTOTRIM_OFFSET_DEG } from '../shared/assists.js';
 import {
   apparentWind, sailForce, damp, forwardResistance, inducedDrag,
   rudderMoment, helmMoment, trackingMoment, equilibriumHeel, basis
@@ -15,8 +16,14 @@ import {
 
 export function createBoat(opts) {
   const o = opts || {};
+  const assist = levelOf(o.assist);
   return {
-    cls: BOATS[o.cls || DEFAULT_BOAT],
+    /* The assist level's boat overrides are baked into the class, so the
+     * force model never learns that assists exist. */
+    cls: Object.keys(assist.boat).length
+      ? withOverrides(o.cls || DEFAULT_BOAT, assist.boat)
+      : BOATS[o.cls || DEFAULT_BOAT],
+    assist: assist,
 
     p: v2(o.x || 0, o.y || 0),
     v: v2(0, 0),
@@ -36,7 +43,7 @@ export function createBoat(opts) {
 
     /* Derived, refreshed every step, for the HUD and the telltales. */
     out: {
-      aws: 0, awa: 0, aoa: 0, sigma: 0, luffing: true, stalled: false,
+      aws: 0, awa: 0, aoa: 0, sigma: 0, sheetEff: 0, luffing: true, stalled: false,
       sog: 0, u: 0, w: 0, leeway: 0,
       drive: 0, side: 0, heelDeg: 0, wave: 1
     },
@@ -45,6 +52,16 @@ export function createBoat(opts) {
     stats: { distance: 0, tacks: 0, gybes: 0, ironsSeconds: 0, capsizes: 0, topSpeed: 0 },
     _lastTackSign: 0
   };
+}
+
+/** Change level mid-game without losing the boat's position or way on. */
+export function setAssist(boat, id) {
+  const a = levelOf(id);
+  boat.assist = a;
+  boat.cls = Object.keys(a.boat).length
+    ? withOverrides(DEFAULT_BOAT, a.boat)
+    : BOATS[DEFAULT_BOAT];
+  return boat;
 }
 
 export function setInput(boat, input) {
@@ -84,14 +101,46 @@ export function step(boat, windFlow, dt, lockHeading) {
     return boat;
   }
 
+  /* ── the assist layer ──────────────────────────────────────────────
+   * Everything here acts on the PLAYER'S INPUT before it reaches the force
+   * model. Nothing below this block knows an assist exists. On strict, every
+   * term is zero and this is a no-op. */
+  const A = boat.assist;
+  let wantRudder = boat.input.r;
+  let wantSheet = boat.input.s;
+
+  if (A.headingHold > 0 && Math.abs(wantRudder) < 0.06) {
+    /* Tiller centred means "hold what I have". Counters the weather helm that
+     * otherwise rounds an unattended boat up into irons — the single biggest
+     * source of "I was doing fine and then she just stopped". */
+    if (boat._holdTheta === undefined || boat._holdTheta === null) boat._holdTheta = boat.theta;
+    const err = wrap(boat._holdTheta - boat.theta);
+    /* Positive rudder turns to STARBOARD, which DECREASES theta. So correcting
+     * a positive error (needing more theta) takes negative rudder. Getting
+     * this backwards drives her away from the course she is meant to hold,
+     * which looks exactly like the weather helm it is supposed to cancel. */
+    wantRudder = clamp(-err * 5.5 * A.headingHold, -0.75, 0.75);
+  } else {
+    boat._holdTheta = null;      // the player is steering; get out of the way
+  }
+
+  if (A.autoTrim > 0 && !boat.capsized) {
+    /* Aim the sheet at the angle of attack that draws well, DELIBERATELY a
+     * little off the true optimum so this is easier, not faster. */
+    const target = Math.abs(o.awa) - (b.optimalAoAR + rad(AUTOTRIM_OFFSET_DEG));
+    const wantSigma = Math.max(b.sheetMinR, Math.min(b.sheetMaxR, target));
+    const auto = (wantSigma - b.sheetMinR) / (b.sheetMaxR - b.sheetMinR);
+    wantSheet = wantSheet * (1 - A.autoTrim) + auto * A.autoTrim;
+  }
+
   /* ── controls, rate limited ────────────────────────────────────── */
-  const targetDelta = boat.input.r * b.rudderMaxR;
+  const targetDelta = wantRudder * b.rudderMaxR;
   boat.delta = approach(boat.delta, targetDelta, b.rudderRateR * dt);
 
   /* Sheet maps into [sheetMin, sheetMax] rather than starting at zero: the
    * boom stops at the centreline, so "strapped flat" is not a state you can
    * reach, and neither is the dead spot that came with it. */
-  const targetSigma = b.sheetMinR + boat.input.s * (b.sheetMaxR - b.sheetMinR);
+  const targetSigma = b.sheetMinR + wantSheet * (b.sheetMaxR - b.sheetMinR);
   boat.sigma = approach(boat.sigma, targetSigma, b.sheetRateR * dt);
 
   /* ── frames and apparent wind ──────────────────────────────────── */
@@ -172,6 +221,7 @@ export function step(boat, windFlow, dt, lockHeading) {
   o.side = sailLat;
   o.heelDeg = boat.phi * 180 / Math.PI;
   o.sigma = boat.sigma;
+  o.sheetEff = wantSheet;
   o.wave = res.wave;
   o.induced = di;
 

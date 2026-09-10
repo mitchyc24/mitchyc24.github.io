@@ -47,6 +47,8 @@ canvas { display: block; width: 100%; height: 100%; background: #06121C; }
   display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: baseline;
 }
 .pl .nm { font-family: var(--f-display); font-weight: 700; font-size: 15px; }
+.pl .nm em { font-family: var(--f-mono); font-style: normal; font-size: 9px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted); margin-left: 6px; }
 .pl .sog { font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; color: var(--shoal); }
 .pl .sub { grid-column: 1 / -1; font-size: 10px; color: var(--muted); letter-spacing: .05em; }
 .pl.good .sub { color: var(--ok); }
@@ -133,13 +135,14 @@ canvas { display: block; width: 100%; height: 100%; background: #06121C; }
 <script type="module">
 import { resolveCapability } from '../src/host/capability.js';
 import { PeerHost } from '../src/net/peer-host.js';
-import { createWorld, addBoat, removeBoat, applyInput, pump } from '../src/core/world.js';
+import { createWorld, addBoat, removeBoat, applyInput, setBoatAssist, pump } from '../src/core/world.js';
 import { windFrom } from '../src/core/wind.js';
-import { createScene, resize, frameBoats, drawWater, drawWakes, drawBoat,
-         drawWindIndicator, forgetBoat } from '../src/render/scene.js';
+import { createScene, resize, frameBoats, drawWater, drawWindStreaks, drawWakes,
+         drawBoat, drawWindIndicator, forgetBoat } from '../src/render/scene.js';
 import { telltale, planingState } from '../src/shared/telltales.js';
 import { qrSvg } from '../src/shared/qr.js';
 import { deg, wrap, rad } from '../src/shared/angles.js';
+import { pointOfSail, tackName } from '../src/shared/compass.js';
 import { msToKn } from '../src/shared/units.js';
 import { EVENTS } from '../src/net/protocol.js';
 
@@ -171,6 +174,7 @@ function spawnFor(slot) {
 const host = new PeerHost({
   onJoin: (player) => {
     const sp = spawnFor(player.slot);
+    sp.assist = player.assist;
     const b = addBoat(world, player.boatId, sp);
     b.hull = player.hull;
     b.name = player.name;
@@ -181,6 +185,10 @@ const host = new PeerHost({
   },
   onLeave: (player) => { removeBoat(world, player.boatId); forgetBoat(scene, player.boatId); },
   onInput: (player, input) => applyInput(world, player.boatId, input),
+  onAssist: (player, level) => {
+    setBoatAssist(world, player.boatId, level);
+    D.log('info', player.name + ' switched to ' + level);
+  },
   readBoat: (player) => {
     const b = world.byId.get(player.boatId);
     if (!b) return null;
@@ -194,7 +202,9 @@ const host = new PeerHost({
       vmg: msToKn(o.sog * Math.cos(rad(twa))),
       heel: o.heelDeg,
       aoa: deg(o.aoa),
-      tt: telltale(o, b.cls, b.capsized).band,
+      tt: telltale(o, b.cls, b.capsized, b.assist.trimAssist, b.assist.autoTrim).band,
+      pos: pointOfSail(twa).name,
+      tk: tackName(twa),
       pl: planingState(o, b.cls),
       cap: b.capsized
     };
@@ -250,7 +260,7 @@ function renderFleet(list) {
   const box = $('fleet');
   box.innerHTML = list.map((p) => `
     <div class="pl" data-boat="${p.boatId}" style="border-left-color:${esc(p.hull)}">
-      <span class="nm">${esc(p.name)}</span>
+      <span class="nm">${esc(p.name)}<em>${p.assist === 'strict' ? '' : esc(p.assist)}</em></span>
       <span class="sog">—</span>
       <span class="sub">joining…</span>
     </div>`).join('');
@@ -261,7 +271,7 @@ function paintFleet() {
     const row = document.querySelector('.pl[data-boat="' + p.boatId + '"]');
     const b = world.byId.get(p.boatId);
     if (!row || !b) continue;
-    const tt = telltale(b.out, b.cls, b.capsized);
+    const tt = telltale(b.out, b.cls, b.capsized, b.assist.trimAssist, b.assist.autoTrim);
     row.className = 'pl ' + tt.band + (p.connected ? '' : ' dropped');
     row.querySelector('.sog').textContent = msToKn(b.out.sog).toFixed(1) + ' kn';
     row.querySelector('.sub').textContent = p.connected ? tt.title : 'disconnected — drifting';
@@ -294,6 +304,7 @@ function frame(now) {
   const boats = world.boats;
   frameBoats(scene, boats);
   drawWater(scene, world.wind);
+  drawWindStreaks(scene, world.wind, world.time);
   drawWakes(scene, boats);
   for (const b of boats) {
     drawBoat(scene, b, { hull: b.hull, label: b.name, hiking: b.input.h });

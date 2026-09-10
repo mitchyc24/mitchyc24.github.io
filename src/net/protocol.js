@@ -7,19 +7,26 @@
  * and stays testable in Node.
  */
 
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 export const T = {
   HELLO:   'hello',   // phone -> host, once
   WELCOME: 'welcome', // host  -> phone, once
   IN:      'in',      // phone -> host, INPUT_HZ, lossy
+  ASSIST:  'asst',    // phone -> host, on change
   TEL:     'tel',     // host  -> phone, TEL_HZ
   EVT:     'evt',     // host  -> phone, on event
   BYE:     'bye'
 };
 
-export function hello(pid, name, hull) {
-  return { t: T.HELLO, v: PROTOCOL_VERSION, pid, name, hull };
+export function hello(pid, name, hull, assist) {
+  return { t: T.HELLO, v: PROTOCOL_VERSION, pid, name, hull, assist };
+}
+
+/** Change assist level mid-game. Per player, so a beginner on arcade sails in
+ *  the same fleet as someone on strict. */
+export function setAssistMsg(level) {
+  return { t: T.ASSIST, a: level };
 }
 
 export function welcome(slot, hostKind, boat) {
@@ -50,6 +57,8 @@ export function telemetry(p) {
     vmg: r2(p.vmg),      // knots, +ve to windward
     heel: r0(p.heel),    // degrees, signed: +ve to starboard
     tt: p.tt,            // telltale band, from shared/telltales.js
+    pos: p.pos,          // point of sail, named
+    tk: p.tk,            // which tack — port or starboard
     pl: p.pl,            // planing state — the lesson telltales cannot teach
     aoa: r0(p.aoa),      // degrees
     cap: p.cap ? 1 : 0,  // capsized

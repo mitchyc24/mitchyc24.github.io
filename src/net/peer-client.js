@@ -6,7 +6,7 @@
  */
 
 import { loadPeerJS } from '../shared/peer-loader.js';
-import { T, hello, input } from './protocol.js';
+import { T, hello, input, setAssistMsg } from './protocol.js';
 
 const cfg = () => window.SS_CONFIG;
 const BACKOFF = [1000, 2000, 4000, 8000, 8000];
@@ -34,6 +34,14 @@ export class PeerClient {
     this._sendTimer = null;
     this._closing = false;
     this._sentAt = new Map();
+  }
+
+  /** Change assist level mid-game; takes effect on the next host step. */
+  setAssist(level) {
+    this.profile.assist = level;
+    if (this.conn && this.conn.open) {
+      try { this.conn.send(setAssistMsg(level)); } catch (e) { /* channel closing */ }
+    }
   }
 
   setControls(c) {
@@ -82,7 +90,8 @@ export class PeerClient {
       conn.on('open', () => {
         clearTimeout(iceGuard);
         this.attempt = 0;
-        conn.send(hello(this.profile.pid, this.profile.name, this.profile.hull));
+        conn.send(hello(this.profile.pid, this.profile.name, this.profile.hull,
+                        this.profile.assist));
         this._setState('connected');
         this._startSending();
       });

@@ -21,7 +21,8 @@ export const TELLTALE = {
   GOOD: 'good',
   OVER: 'over',
   STALLED: 'stalled',
-  RUNNING: 'running'
+  RUNNING: 'running',
+  AUTO: 'auto'
 };
 
 /* How far either side of the optimum still counts as being in the groove.
@@ -34,10 +35,20 @@ export const GROOVE_DEG = 5;
  * @param cls   the boat class, for optimalAoA and stallEnd
  * @returns { band, title, hint, act } where act is -1 trim in, 0 hold, +1 ease
  */
-export function telltale(out, cls, capsized) {
+export function telltale(out, cls, capsized, extraGroove, autoTrim) {
+  const groove = GROOVE_DEG + (extraGroove || 0);
   if (capsized) {
     return { band: TELLTALE.CAPSIZED, title: 'CAPSIZED', hint: 'hold on — she is coming up', act: 0 };
   }
+  /* If the sheet is being trimmed FOR the player, a trim instruction is noise
+   * at best and a contradiction at worst — the strip telling you the sail is
+   * over-trimmed while the game is the one trimming it. Same rule as the run:
+   * only give advice the player can act on. */
+  if (autoTrim >= 0.999) {
+    return { band: TELLTALE.AUTO, title: 'TRIMMED FOR YOU',
+             hint: 'just steer — the sail looks after itself', act: 0 };
+  }
+
   if (out.luffing) {
     return { band: TELLTALE.LUFFING, title: 'LUFFING', hint: 'sail flapping — trim in', act: -1 };
   }
@@ -53,15 +64,23 @@ export function telltale(out, cls, capsized) {
      * and it is why real sailors stop reading telltales downwind. */
     const atTheStop = out.sigma !== undefined && out.sigma >= cls.sheetMaxR * 0.95;
     if (atTheStop || Math.abs(deg(out.awa)) > 120) {
-      return { band: TELLTALE.RUNNING, title: 'RUNNING',
-               hint: 'squared off — telltales do not apply here', act: 0 };
+      /* "Do nothing" was wrong here and it cost real speed. A player who bears
+       * away with the sheet half in gets told the sail is stalled, cannot ease
+       * usefully by the usual rule, and just sails slowly. On a run you square
+       * the boom right off — so say that, until the sheet is actually at the
+       * stop and there is genuinely nothing left to do. */
+      return atTheStop
+        ? { band: TELLTALE.RUNNING, title: 'RUNNING',
+            hint: 'squared right off — nothing more to trim', act: 0 }
+        : { band: TELLTALE.RUNNING, title: 'RUNNING',
+            hint: 'let it all the way out', act: 1 };
     }
     return { band: TELLTALE.STALLED, title: 'STALLED', hint: 'way over-trimmed — ease out', act: 1 };
   }
-  if (aoa > opt + GROOVE_DEG) {
+  if (aoa > opt + groove) {
     return { band: TELLTALE.OVER, title: 'OVER-TRIMMED', hint: 'ease until she stops slowing', act: 1 };
   }
-  if (aoa < opt - GROOVE_DEG) {
+  if (aoa < opt - groove) {
     return { band: TELLTALE.EDGE, title: 'ON THE EDGE', hint: 'nearly luffing — trim in a touch', act: -1 };
   }
   return { band: TELLTALE.GOOD, title: 'DRAWING WELL', hint: 'that is the groove — hold it', act: 0 };

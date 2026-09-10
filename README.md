@@ -386,6 +386,66 @@ src/net/protocol.js       v2 wire format — no DOM, no PeerJS
 
 ---
 
+## Assist levels
+
+Chosen **per player**, on the phone, and changeable mid-game without losing your
+boat. A beginner on arcade sails in the same fleet as someone on strict.
+
+| | |
+|---|---|
+| **Strict** | The real thing. In irons is real, capsizing is real. |
+| **Assisted** | Holds her course with the tiller centred, steers at any speed, much harder to capsize. You still trim. |
+| **Arcade** | The sail trims itself and she will not go over. Just steer. |
+
+**The physics is not forked.** There is one force model — the real one — and
+every level runs it. What changes is a handful of boat constants and a thin
+layer over the player's input, both declared in `src/shared/assists.js`. A
+second simplified simulation would drift out of step, and the polar sweep and
+the emergent-behaviour suite would only ever cover one of them.
+
+### Speed-neutral, and measured
+
+Assists are **easier, not faster**. Auto-trim deliberately aims off the optimum,
+and the offset was measured rather than guessed:
+
+```bash
+node tools/assist-balance.js     # arcade vs a strict boat sailed well
+```
+
+`AUTOTRIM_OFFSET_DEG = 12` puts arcade at **99%** of a well-sailed strict boat
+across the points of sail and both wind strengths. Change it and re-run the
+tool, or `test/assists.test.mjs` will fail you. A beginner who could simply
+out-sail an expert by switching mode would make mixed-ability racing pointless
+and remove any reason to learn the real boat.
+
+One thing no assist removes: **you still cannot sail straight into the wind.**
+There is a test for it. Take that away and there is no game left.
+
+---
+
+## Wind, said unambiguously
+
+Wind direction is the most confusable thing in a sailing game, because the two
+conventions point opposite ways: sailors name a wind by where it **comes from**,
+arrows show where it **goes**. An early build drew the arrow 90° out and the
+whole game felt arbitrary — you cannot learn a boat when the one cue telling you
+where the wind is happens to be lying.
+
+`src/shared/compass.js` owns that maths now, in one pure module the renderer and
+the tests share. On top of it:
+
+- **Drifting streaks on the water** — the only cue that cannot be misread,
+  because it moves. Everything else is a caption for this.
+- **A rose that states both facts**: "NORTHERLY 12 kn" and "from N → blowing S".
+- **A points-of-sail dial on the phone**, drawn **boat-up** — your bow at the
+  top, the wind swinging around it, the no-go zone a shaded wedge you can watch
+  yourself heading into. The TV shows the fleet from above, which is the wrong
+  frame when you are the one steering.
+- **The point of sail named in words** — CLOSE HAULED, BEAM REACH, RUNNING — so
+  an angle becomes a thing you can learn.
+
+---
+
 ## Next
 
 M3 — the harbour lobby: QR join into a sailable world, mode zones you sail into

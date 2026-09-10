@@ -5,7 +5,7 @@
  */
 
 import { createWind, advanceWind, windAt } from './wind.js';
-import { createBoat, setInput, step as stepBoat } from './boat.js';
+import { createBoat, setInput, setAssist, step as stepBoat } from './boat.js';
 
 export const DT = 1 / 60;
 const MAX_STEPS = 5;   // after a stall, drop time rather than fast-forward
@@ -35,6 +35,12 @@ export function removeBoat(world, id) {
   world.byId.delete(id);
   const i = world.boats.indexOf(b);
   if (i >= 0) world.boats.splice(i, 1);
+}
+
+export function setBoatAssist(world, id, level) {
+  const b = world.byId.get(id);
+  if (b) setAssist(b, level);
+  return b;
 }
 
 export function applyInput(world, id, input) {

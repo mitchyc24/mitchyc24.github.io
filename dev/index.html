@@ -92,6 +92,7 @@ canvas { display: block; width: 100%; height: 100%; touch-action: none; }
     <div><dt>True wind</dt><dd id="i-twa">0<small>°</small></dd></div>
     <div><dt>Heel</dt><dd id="i-heel">0<small>°</small></dd></div>
     <div><dt>VMG</dt><dd id="i-vmg">0.0 <small>kn</small></dd></div>
+    <div style="grid-column:1/-1"><dt>Point of sail</dt><dd id="i-pos" style="font-size:15px">—</dd></div>
   </dl>
 
   <div class="hud" id="telltale">
@@ -116,7 +117,10 @@ canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
 <script type="module">
 import { createWorld, addBoat, applyInput, pump, DT } from '../src/core/world.js';
-import { windFrom, windAt, gustAt } from '../src/core/wind.js';
+import { windFrom } from '../src/core/wind.js';
+import { createScene, resize, drawWater, drawWindStreaks, drawWakes, drawBoat,
+         drawWindIndicator } from '../src/render/scene.js';
+import { pointOfSail, tackName } from '../src/shared/compass.js';
 import { BOATS, withOverrides } from '../src/shared/boats.js';
 import { deg, rad, wrap, clamp } from '../src/shared/angles.js';
 import { msToKn } from '../src/shared/units.js';
@@ -145,8 +149,8 @@ addEventListener('keydown', (e) => {
   keys[e.key] = true;
   if (e.key === '~') $('tune').classList.toggle('on');
   if (e.key === 'r' || e.key === 'R') reset();
-  if (e.key === '+' || e.key === '=') PPM = Math.min(40, PPM * 1.25);
-  if (e.key === '-' || e.key === '_') PPM = Math.max(4, PPM / 1.25);
+  if (e.key === '+' || e.key === '=') scene.ppm = Math.min(40, scene.ppm * 1.25);
+  if (e.key === '-' || e.key === '_') scene.ppm = Math.max(4, scene.ppm / 1.25);
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
 });
 addEventListener('keyup', (e) => { keys[e.key] = false; });
@@ -249,143 +253,12 @@ function buildTune() {
 buildTune();
 if (Q.get('tune') === '1') $('tune').classList.add('on');
 
-/* ── rendering ──────────────────────────────────────────────────── */
-const cv = $('c'), ctx = cv.getContext('2d');
-let W = 0, H = 0, DPR = 1;
-let PPM = Number(Q.get('zoom')) || 15;   // pixels per metre
-
-function resize() {
-  DPR = Math.min(2, window.devicePixelRatio || 1);
-  W = cv.clientWidth; H = cv.clientHeight;
-  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-}
-addEventListener('resize', resize);
-
-/* World (y north, up) to screen (y down). */
-const sx = (wx) => W / 2 + (wx - me.p.x) * PPM;
-const sy = (wy) => H / 2 - (wy - me.p.y) * PPM;
-
-function drawWater() {
-  ctx.fillStyle = '#06121C';
-  ctx.fillRect(0, 0, W, H);
-
-  /* Gusts, sampled coarsely — darker water is more wind, exactly as it reads
-   * from a real boat. */
-  const cell = 16;
-  for (let py = 0; py < H; py += cell) {
-    for (let px = 0; px < W; px += cell) {
-      const wx = me.p.x + (px + cell / 2 - W / 2) / PPM;
-      const wy = me.p.y - (py + cell / 2 - H / 2) / PPM;
-      const g = gustAt(world.wind, { x: wx, y: wy });
-      const k = clamp((g - 0.75) / 0.5, 0, 1);
-      ctx.fillStyle = 'rgba(120,173,206,' + (0.03 + k * 0.09).toFixed(3) + ')';
-      ctx.fillRect(px, py, cell, cell);
-    }
-  }
-
-  /* A sparse grid so motion is legible on open water. */
-  ctx.strokeStyle = 'rgba(120,173,206,.07)'; ctx.lineWidth = 1;
-  const G = 25;
-  const x0 = Math.floor((me.p.x - W / 2 / PPM) / G) * G;
-  const y0 = Math.floor((me.p.y - H / 2 / PPM) / G) * G;
-  ctx.beginPath();
-  for (let x = x0; x < me.p.x + W / PPM; x += G) { ctx.moveTo(sx(x), 0); ctx.lineTo(sx(x), H); }
-  for (let y = y0; y < me.p.y + H / PPM; y += G) { ctx.moveTo(0, sy(y)); ctx.lineTo(W, sy(y)); }
-  ctx.stroke();
-}
-
-const wake = [];
-function drawWake() {
-  if (!me.capsized && me.out.sog > 0.4 && wake.length < 600) {
-    wake.push({ x: me.p.x, y: me.p.y, a: Math.min(1, me.out.sog / 4) });
-  }
-  if (wake.length > 260) wake.shift();
-  for (let i = 0; i < wake.length; i++) {
-    const w = wake[i], t = i / wake.length;
-    ctx.fillStyle = 'rgba(190,222,240,' + (t * t * w.a * 0.30).toFixed(3) + ')';
-    ctx.beginPath();
-    ctx.arc(sx(w.x), sy(w.y), 1.1 + t * 3.0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawBoat(b) {
-  const B = b.cls;
-  const cx = sx(b.p.x), cy = sy(b.p.y);
-  ctx.save();
-  ctx.translate(cx, cy);
-  /* Screen y is flipped, so a CCW world heading is CW on screen. */
-  ctx.rotate(-b.theta + Math.PI / 2);
-
-  const L = B.loa * PPM, halfB = (B.beam / 2) * PPM;
-  /* Foreshorten across the beam to fake heel — cheap, and reads instantly. */
-  const heelSquash = Math.cos(b.phi);
-  ctx.scale(Math.max(0.18, Math.abs(heelSquash)) * Math.sign(heelSquash || 1), 1);
-
-  /* hull */
-  ctx.beginPath();
-  ctx.moveTo(0, -L * 0.5);
-  ctx.quadraticCurveTo(halfB, -L * 0.16, halfB * 0.86, L * 0.34);
-  ctx.lineTo(-halfB * 0.86, L * 0.34);
-  ctx.quadraticCurveTo(-halfB, -L * 0.16, 0, -L * 0.5);
-  ctx.closePath();
-  ctx.fillStyle = b.capsized ? '#5A6B77' : '#E9EEF2';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(6,18,28,.8)'; ctx.lineWidth = 1.2; ctx.stroke();
-
-  /* sail: swings to leeward, and its belly follows the wind side */
-  if (!b.capsized) {
-    const side = b.out.awa > 0 ? 1 : -1;      // wind from port -> boom to starboard
-    const boom = side * b.sigma;
-    const mast = { x: 0, y: -L * 0.18 };
-    const clew = { x: Math.sin(boom) * L * 0.52, y: -L * 0.18 + Math.cos(boom) * L * 0.52 };
-    const belly = 0.16 * L * (b.out.luffing ? 0.25 : 1) * side;
-    ctx.beginPath();
-    ctx.moveTo(mast.x, mast.y);
-    ctx.quadraticCurveTo((mast.x + clew.x) / 2 + belly * Math.cos(boom),
-                         (mast.y + clew.y) / 2 - belly * Math.sin(boom) * side,
-                         clew.x, clew.y);
-    ctx.strokeStyle = b.out.luffing ? '#E3B341' : (b.out.stalled ? '#E97A6F' : '#FFFFFF');
-    ctx.lineWidth = 3.2; ctx.lineCap = 'round';
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  /* rudder angle, drawn unsquashed so it stays readable */
-  ctx.save();
-  ctx.translate(cx, cy); ctx.rotate(-b.theta + Math.PI / 2);
-  ctx.translate(0, L * 0.34); ctx.rotate(-b.delta);
-  ctx.strokeStyle = 'rgba(240,119,187,.9)'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, L * 0.14); ctx.stroke();
-  ctx.restore();
-}
-
-function drawWindIndicator() {
-  const panel = $('tune').classList.contains('on') ? 320 : 0;
-  const r = 46, cx = W - panel - r - 26, cy = r + 26;
-  const from = windFrom(world.wind);
-  ctx.save();
-  ctx.globalAlpha = 0.92;
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(9,20,28,.85)'; ctx.fill();
-  ctx.strokeStyle = 'rgba(120,173,206,.35)'; ctx.lineWidth = 1; ctx.stroke();
-
-  /* Arrow points the way the wind is blowing. */
-  const a = -from + Math.PI;
-  ctx.translate(cx, cy); ctx.rotate(a);
-  ctx.strokeStyle = '#78ADCE'; ctx.lineWidth = 2.4;
-  ctx.beginPath(); ctx.moveTo(0, -r * 0.62); ctx.lineTo(0, r * 0.5); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-6, r * 0.28); ctx.lineTo(0, r * 0.5); ctx.lineTo(6, r * 0.28);
-  ctx.fillStyle = '#78ADCE'; ctx.fill();
-  ctx.restore();
-
-  ctx.fillStyle = 'rgba(180,200,215,.85)';
-  ctx.font = '500 10px "IBM Plex Mono", monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText(msToKn(world.wind.baseSpeed * gustAt(world.wind, me.p)).toFixed(1) + ' kn',
-               cx, cy + r + 14);
-}
+/* ── rendering ──────────────────────────────────────────────────────
+ * Uses the shared renderer, so the dev view cannot drift away from what the
+ * TV actually shows — which is how the wind indicator here ended up 90
+ * degrees out from reality for a while. */
+const scene = createScene($('c'), { fidelity: 'full', ppm: Number(Q.get('zoom')) || 15 });
+addEventListener('resize', () => resize(scene));
 
 /* ── telltales ──────────────────────────────────────────────────── */
 function telltale(b) {
@@ -401,7 +274,7 @@ function telltale(b) {
 
 /* ── loop ───────────────────────────────────────────────────────── */
 let last = performance.now();
-resize();
+resize(scene);
 
 function frame(now) {
   const elapsed = (now - last) / 1000; last = now;
@@ -413,10 +286,12 @@ function frame(now) {
 
   pump(world, elapsed);
 
-  drawWater();
-  drawWake();
-  drawBoat(me);
-  drawWindIndicator();
+  scene.camera.x = me.p.x; scene.camera.y = me.p.y;
+  drawWater(scene, world.wind);
+  drawWindStreaks(scene, world.wind, world.time);
+  drawWakes(scene, [me]);
+  drawBoat(scene, me, { hiking: me.input.h });
+  drawWindIndicator(scene, world.wind, { right: $('tune').classList.contains('on') ? 320 : 0 });
 
   const o = me.out;
   $('i-sog').innerHTML = msToKn(o.sog).toFixed(1) + ' <small>kn</small>';
@@ -424,7 +299,9 @@ function frame(now) {
     (o.awa > 0 ? 'port' : 'stbd') + '</small>';
   $('i-aws').innerHTML = msToKn(o.aws).toFixed(1) + ' <small>kn</small>';
   const twa = deg(wrap(windFrom(world.wind) - me.theta));
-  $('i-twa').innerHTML = Math.abs(twa).toFixed(0) + '<small>°</small>';
+  const pos = pointOfSail(twa), tack = tackName(twa);
+  $('i-twa').innerHTML = Math.abs(twa).toFixed(0) + '<small>° ' + (tack || '') + '</small>';
+  $('i-pos').textContent = pos.name;
   $('i-heel').innerHTML = Math.abs(o.heelDeg).toFixed(0) + '<small>° ' +
     (o.heelDeg > 0 ? 'stbd' : 'port') + '</small>';
   $('i-vmg').innerHTML = msToKn(o.sog * Math.cos(rad(twa))).toFixed(1) + ' <small>kn</small>';

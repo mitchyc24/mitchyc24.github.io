@@ -29,6 +29,7 @@ function fresh() {
     pid: uuid(),
     name: NAMES[Math.floor(Math.random() * NAMES.length)],
     hull: '#B3117A',
+    assist: 'strict',
     created: Date.now(),
     stats: {}          // M4 fills this in
   };
@@ -41,7 +42,10 @@ export function loadProfile() {
   if (raw) {
     try {
       const p = JSON.parse(raw);
-      if (p && p.v === 1 && typeof p.pid === 'string') return p;
+      if (p && p.v === 1 && typeof p.pid === 'string') {
+        if (!p.assist) p.assist = 'strict';
+        return p;
+      }
     } catch (e) { /* corrupt — fall through and start clean */ }
   }
 
