@@ -67,8 +67,58 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
     <div class="probe">
       <div class="pk">cast state</div><div class="pv" id="caststate">—</div>
       <div class="pk">receivers found</div><div class="pv" id="devcount">—</div>
+      <div class="pk">app ID in use</div><div class="pv" id="appid">—</div>
     </div>
     <div class="verdict" id="devhelp"></div>
+  </div>
+
+  <!-- Shown only when discovery comes back empty. Splits the two causes
+       instead of leaving you to guess between them. -->
+  <div class="panel" id="triage" hidden>
+    <p class="eyebrow" style="margin-bottom:10px">Nothing found — narrow it down</p>
+
+    <p style="font-size:13px;margin-bottom:12px">
+      Your app <code id="ourid"></code> is <b>unpublished</b>, so a Chromecast only
+      offers it once that exact serial number is registered <i>and</i> the device has
+      been rebooted afterwards. Google's Default Media Receiver is published and
+      available on every Chromecast, so trying it separates the two causes:
+    </p>
+
+    <p style="margin-bottom:12px">
+      <a class="btn ghost" id="trydefault" style="text-decoration:none;display:inline-block;font-size:13px;padding:10px 16px">
+        Test discovery with Google's default receiver
+      </a>
+    </p>
+
+    <div class="probe" style="gap:6px 14px">
+      <div class="pk" style="grid-column:1/-1;color:var(--ok)">
+        If the default receiver <b>does</b> find your TV
+      </div>
+      <div class="pv" style="grid-column:1/-1;text-align:left;color:var(--ink-2)">
+        Discovery and your network are fine. It is app availability: re-check the
+        serial number in the console, wait the full 15 minutes, then pull the
+        Chromecast's power for 10 seconds and plug it back in.
+      </div>
+      <div class="pk" style="grid-column:1/-1;color:var(--err);padding-top:8px">
+        If it finds nothing either
+      </div>
+      <div class="pv" style="grid-column:1/-1;text-align:left;color:var(--ink-2)">
+        The problem is discovery, not this app. In rough order of likelihood:
+        a VPN or corporate network client on this PC (mDNS does not survive one);
+        the Chromecast on a different SSID, guest network or VLAN;
+        AP isolation on the router; the device asleep or unplugged; mDNS blocked
+        by Windows Firewall. Also check the clock — more than ten minutes of skew
+        between PC and Chromecast makes Cast authentication fail outright.
+        <br><br>
+        Quickest independent check: Chrome's own menu → <b>Cast</b>. That does
+        generic discovery with no app ID involved. If your Ultra is missing there
+        too, nothing in this project can help until the network is fixed.
+      </div>
+    </div>
+
+    <p style="font-size:12.5px;margin-top:12px;color:var(--muted)" id="backlink-wrap" hidden>
+      <a href="./">← back to the Sailing School receiver</a>
+    </p>
   </div>
 
   <div class="keepopen">
@@ -120,9 +170,8 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
     var C = cast.framework.CastState;
     if (s === C.NO_DEVICES_AVAILABLE) {
       return ['no receivers found on this network',
-              'Nothing to cast to yet. The computer and the Chromecast must be ' +
-              'on the same network and subnet, and in Chrome — Edge and Firefox ' +
-              'cannot discover Cast devices.'];
+              'Either nothing is discoverable, or this device does not offer ' +
+              'your unpublished app yet. The panel below tells the two apart.'];
     }
     if (s === C.NOT_CONNECTED) return ['receiver available — press Cast', ''];
     if (s === C.CONNECTING) return ['connecting…', ''];
@@ -145,8 +194,21 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
       receiverApplicationId: CFG.CAST_APP_ID,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
     });
-    D.log('ok', 'cast sender ready — app ID ' + CFG.CAST_APP_ID);
+    var usingDefault = CFG.CAST_APP_ID === CFG.CAST_DEFAULT_MEDIA_RECEIVER;
+    D.log('ok', 'cast sender ready — app ID ' + CFG.CAST_APP_ID +
+                (usingDefault ? '  (Google Default Media Receiver)' : ''));
+
     el('devices').hidden = false;
+    el('appid').textContent = CFG.CAST_APP_ID + (usingDefault ? ' — default' : '');
+    el('ourid').textContent = CFG.CAST_APP_ID;
+    el('trydefault').href = '?appid=' + CFG.CAST_DEFAULT_MEDIA_RECEIVER;
+    el('backlink-wrap').hidden = !CFG.CAST_APP_ID_OVERRIDDEN;
+
+    if (usingDefault) {
+      el('trydefault').parentNode.hidden = true;
+      D.log('warn', 'discovery test only — this launches Google\'s blank media ' +
+                    'receiver, not the game');
+    }
 
     /* Our own button, so it is always visible and always says something. */
     el('castbtn').disabled = false;
@@ -158,13 +220,14 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
     });
 
     function paintCastState(s) {
+      var none = (s === cast.framework.CastState.NO_DEVICES_AVAILABLE);
       var d = describeCastState(s);
       el('caststate').textContent = d[0];
       el('devhelp').textContent = d[1];
-      el('devcount').textContent =
-        (s === cast.framework.CastState.NO_DEVICES_AVAILABLE) ? '0' : '1 or more';
+      el('devcount').textContent = none ? '0' : '1 or more';
       el('state').textContent = d[0];
-      el('castbtn').disabled = (s === cast.framework.CastState.NO_DEVICES_AVAILABLE);
+      el('castbtn').disabled = none;
+      el('triage').hidden = !none;
     }
 
     paintCastState(ctx.getCastState());

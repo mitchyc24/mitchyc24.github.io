@@ -65,4 +65,22 @@ window.SS_CONFIG = {
     C.PEER_OPTS.config = { iceServers: [] };
     C.STUN_OFF = true;
   }
+
+  /* ?appid=XXXXXXXX — cast with a different receiver application.
+   *
+   * The one that matters is Google's Default Media Receiver, CC1AD845. It is
+   * published and available on every Chromecast ever made, so it isolates the
+   * two reasons a sender reports "no receivers found":
+   *
+   *   default receiver finds a device, ours does not  →  app availability
+   *      (device not registered, or not rebooted since registering)
+   *   neither finds a device                          →  discovery itself
+   *      (mDNS blocked, VPN, guest network, AP isolation, device asleep)
+   */
+  var appid = q.get('appid');
+  if (appid) {
+    C.CAST_APP_ID = appid.toUpperCase();
+    C.CAST_APP_ID_OVERRIDDEN = true;
+  }
+  C.CAST_DEFAULT_MEDIA_RECEIVER = 'CC1AD845';
 })();
