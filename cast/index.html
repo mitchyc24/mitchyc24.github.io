@@ -121,6 +121,25 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
     </p>
   </div>
 
+  <!-- Shown whenever ?appid= is pointing at Google's default receiver. Without
+       this, a blank TV showing a Cast logo reads as a failure when it is in
+       fact the expected result. -->
+  <div class="panel" id="defaultmode" hidden style="border-color:var(--shoal)">
+    <p class="eyebrow" style="color:var(--shoal);margin-bottom:10px">Discovery test — not the game</p>
+    <p style="font-size:13.5px;margin-bottom:12px">
+      <code>CC1AD845</code> is Google's <b>Default Media Receiver</b>: a media
+      player with no media loaded. So <b>a Cast logo on an otherwise blank TV is
+      exactly what success looks like here.</b> There is nothing more to see —
+      this test only answers whether your network can find the device at all.
+    </p>
+    <div id="defaultverdict" style="font-size:13.5px"></div>
+    <p style="margin:14px 0 0">
+      <a class="btn" href="./" style="text-decoration:none;display:inline-block;font-size:14px;padding:12px 20px">
+        Back to the Sailing School receiver
+      </a>
+    </p>
+  </div>
+
   <div class="keepopen">
     Keep this tab open. A Cast session ends when its last sender disconnects, so
     this page is the ignition key — it heartbeats every 20 seconds to stop the
@@ -206,6 +225,7 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
 
     if (usingDefault) {
       el('trydefault').parentNode.hidden = true;
+      el('defaultmode').hidden = false;
       D.log('warn', 'discovery test only — this launches Google\'s blank media ' +
                     'receiver, not the game');
     }
@@ -220,7 +240,8 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
     });
 
     function paintCastState(s) {
-      var none = (s === cast.framework.CastState.NO_DEVICES_AVAILABLE);
+      var C = cast.framework.CastState;
+      var none = (s === C.NO_DEVICES_AVAILABLE);
       var d = describeCastState(s);
       el('caststate').textContent = d[0];
       el('devhelp').textContent = d[1];
@@ -228,6 +249,31 @@ p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
       el('state').textContent = d[0];
       el('castbtn').disabled = none;
       el('triage').hidden = !none;
+
+      /* The whole point of the default-receiver run: say what it proved. */
+      if (!usingDefault) return;
+      if (s === C.CONNECTED) {
+        el('defaultverdict').innerHTML =
+          '<b style="color:var(--ok)">Result: discovery works.</b> Your network, ' +
+          'mDNS and this browser are all fine, and the Ultra is reachable. So the ' +
+          'earlier &ldquo;no receivers found&rdquo; for app <code>FB21C379</code> ' +
+          'was <b>app availability</b>: the Chromecast is not yet offering your ' +
+          'unpublished app.<br><br>' +
+          'Fix it in this order: confirm the serial in the console reads exactly ' +
+          '<code>9911C91V8N</code> &middot; make sure 15 minutes have passed since ' +
+          'you registered it &middot; <b>pull the Chromecast\'s power for 10 seconds ' +
+          'and plug it back in</b> &mdash; the reboot is the step people skip &middot; ' +
+          'then come back here without the <code>?appid=</code>.';
+      } else if (none) {
+        el('defaultverdict').innerHTML =
+          '<b style="color:var(--err)">Result: discovery is broken.</b> Even ' +
+          'Google\'s own receiver cannot see your TV, so this is a network problem ' +
+          'and nothing in this project can work around it. Check for a VPN on this ' +
+          'PC first, then the Chromecast\'s network, then AP isolation.';
+      } else {
+        el('defaultverdict').textContent =
+          'Press Cast and pick the Ultra. Waiting for a result…';
+      }
     }
 
     paintCastState(ctx.getCastState());

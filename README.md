@@ -87,6 +87,36 @@ That is the right state for M0 — publish later, when someone else needs to run
    disconnects. The tab heartbeats every 20 s; the receiver raises
    `maxInactivity` to an hour to match.
 
+### If the sender says "no receivers found"
+
+Discovery is filtered by whether a device offers the app you asked for, so this
+one message has two very different causes. `/cast/` shows a triage panel that
+splits them, using `?appid=CC1AD845` — Google's Default Media Receiver, which is
+published and available on every Chromecast ever made.
+
+**A Cast logo on an otherwise blank TV is what success looks like for that
+test.** CC1AD845 is a media player with no media loaded; there is nothing more
+to see. It only answers whether the device is reachable.
+
+- **Default receiver connects, yours doesn't** → app availability. Confirm the
+  serial, confirm 15 minutes have passed, then **pull the Chromecast's power for
+  10 seconds**. The reboot is the step people skip.
+- **Neither connects** → discovery. VPN on the PC first, then the Chromecast's
+  network, then AP isolation. Fastest independent check: Chrome menu → **Cast**.
+
+Note also that the application and the device must be registered under the
+**same developer account**, and sender and receiver must be on the same network.
+
+### Once your app does launch
+
+If the TV shows the landing page with two buttons, the receiver URL is still the
+site root — change it to `https://mitchyc24.github.io/host/`.
+
+For anything else, attach DevTools over the LAN at `http://<chromecast-ip>:9222`,
+or use `chrome://inspect`. Find the IP in Google Home → device → settings →
+Information. Don't leave the debugger attached for long; it exhausts resources
+on the receiver.
+
 ### What to read off the TV
 
 The diagnostics drawer, bottom of the screen:
@@ -215,8 +245,83 @@ itself. That's the part M0 is asking you to do.
 
 ---
 
+---
+
+## M1 — the physics
+
+`src/core/` is DOM-free, network-free and render-free, so the whole simulation
+runs headless in Node. That is what makes the physics tunable at all: squinting
+at a boat on a TV tells you almost nothing.
+
+```bash
+node tools/polar-sweep.js 6      # the polar at 6 m/s
+node tools/trap-check.js         # bistability check
+node --test "test/*.test.mjs"    # 24 emergent-behaviour tests
+open dev/                        # sail it — keyboard, or scan the QR
+```
+
+`/dev/` is the sail lab: canvas, instruments, telltales, and a live tuning
+overlay on `?tune=1`. Keys: arrows for tiller and mainsheet, space to hike,
+`~` for tuning, `R` to reset, `+`/`-` to zoom. It also hosts a room, so the M0
+phone controller can take the helm — scan the QR in the corner.
+
+### What the polar says, at 6 m/s (12 kn)
+
+| | |
+|---|---|
+| No-go zone | nothing below 25°, creeping at 30°, sailing by 40° |
+| Best upwind VMG | 50°, with 45° at 99% of it — a flat groove, as real polars have |
+| Fastest | 90° at 8.6 kn, planing |
+| Best downwind VMG | **135°** — gybing down beats running dead |
+| Dead run | 4.7 kn, 55% of max |
+
+None of those are coded for. They fall out of the force model, and the test
+suite asserts each one so a future change cannot quietly break them.
+
+### Four things the numbers caught that watching never would
+
+1. **Keel induced drag was missing.** A foil making side force also makes drag,
+   rising with the square of that force. Without it the polar's knee was far too
+   soft. It is the term that decides how high she points.
+2. **An induced-drag death spiral.** Driven from sail force and forward speed,
+   low speed made huge drag, which held speed down, which made more drag. She
+   sailed fine in 8 m/s and stopped dead in 12. Induced drag belongs to the
+   *keel* reaction at the *water* speed, and it needs a ceiling.
+3. **Weather helm with nothing to push against.** Driven from sail force alone,
+   a boat sitting still had a large yawing moment its stopped rudder could not
+   answer, so she rounded up into irons from every standing start. It is a
+   couple between sail and keel, limited by the smaller of the two.
+4. **No directional stability at all.** Real hulls weathercock toward their
+   direction of motion; that is what opposes weather helm and lets a boat
+   track. `Ktrack` is left just shy of neutral, so a released helm creeps to
+   windward and depowers rather than bearing away into a broach.
+
+### Tuning it yourself
+
+Every constant is in `src/shared/boats.js`, and `LAT_OVER_FWD` — how much harder
+the keel resists sideways motion than the hull resists forward motion — is still
+the one to touch first. After any change:
+
+```bash
+node tools/polar-sweep.js 6 && node tools/trap-check.js && node --test "test/*.test.mjs"
+```
+
+`tools/tune.js` does a grid search against what a real dinghy does, if you want
+the machine to find it.
+
+### Known and intended
+
+- **Planing hysteresis.** Below hull speed she cannot push through the drag
+  hump; already planing she stays up. Bear away in a gust to get her going, and
+  she keeps going after it passes. `trap-check.js` reports these separately from
+  real faults.
+- **Yaw instability under fixed sheet.** Let go of the tiller and she wanders
+  off, upwind or down. This is true of real dinghies and is why nobody does it.
+
+---
+
 ## Next
 
-M1 — one boat, real physics, headless polar sweep. `src/core/` stays DOM-free so
-the whole simulation runs in Node and the polar can be validated in CI rather
-than by squinting at a TV.
+M2 — the real phone controller: tiller, mainsheet, hike and the telltale strip,
+driving this boat over the M0 transport. The gate is a non-sailor getting
+upwind using only the telltales.

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sailing School — Sail Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../src/shared/ui.css">
+<style>
+html, body { height: 100%; overflow: hidden; }
+body { display: flex; flex-direction: column; }
+
+canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#stage { position: relative; flex: 1; min-height: 0; background: #06121C; }
+
+/* ── overlays ───────────────────────────────────────────────────── */
+.hud { position: absolute; pointer-events: none; }
+
+#instruments {
+  top: 14px; left: 14px;
+  display: grid; grid-template-columns: repeat(3, minmax(96px, auto)); gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule);
+}
+#instruments div { background: rgba(9,20,28,.92); padding: 8px 11px; }
+#instruments dt { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 0 0 3px; }
+#instruments dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 21px; font-variant-numeric: tabular-nums; }
+#instruments dd small { font-size: 11px; font-weight: 400; color: var(--muted); font-family: var(--f-mono); }
+
+#telltale {
+  top: 14px; left: 50%; transform: translateX(-50%);
+  background: rgba(9,20,28,.92); border: 1px solid var(--rule);
+  padding: 8px 18px; text-align: center; min-width: 240px;
+}
+#telltale .state { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: .02em; }
+#telltale .hint { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+#telltale.luff .state { color: var(--warn); }
+#telltale.good .state { color: var(--ok); }
+#telltale.stall .state { color: var(--err); }
+#telltale.over .state { color: var(--err); }
+
+#keys {
+  bottom: 14px; left: 14px;
+  background: rgba(9,20,28,.9); border: 1px solid var(--rule); padding: 9px 13px;
+  font-size: 11px; color: var(--ink-2); line-height: 1.8;
+}
+#keys b { color: var(--ink); font-weight: 500; }
+
+#join {
+  bottom: 14px; right: 14px; pointer-events: auto;
+  background: rgba(9,20,28,.92); border: 1px solid var(--rule); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px; align-items: center; width: 190px;
+}
+#join .code { font-family: var(--f-display); font-weight: 800; font-size: 30px; letter-spacing: .1em; color: var(--magenta); }
+#join .qr { width: 150px; background: #fff; padding: 6px; }
+#join .qr svg { display: block; width: 100%; height: auto; }
+#join .lbl { font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+#join .who { font-size: 11px; color: var(--ink-2); text-align: center; }
+
+/* ── tuning ─────────────────────────────────────────────────────── */
+#tune {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 320px;
+  background: rgba(6,15,21,.97); border-left: 1px solid var(--rule);
+  overflow-y: auto; padding: 14px; display: none; pointer-events: auto;
+}
+#tune.on { display: block; }
+#tune h3 { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--magenta); margin: 14px 0 8px; }
+#tune h3:first-child { margin-top: 0; }
+.knob { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 9px; font-size: 11px; }
+.knob label { color: var(--ink-2); }
+.knob .val { font-family: var(--f-mono); color: var(--magenta); font-variant-numeric: tabular-nums; }
+.knob input { grid-column: 1 / -1; width: 100%; accent-color: var(--magenta); }
+#tune .note { font-size: 10.5px; color: var(--muted); line-height: 1.55; margin: 10px 0; }
+#tune button { width: 100%; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<script src="../src/shared/config.js"></script>
+<script src="../src/shared/boot-diag.js"></script>
+<script src="../vendor/qrcode-generator-2.0.4.js"></script>
+
+<div id="fatal" hidden style="position:fixed;bottom:0;left:0;right:0;z-index:50"></div>
+
+<div id="stage">
+  <canvas id="c"></canvas>
+
+  <dl class="hud" id="instruments">
+    <div><dt>Speed</dt><dd id="i-sog">0.0 <small>kn</small></dd></div>
+    <div><dt>App. wind</dt><dd id="i-awa">0<small>°</small></dd></div>
+    <div><dt>App. speed</dt><dd id="i-aws">0.0 <small>kn</small></dd></div>
+    <div><dt>True wind</dt><dd id="i-twa">0<small>°</small></dd></div>
+    <div><dt>Heel</dt><dd id="i-heel">0<small>°</small></dd></div>
+    <div><dt>VMG</dt><dd id="i-vmg">0.0 <small>kn</small></dd></div>
+  </dl>
+
+  <div class="hud" id="telltale">
+    <div class="state" id="t-state">LUFFING</div>
+    <div class="hint" id="t-hint">sail flapping — trim in</div>
+  </div>
+
+  <div class="hud" id="keys">
+    <b>&larr; &rarr;</b> tiller &nbsp; <b>&uarr; &darr;</b> mainsheet<br>
+    <b>space</b> hike &nbsp; <b>~</b> tuning &nbsp; <b>R</b> reset &nbsp; <b>+ &minus;</b> zoom
+  </div>
+
+  <div class="hud" id="join">
+    <span class="lbl">Sail it from a phone</span>
+    <div class="code" id="j-code">····</div>
+    <div class="qr" id="j-qr"></div>
+    <div class="who" id="j-who">waiting…</div>
+  </div>
+
+  <div id="tune"></div>
+</div>
+
+<script type="module">
+import { createWorld, addBoat, applyInput, pump, DT } from '../src/core/world.js';
+import { windFrom, windAt, gustAt } from '../src/core/wind.js';
+import { BOATS, withOverrides } from '../src/shared/boats.js';
+import { deg, rad, wrap, clamp } from '../src/shared/angles.js';
+import { msToKn } from '../src/shared/units.js';
+import { PeerHost } from '../src/net/peer-host.js';
+import { qrSvg } from '../src/shared/qr.js';
+
+const D = window.SSDiag; D.booted();
+const $ = (id) => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+
+/* ── world ──────────────────────────────────────────────────────── */
+const world = createWorld({
+  wind: {
+    speed: Number(Q.get('wind')) || 6,
+    from: Math.PI / 2,
+    seed: 11,
+    steady: Q.get('steady') === '1'
+  }
+});
+const me = addBoat(world, 'me', { theta: Math.PI / 2 - rad(50) });
+
+/* ── keyboard ───────────────────────────────────────────────────── */
+const keys = Object.create(null);
+let kbRudder = 0, kbSheet = 0.2;
+addEventListener('keydown', (e) => {
+  keys[e.key] = true;
+  if (e.key === '~') $('tune').classList.toggle('on');
+  if (e.key === 'r' || e.key === 'R') reset();
+  if (e.key === '+' || e.key === '=') PPM = Math.min(40, PPM * 1.25);
+  if (e.key === '-' || e.key === '_') PPM = Math.max(4, PPM / 1.25);
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
+});
+addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+function reset() {
+  me.p = { x: 0, y: 0 }; me.v = { x: 0, y: 0 };
+  me.theta = Math.PI / 2 - rad(50); me.omega = 0; me.phi = 0;
+  me.capsized = false; me.recovery = 0;
+}
+
+function readKeyboard(dt) {
+  /* r > 0 puts the rudder to starboard, which turns the bow to starboard —
+   * the same mapping as the phone tiller: push right, bow goes right. */
+  const want = (keys.ArrowRight ? 1 : 0) + (keys.ArrowLeft ? -1 : 0);
+  /* Springs back to centre like the phone tiller does. */
+  kbRudder = want !== 0 ? clamp(kbRudder + want * dt * 2.4, -1, 1)
+                        : kbRudder * Math.max(0, 1 - dt * 6);
+  if (keys.ArrowUp) kbSheet = clamp(kbSheet - dt * 0.55, 0, 1);
+  if (keys.ArrowDown) kbSheet = clamp(kbSheet + dt * 0.55, 0, 1);
+  return { r: kbRudder, s: kbSheet, h: keys[' '] ? 1 : 0 };
+}
+
+/* ── phone controller, over the M0 transport ────────────────────── */
+let phone = null;
+const host = new PeerHost({
+  onPlayers: (list) => {
+    phone = list.length ? list[0] : null;
+    $('j-who').textContent = list.length ? list[0].name + ' has the helm' : 'waiting…';
+  }
+});
+host.open().then((code) => {
+  $('j-code').textContent = code;
+  $('j-qr').innerHTML = qrSvg(host.joinUrl, { dark: '#06121C', light: '#fff' });
+}).catch((e) => {
+  D.log('warn', 'no phone controller: ' + e.message);
+  $('j-code').textContent = '——';
+  $('j-who').textContent = 'keyboard only';
+});
+
+/* ── tuning overlay ─────────────────────────────────────────────── */
+const KNOBS = [
+  ['Sail', [
+    ['sailArea', 4, 20, 0.1, 'm²'],
+    ['camberGain', 1, 3, 0.05, '× flat plate'],
+    ['parasiticCd', 0.05, 0.6, 0.01, 'Cd at zero AoA'],
+    ['dragPeak', 0.6, 2.0, 0.05, 'Cd ceiling'],
+    ['optimalAoA', 8, 30, 0.5, '° for telltales']
+  ]],
+  ['Hull and keel', [
+    ['Kfwd', 3, 25, 0.5, 'quadratic drag'],
+    ['LAT_OVER_FWD', 10, 90, 1, '← the critical ratio'],
+    ['keelInduced', 0.0001, 0.004, 0.0001, 'price of side force'],
+    ['waveK', 1, 3, 0.05, 'hump height'],
+    ['planeDrag', 0.5, 1.2, 0.02, 'planing relief']
+  ]],
+  ['Steering and heel', [
+    ['Krud', 40, 400, 5, 'rudder authority'],
+    ['Cyaw', 100, 800, 10, 'yaw damping'],
+    ['helmLever', 0, 0.8, 0.01, 'm — weather helm'],
+    ['rightingHiked', 800, 3200, 25, 'N·m hiked'],
+    ['capsizeAngle', 40, 85, 1, '°']
+  ]]
+];
+const overrides = {};
+
+function buildTune() {
+  const box = $('tune');
+  box.innerHTML = '<div class="note">Live constants. Nothing here is saved — copy the ' +
+    'values you like into <code>src/shared/boats.js</code>, then re-run ' +
+    '<code>node tools/polar-sweep.js</code> and <code>node --test test/*.test.mjs</code> ' +
+    'to check you have not broken the polar.</div>';
+  for (const [group, rows] of KNOBS) {
+    const h = document.createElement('h3'); h.textContent = group; box.appendChild(h);
+    for (const [key, min, max, step, unit] of rows) {
+      const wrap = document.createElement('div'); wrap.className = 'knob';
+      const cur = BOATS.dinghy[key];
+      wrap.innerHTML = '<label>' + key + ' <span style="color:var(--muted)">' + unit + '</span></label>' +
+        '<span class="val" id="v-' + key + '">' + cur + '</span>';
+      const inp = document.createElement('input');
+      inp.type = 'range'; inp.min = min; inp.max = max; inp.step = step; inp.value = cur;
+      inp.id = 'k-' + key;
+      inp.addEventListener('input', () => {
+        overrides[key] = Number(inp.value);
+        $('v-' + key).textContent = inp.value;
+        me.cls = withOverrides('dinghy', overrides);
+      });
+      wrap.appendChild(inp);
+      box.appendChild(wrap);
+    }
+  }
+  const b = document.createElement('button');
+  b.className = 'btn ghost'; b.textContent = 'Copy overrides as JSON';
+  b.addEventListener('click', () => {
+    navigator.clipboard.writeText(JSON.stringify(overrides, null, 2));
+    b.textContent = 'copied';
+    setTimeout(() => { b.textContent = 'Copy overrides as JSON'; }, 1200);
+  });
+  box.appendChild(b);
+}
+buildTune();
+if (Q.get('tune') === '1') $('tune').classList.add('on');
+
+/* ── rendering ──────────────────────────────────────────────────── */
+const cv = $('c'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+let PPM = Number(Q.get('zoom')) || 15;   // pixels per metre
+
+function resize() {
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', resize);
+
+/* World (y north, up) to screen (y down). */
+const sx = (wx) => W / 2 + (wx - me.p.x) * PPM;
+const sy = (wy) => H / 2 - (wy - me.p.y) * PPM;
+
+function drawWater() {
+  ctx.fillStyle = '#06121C';
+  ctx.fillRect(0, 0, W, H);
+
+  /* Gusts, sampled coarsely — darker water is more wind, exactly as it reads
+   * from a real boat. */
+  const cell = 16;
+  for (let py = 0; py < H; py += cell) {
+    for (let px = 0; px < W; px += cell) {
+      const wx = me.p.x + (px + cell / 2 - W / 2) / PPM;
+      const wy = me.p.y - (py + cell / 2 - H / 2) / PPM;
+      const g = gustAt(world.wind, { x: wx, y: wy });
+      const k = clamp((g - 0.75) / 0.5, 0, 1);
+      ctx.fillStyle = 'rgba(120,173,206,' + (0.03 + k * 0.09).toFixed(3) + ')';
+      ctx.fillRect(px, py, cell, cell);
+    }
+  }
+
+  /* A sparse grid so motion is legible on open water. */
+  ctx.strokeStyle = 'rgba(120,173,206,.07)'; ctx.lineWidth = 1;
+  const G = 25;
+  const x0 = Math.floor((me.p.x - W / 2 / PPM) / G) * G;
+  const y0 = Math.floor((me.p.y - H / 2 / PPM) / G) * G;
+  ctx.beginPath();
+  for (let x = x0; x < me.p.x + W / PPM; x += G) { ctx.moveTo(sx(x), 0); ctx.lineTo(sx(x), H); }
+  for (let y = y0; y < me.p.y + H / PPM; y += G) { ctx.moveTo(0, sy(y)); ctx.lineTo(W, sy(y)); }
+  ctx.stroke();
+}
+
+const wake = [];
+function drawWake() {
+  if (!me.capsized && me.out.sog > 0.4 && wake.length < 600) {
+    wake.push({ x: me.p.x, y: me.p.y, a: Math.min(1, me.out.sog / 4) });
+  }
+  if (wake.length > 260) wake.shift();
+  for (let i = 0; i < wake.length; i++) {
+    const w = wake[i], t = i / wake.length;
+    ctx.fillStyle = 'rgba(190,222,240,' + (t * t * w.a * 0.30).toFixed(3) + ')';
+    ctx.beginPath();
+    ctx.arc(sx(w.x), sy(w.y), 1.1 + t * 3.0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawBoat(b) {
+  const B = b.cls;
+  const cx = sx(b.p.x), cy = sy(b.p.y);
+  ctx.save();
+  ctx.translate(cx, cy);
+  /* Screen y is flipped, so a CCW world heading is CW on screen. */
+  ctx.rotate(-b.theta + Math.PI / 2);
+
+  const L = B.loa * PPM, halfB = (B.beam / 2) * PPM;
+  /* Foreshorten across the beam to fake heel — cheap, and reads instantly. */
+  const heelSquash = Math.cos(b.phi);
+  ctx.scale(Math.max(0.18, Math.abs(heelSquash)) * Math.sign(heelSquash || 1), 1);
+
+  /* hull */
+  ctx.beginPath();
+  ctx.moveTo(0, -L * 0.5);
+  ctx.quadraticCurveTo(halfB, -L * 0.16, halfB * 0.86, L * 0.34);
+  ctx.lineTo(-halfB * 0.86, L * 0.34);
+  ctx.quadraticCurveTo(-halfB, -L * 0.16, 0, -L * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = b.capsized ? '#5A6B77' : '#E9EEF2';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(6,18,28,.8)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  /* sail: swings to leeward, and its belly follows the wind side */
+  if (!b.capsized) {
+    const side = b.out.awa > 0 ? 1 : -1;      // wind from port -> boom to starboard
+    const boom = side * b.sigma;
+    const mast = { x: 0, y: -L * 0.18 };
+    const clew = { x: Math.sin(boom) * L * 0.52, y: -L * 0.18 + Math.cos(boom) * L * 0.52 };
+    const belly = 0.16 * L * (b.out.luffing ? 0.25 : 1) * side;
+    ctx.beginPath();
+    ctx.moveTo(mast.x, mast.y);
+    ctx.quadraticCurveTo((mast.x + clew.x) / 2 + belly * Math.cos(boom),
+                         (mast.y + clew.y) / 2 - belly * Math.sin(boom) * side,
+                         clew.x, clew.y);
+    ctx.strokeStyle = b.out.luffing ? '#E3B341' : (b.out.stalled ? '#E97A6F' : '#FFFFFF');
+    ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  /* rudder angle, drawn unsquashed so it stays readable */
+  ctx.save();
+  ctx.translate(cx, cy); ctx.rotate(-b.theta + Math.PI / 2);
+  ctx.translate(0, L * 0.34); ctx.rotate(-b.delta);
+  ctx.strokeStyle = 'rgba(240,119,187,.9)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, L * 0.14); ctx.stroke();
+  ctx.restore();
+}
+
+function drawWindIndicator() {
+  const panel = $('tune').classList.contains('on') ? 320 : 0;
+  const r = 46, cx = W - panel - r - 26, cy = r + 26;
+  const from = windFrom(world.wind);
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(9,20,28,.85)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(120,173,206,.35)'; ctx.lineWidth = 1; ctx.stroke();
+
+  /* Arrow points the way the wind is blowing. */
+  const a = -from + Math.PI;
+  ctx.translate(cx, cy); ctx.rotate(a);
+  ctx.strokeStyle = '#78ADCE'; ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.moveTo(0, -r * 0.62); ctx.lineTo(0, r * 0.5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-6, r * 0.28); ctx.lineTo(0, r * 0.5); ctx.lineTo(6, r * 0.28);
+  ctx.fillStyle = '#78ADCE'; ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = 'rgba(180,200,215,.85)';
+  ctx.font = '500 10px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(msToKn(world.wind.baseSpeed * gustAt(world.wind, me.p)).toFixed(1) + ' kn',
+               cx, cy + r + 14);
+}
+
+/* ── telltales ──────────────────────────────────────────────────── */
+function telltale(b) {
+  const B = b.cls;
+  if (b.capsized) return ['over', 'CAPSIZED', 'wait for her to come up'];
+  if (b.out.luffing) return ['luff', 'LUFFING', 'sail flapping — trim in'];
+  const aoa = deg(b.out.aoa), opt = B.optimalAoA;
+  if (aoa > B.stallEnd) return ['stall', 'STALLED', 'over-trimmed — ease out'];
+  if (aoa < opt - 6) return ['luff', 'ON THE EDGE', 'nearly luffing — trim in a touch'];
+  if (aoa > opt + 6) return ['stall', 'OVER-TRIMMED', 'ease until she stops slowing'];
+  return ['good', 'DRAWING WELL', 'that is the groove — hold it'];
+}
+
+/* ── loop ───────────────────────────────────────────────────────── */
+let last = performance.now();
+resize();
+
+function frame(now) {
+  const elapsed = (now - last) / 1000; last = now;
+
+  const kb = readKeyboard(Math.min(elapsed, 0.05));
+  /* Whoever moved last has the helm, so you can hand it to a phone mid-sail. */
+  const ph = phone && Math.abs(phone.r) > 0.02 ? { r: phone.r, s: kb.s, h: kb.h } : null;
+  applyInput(world, 'me', ph || kb);
+
+  pump(world, elapsed);
+
+  drawWater();
+  drawWake();
+  drawBoat(me);
+  drawWindIndicator();
+
+  const o = me.out;
+  $('i-sog').innerHTML = msToKn(o.sog).toFixed(1) + ' <small>kn</small>';
+  $('i-awa').innerHTML = Math.abs(deg(o.awa)).toFixed(0) + '<small>° ' +
+    (o.awa > 0 ? 'port' : 'stbd') + '</small>';
+  $('i-aws').innerHTML = msToKn(o.aws).toFixed(1) + ' <small>kn</small>';
+  const twa = deg(wrap(windFrom(world.wind) - me.theta));
+  $('i-twa').innerHTML = Math.abs(twa).toFixed(0) + '<small>°</small>';
+  $('i-heel').innerHTML = Math.abs(o.heelDeg).toFixed(0) + '<small>° ' +
+    (o.heelDeg > 0 ? 'stbd' : 'port') + '</small>';
+  $('i-vmg').innerHTML = msToKn(o.sog * Math.cos(rad(twa))).toFixed(1) + ' <small>kn</small>';
+
+  const [cls, state, hint] = telltale(me);
+  const tt = $('telltale');
+  tt.className = 'hud ' + cls;
+  $('t-state').textContent = state;
+  $('t-hint').textContent = hint;
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
