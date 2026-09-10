@@ -3,24 +3,26 @@
 <head>
 <meta charset="utf-8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
 <meta name="theme-color" content="#0B131A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Sailing School — Controller</title>
+<link rel="manifest" href="../manifest.webmanifest">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="../src/shared/ui.css">
 <style>
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
-  display: flex; flex-direction: column;
-  padding: max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
-  gap: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ── join screen ────────────────────────────────────────────────── */
-#join { display: flex; flex-direction: column; gap: 16px; justify-content: center; flex: 1; }
+/* ── join ───────────────────────────────────────────────────────── */
+#join { display: flex; flex-direction: column; gap: 15px; justify-content: center; flex: 1; padding: 0 6px; }
 #join h1 { font-size: 30px; font-weight: 800; }
 #join p { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; margin: 0; }
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -31,57 +33,148 @@ body {
   padding: 12px 14px; width: 100%; letter-spacing: .12em; text-transform: uppercase;
 }
 .field input.name { font-size: 18px; letter-spacing: 0; text-transform: none; }
+.hulls { display: flex; gap: 8px; }
+.hulls button { width: 34px; height: 34px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.hulls button[aria-pressed="true"] { border-color: var(--ink); }
 
 /* ── controller ─────────────────────────────────────────────────── */
-#ctl { display: none; flex-direction: column; flex: 1; gap: 12px; min-height: 0; }
+#ctl { display: none; flex-direction: column; flex: 1; gap: 8px; min-height: 0; }
 #ctl.live { display: flex; }
 
-.status {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 11.5px; color: var(--muted); letter-spacing: .04em;
-}
-.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
+/* status */
+.status { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
 .dot.connected { background: var(--ok); }
 .dot.connecting, .dot.reconnecting, .dot.slow { background: var(--warn); }
 .dot.failed { background: var(--err); }
-.status .right { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.status .right { margin-left: auto; font-variant-numeric: tabular-nums; }
 
-.readout {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-  background: var(--rule); border: 1px solid var(--rule);
+/* ── telltales: the teaching device ─────────────────────────────── */
+#tt {
+  border: 1px solid var(--rule); background: var(--surface);
+  padding: 9px 12px; text-align: center; transition: background .18s, border-color .18s;
 }
-.readout div { background: var(--surface); padding: 9px 10px; }
-.readout dt { font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 3px; }
-.readout dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 19px; font-variant-numeric: tabular-nums; }
+#tt .title { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: .02em; }
+#tt .hint { font-size: 11px; color: var(--ink-2); margin-top: 1px; }
+#tt .ribbons { display: flex; justify-content: center; gap: 5px; height: 15px; margin-bottom: 6px; }
+#tt .ribbons i {
+  display: block; width: 3px; height: 100%; background: var(--muted);
+  transform-origin: top center; border-radius: 2px;
+}
+#tt.good   { border-color: var(--ok);   background: #0E241B; }
+#tt.good .title { color: var(--ok); }
+#tt.good .ribbons i { background: var(--ok); }
+#tt.edge, #tt.luffing { border-color: var(--warn); background: #241C0C; }
+#tt.edge .title, #tt.luffing .title { color: var(--warn); }
+#tt.edge .ribbons i, #tt.luffing .ribbons i { background: var(--warn); animation: flap .32s infinite alternate ease-in-out; }
+#tt.luffing .ribbons i { animation-duration: .16s; }
+#tt.over, #tt.stalled { border-color: var(--err); background: #2A1210; }
+#tt.over .title, #tt.stalled .title { color: var(--err); }
+#tt.over .ribbons i, #tt.stalled .ribbons i { background: var(--err); animation: churn .5s infinite alternate ease-in-out; }
+#tt.capsized { border-color: var(--err); background: #2A1210; }
+#tt.capsized .title { color: var(--err); }
+#tt .ribbons i:nth-child(2) { animation-delay: .05s }
+#tt .ribbons i:nth-child(3) { animation-delay: .1s }
+#tt .ribbons i:nth-child(4) { animation-delay: .15s }
+#tt .ribbons i:nth-child(5) { animation-delay: .2s }
+@keyframes flap  { from { transform: rotate(-24deg) } to { transform: rotate(26deg) } }
+@keyframes churn { from { transform: rotate(6deg) scaleY(.75) } to { transform: rotate(-8deg) scaleY(1) } }
+@media (prefers-reduced-motion: reduce) { #tt .ribbons i { animation: none !important } }
 
-/* The one M0 axis. A wide drag zone, absolute within its width, springs back
-   to centre on release — the tiller behaviour from §8 of the plan, minus the
-   boat it will eventually steer. */
-.tiller {
-  flex: 1; min-height: 160px; position: relative;
-  background: var(--surface); border: 1px solid var(--rule);
-  touch-action: none; overscroll-behavior: none;
-  display: flex; align-items: center; justify-content: center;
-  -webkit-user-select: none; user-select: none;
-  -webkit-tap-highlight-color: transparent;
+/* planing — the second lesson, kept separate from the telltales because
+   telltales genuinely cannot teach it */
+#plane {
+  border: 1px solid var(--rule); background: var(--surface);
+  padding: 4px 9px; font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--muted); text-align: center; transition: background .2s, color .2s;
 }
-.tiller .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule); }
-.tiller .knob {
-  position: absolute; top: 8px; bottom: 8px; width: 58px;
-  background: var(--magenta); left: 50%; margin-left: -29px;
-  will-change: transform;
-}
-.tiller .hint {
-  position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
-  font-size: 11px; letter-spacing: .14em;
-  text-transform: uppercase; color: var(--muted); pointer-events: none;
-}
-/* Gone for good once they have worked out what it does. */
-.tiller.touched .hint { display: none; }
+#plane[data-state="onthehump"] { color: var(--warn); border-color: var(--warn); }
+#plane[data-state="planing"] { background: var(--magenta); color: var(--paper); border-color: var(--magenta); font-weight: 600; }
 
-.diagwrap { max-height: 34vh; overflow-y: auto; }
-.diagwrap h3 { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 0 0 7px; }
-.tog { background: none; border: 0; color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 4px 0; text-decoration: underline; cursor: pointer; }
+/* instruments */
+.readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.readout div { background: var(--surface); padding: 6px 7px; }
+.readout dt { font-size: 8.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin: 0 0 2px; }
+.readout dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.readout dd small { font-size: 9px; font-weight: 400; color: var(--muted); font-family: var(--f-mono); }
+
+/* heel bar */
+#heelbar {
+  height: 15px; background: var(--surface); border: 1px solid var(--rule);
+  position: relative; overflow: hidden;
+}
+#heelbar .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--muted); opacity: .7; }
+/* No explicit width: the fill is stretched by setting left AND right from
+   JS, and a declared width makes `right` inert. */
+#heelbar .fill { position: absolute; top: 2px; bottom: 2px; background: var(--shoal); left: 50%; right: 50%; opacity: .85; transition: background .2s; }
+#heelbar.hot .fill { background: var(--err); }
+/* where she goes over — the line you are trying not to cross */
+#heelbar .lim { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--err); opacity: .5; }
+#heelbar .lim.l { left: 8%; } #heelbar .lim.r { right: 8%; }
+#heelbar .cap { position: absolute; inset: 0; text-align: center; font-size: 8.5px;
+  line-height: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
+#heelbar.hot .cap { color: #FFD9D4; }
+
+/* ── the controls ───────────────────────────────────────────────── */
+.zones { flex: 1; display: grid; grid-template-columns: 84px 1fr; gap: 8px; min-height: 150px; }
+
+.zone {
+  position: relative; background: var(--surface); border: 1px solid var(--rule);
+  touch-action: none; overscroll-behavior: none; overflow: hidden;
+}
+.zone .cap {
+  position: absolute; left: 0; right: 0; text-align: center; pointer-events: none;
+  font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+
+/* mainsheet: vertical, stays where you put it */
+#sheet { --s: .25; }
+#sheet .cap { top: 7px; }
+#sheet .track { position: absolute; left: 50%; top: 26px; bottom: 26px; width: 2px; background: var(--rule); transform: translateX(-50%); }
+#sheet .grip {
+  position: absolute; left: 7px; right: 7px; height: 34px;
+  background: var(--magenta); border-radius: 2px;
+  top: calc(26px + (100% - 52px - 34px) * var(--s));
+}
+#sheet .ends { position: absolute; left: 0; right: 0; font-size: 8.5px; color: var(--muted); text-align: center; }
+#sheet .ends.in { top: 22px; } #sheet .ends.out { bottom: 7px; }
+
+/* tiller: horizontal, springs back */
+#tiller { --v: 0; }
+#tiller .cap { bottom: 8px; }
+#tiller .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+#tiller .grip {
+  position: absolute; top: 14px; bottom: 30px; width: 46px;
+  background: var(--magenta); border-radius: 3px; opacity: .92;
+  left: 50%; transform: translateX(calc(-50% + var(--v) * (50cqw - 30px)));
+}
+#tiller .grip::after {
+  content: ''; position: absolute; left: 50%; top: 12%; bottom: 12%;
+  width: 2px; margin-left: -1px; background: rgba(11,19,26,.45);
+}
+#tiller { container-type: inline-size; }
+#tiller.touched .cap { opacity: .35; }
+
+/* hike */
+#hike {
+  height: 62px; background: var(--surface-2); border: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: var(--f-display); font-weight: 700; font-size: 15px; letter-spacing: .04em;
+  touch-action: none; color: var(--ink-2);
+}
+#hike.down { background: var(--magenta); color: var(--paper); border-color: var(--magenta); }
+#hike small { font-family: var(--f-mono); font-weight: 400; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+
+/* banner */
+#banner {
+  position: fixed; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom));
+  background: var(--magenta); color: var(--paper); padding: 11px 14px; z-index: 30;
+  font-family: var(--f-display); font-weight: 700; font-size: 14px; text-align: center;
+}
+#banner[hidden] { display: none }
+
+.tog { background: none; border: 0; color: var(--muted); font-family: var(--f-mono); font-size: 10.5px; padding: 2px 0; text-decoration: underline; }
+.diagwrap { max-height: 30vh; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -89,22 +182,27 @@ body {
 <script src="../src/shared/config.js"></script>
 <script src="../src/shared/boot-diag.js"></script>
 
-<div id="fatal" hidden></div>
+<div id="fatal" hidden style="position:fixed;left:0;right:0;bottom:0;z-index:40"></div>
+<div id="banner" hidden></div>
 
 <div id="join">
   <div>
-    <p class="eyebrow">Sailing School · M0 spike</p>
-    <h1>Join a game</h1>
+    <p class="eyebrow">Sailing School</p>
+    <h1>Take the helm</h1>
   </div>
-  <p>Enter the four-letter code on the screen, or scan the QR code to skip this step.</p>
+  <p>Enter the code on the screen, or scan the QR to skip this.</p>
   <div class="field">
     <label for="code">Room code</label>
     <input id="code" maxlength="4" autocomplete="off" autocapitalize="characters"
-           autocorrect="off" spellcheck="false" inputmode="text" placeholder="ABCD">
+           autocorrect="off" spellcheck="false" placeholder="ABCD">
   </div>
   <div class="field">
     <label for="name">Your name</label>
     <input id="name" class="name" maxlength="16" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="field">
+    <label>Hull</label>
+    <div class="hulls" id="hulls"></div>
   </div>
   <button class="btn" id="go">Join</button>
 </div>
@@ -113,29 +211,46 @@ body {
   <div class="status">
     <span class="dot" id="dot"></span>
     <span id="state">connecting…</span>
-    <span class="right" id="room"></span>
+    <span class="right" id="rtt"></span>
+  </div>
+
+  <div id="tt">
+    <div class="ribbons"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="title" id="tt-title">WAITING</div>
+    <div class="hint" id="tt-hint">connecting to the boat</div>
   </div>
 
   <dl class="readout">
-    <div><dt>Axis</dt><dd id="r-val">0.00</dd></div>
-    <div><dt>Round trip</dt><dd id="r-rtt">—</dd></div>
-    <div><dt>Host uptime</dt><dd id="r-up">—</dd></div>
+    <div><dt>Speed</dt><dd id="r-sog">—</dd></div>
+    <div><dt>Wind angle</dt><dd id="r-awa">—</dd></div>
+    <div><dt>VMG</dt><dd id="r-vmg">—</dd></div>
+    <div><dt>Heel</dt><dd id="r-heel">—</dd></div>
   </dl>
+  <div id="heelbar"><span class="lim l"></span><span class="lim r"></span><div class="mid"></div><div class="fill"></div><span class="cap" id="heel-cap">heel</span></div>
+  <div id="plane" data-state="displacing"><span id="plane-txt">displacing</span></div>
 
-  <div class="tiller" id="tiller">
-    <div class="mid"></div>
-    <div class="knob" id="knob"></div>
-    <span class="hint">drag left / right</span>
+  <div class="zones">
+    <div class="zone" id="sheet">
+      <span class="cap">Mainsheet</span>
+      <span class="ends in">in</span>
+      <div class="track"></div>
+      <div class="grip"></div>
+      <span class="ends out">out</span>
+    </div>
+    <div class="zone" id="tiller">
+      <div class="mid"></div>
+      <div class="grip"></div>
+      <span class="cap">Tiller — drag left / right</span>
+    </div>
   </div>
 
-  <button class="tog" id="tog">show diagnostics</button>
+  <div id="hike">HIKE OUT <small>hold</small></div>
+
+  <button class="tog" id="tog">diagnostics</button>
   <div class="diagwrap" id="diagwrap" hidden>
-    <h3>Device</h3>
     <div class="probe" id="probe"></div>
     <div class="verdict" id="verdict"></div>
-    <h3 style="margin-top:12px">Log</h3>
     <div id="diag-log"></div>
-    <h3 style="margin-top:12px">User agent</h3>
     <div class="ua" id="ua"></div>
   </div>
 </div>
@@ -143,19 +258,28 @@ body {
 <script type="module">
 import { PeerClient } from '../src/net/peer-client.js';
 import { loadProfile, saveProfile } from '../src/shared/profile.js';
+import { makeTiller, makeSheet, makeHold } from '../src/controller/surfaces.js';
+import { EVENTS } from '../src/net/protocol.js';
 
-const D = window.SSDiag;
-D.booted();
-
+const D = window.SSDiag; D.booted();
 const $ = (id) => document.getElementById(id);
 $('verdict').textContent = D.verdict();
 
+const HULLS = ['#B3117A', '#E3B341', '#43BE88', '#78ADCE', '#E97A6F', '#E9EEF2'];
 const profile = loadProfile();
 $('name').value = profile.name;
 
-/* Declared before anything can call join(). The QR auto-join at the bottom of
- * this module used to run first and touch `client` in its temporal dead zone,
- * which broke scanning while typing the code by hand worked fine. */
+HULLS.forEach((c) => {
+  const b = document.createElement('button');
+  b.style.background = c;
+  b.setAttribute('aria-pressed', String(c === profile.hull));
+  b.addEventListener('click', () => {
+    profile.hull = c; saveProfile(profile);
+    [...$('hulls').children].forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  $('hulls').appendChild(b);
+});
+
 let client = null;
 
 $('go').addEventListener('click', join);
@@ -167,112 +291,165 @@ function join() {
     D.fatal('That does not look like a room code — four letters or digits.');
     return;
   }
-
   const name = $('name').value.trim() || profile.name;
   if (name !== profile.name) { profile.name = name; saveProfile(profile); }
 
   $('join').style.display = 'none';
   $('ctl').classList.add('live');
-  $('room').textContent = 'room ' + code;
 
   client = new PeerClient(code, profile, {
     onState: (s, detail) => {
       $('dot').className = 'dot ' + s;
       $('state').textContent = detail ? s + ' — ' + detail : s;
+      if (s !== 'connected') setTelltale({ tt: null });
     },
-    onTelemetry: (t) => {
-      $('r-rtt').textContent = t.rtt === null ? '—' : t.rtt + ' ms';
-      $('r-up').textContent = t.up === undefined ? '—' : fmtTime(t.up);
-    }
+    onWelcome: () => banner('You have the helm', 1600),
+    onTelemetry: (m, rtt) => {
+      $('rtt').textContent = rtt === null ? '' : rtt + ' ms';
+      paint(m);
+    },
+    onEvent: (kind) => onEvent(kind)
   });
+  /* Send the starting trim immediately so the boat is not sitting sheeted in. */
+  client.setControls({ r: 0, s: sheet.value, h: 0 });
   client.connect();
   keepAwake();
 }
 
-/* ── the axis ───────────────────────────────────────────────────── */
-const tiller = $('tiller');
-const knob = $('knob');
-let value = 0, dragging = false;
-
-function setFromClientX(x) {
-  const r = tiller.getBoundingClientRect();
-  const half = r.width / 2;
-  value = Math.max(-1, Math.min(1, (x - r.left - half) / half));
-  paint();
-}
-
-function paint() {
-  $('r-val').textContent = value.toFixed(2);
-  const r = tiller.getBoundingClientRect();
-  knob.style.transform = 'translateX(' + (value * (r.width / 2 - 34)) + 'px)';
-  if (client) client.setValue(value);
-}
-
-tiller.addEventListener('pointerdown', (e) => {
-  dragging = true;
-  tiller.classList.add('active', 'touched');
-  tiller.setPointerCapture(e.pointerId);
-  setFromClientX(e.clientX);
+/* ── control surfaces ───────────────────────────────────────────── */
+const tiller = makeTiller($('tiller'), {
+  onChange: (v) => { if (client) client.setControls({ r: v }); }
 });
-tiller.addEventListener('pointermove', (e) => { if (dragging) setFromClientX(e.clientX); });
+const sheet = makeSheet($('sheet'), {
+  initial: 0.25,
+  onChange: (v) => { if (client) client.setControls({ s: v }); }
+});
+const hike = makeHold($('hike'), {
+  onChange: (v) => {
+    if (client) client.setControls({ h: v });
+    if (v) buzz(12);
+  }
+});
 
-function release() {
-  if (!dragging) return;
-  dragging = false;
-  tiller.classList.remove('active');
-  /* Spring back to centre — a real tiller does this when you let go. */
-  const from = value, t0 = performance.now();
-  (function spring(now) {
-    const k = Math.min(1, ((now || performance.now()) - t0) / 180);
-    value = from * (1 - k * k);
-    paint();
-    if (k < 1 && !dragging) requestAnimationFrame(spring);
-  })();
+/* ── telemetry paint ────────────────────────────────────────────── */
+let lastBand = null;
+
+function paint(m) {
+  $('r-sog').innerHTML = m.sog.toFixed(1) + ' <small>kn</small>';
+  const side = m.awa > 0 ? 'port' : 'stbd';
+  $('r-awa').innerHTML = Math.abs(m.awa) + '<small>° ' + side + '</small>';
+  $('r-vmg').innerHTML = m.vmg.toFixed(1) + ' <small>kn</small>';
+  $('r-heel').innerHTML = Math.abs(m.heel) + '<small>°</small>';
+
+  const bar = $('heelbar'), fill = bar.querySelector('.fill');
+  const pct = Math.min(1, Math.abs(m.heel) / 60) * 50;
+  if (m.heel >= 0) { fill.style.left = '50%'; fill.style.right = (50 - pct) + '%'; }
+  else { fill.style.right = '50%'; fill.style.left = (50 - pct) + '%'; }
+  bar.classList.toggle('hot', Math.abs(m.heel) > 38);
+  document.getElementById('heel-cap').textContent =
+    Math.abs(m.heel) > 38 ? 'HIKE OUT' : 'heel ' + Math.abs(m.heel) + '°';
+
+  setTelltale(m);
+  setPlaning(m.pl);
 }
-tiller.addEventListener('pointerup', release);
-tiller.addEventListener('pointercancel', release);
-window.addEventListener('resize', paint);
-paint();
+
+const PLANE_COPY = {
+  displacing: 'displacing',
+  onthehump: 'on the hump — bear away to get her up',
+  planing: 'PLANING'
+};
+let lastPlane = null;
+function setPlaning(state) {
+  if (!state) return;
+  const el = $('plane');
+  el.dataset.state = state;
+  $('plane-txt').textContent = PLANE_COPY[state] || state;
+  if (state !== lastPlane) {
+    if (state === 'planing') buzz([25, 30, 25]);
+    lastPlane = state;
+  }
+}
+
+const COPY = {
+  luffing:  ['LUFFING', 'sail flapping — trim in'],
+  edge:     ['ON THE EDGE', 'nearly luffing — trim in a touch'],
+  good:     ['DRAWING WELL', 'that is the groove — hold it'],
+  over:     ['OVER-TRIMMED', 'ease until she stops slowing'],
+  stalled:  ['STALLED', 'way over-trimmed — ease out'],
+  capsized: ['CAPSIZED', 'hold on — she is coming up']
+};
+
+function setTelltale(m) {
+  const band = m && m.tt ? m.tt : null;
+  const el = $('tt');
+  if (!band) {
+    el.className = '';
+    $('tt-title').textContent = 'WAITING';
+    $('tt-hint').textContent = 'connecting to the boat';
+    lastBand = null;
+    return;
+  }
+  el.className = band;
+  const [title, hint] = COPY[band] || [band.toUpperCase(), ''];
+  $('tt-title').textContent = title;
+  $('tt-hint').textContent = hint;
+
+  /* A short buzz the moment she comes into the groove, and a longer one when
+   * she falls out of it. Learning the sheet by feel, not by reading. */
+  if (band !== lastBand) {
+    if (band === 'good') buzz(18);
+    else if (lastBand === 'good') buzz([12, 40, 12]);
+    lastBand = band;
+  }
+}
+
+function onEvent(kind) {
+  if (kind === EVENTS.CAPSIZE) { banner('Capsized — sit tight', 2600); buzz([40, 60, 40, 60, 90]); }
+  if (kind === EVENTS.RECOVERED) { banner('Back up — sheet is eased', 1800); buzz(25); }
+  if (kind === EVENTS.IN_IRONS) banner('In irons — no way on to steer', 2200);
+  if (kind === EVENTS.TACK) buzz(15);
+  if (kind === EVENTS.GYBE) buzz([15, 40, 15]);
+}
+
+let bannerTimer = 0;
+function banner(text, ms) {
+  const b = $('banner');
+  b.textContent = text; b.hidden = false;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { b.hidden = true; }, ms || 2000);
+}
+
+/* Silently absent on iOS. Never make it load-bearing. */
+function buzz(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* ignore */ }
+}
 
 /* ── screen wake lock ───────────────────────────────────────────── */
 let lock = null;
 async function keepAwake() {
   if (!('wakeLock' in navigator)) {
-    D.log('warn', 'no Screen Wake Lock on this device — the screen may sleep mid-race');
+    D.log('warn', 'no Screen Wake Lock here — the screen may sleep mid-race');
     return;
   }
   try {
     lock = await navigator.wakeLock.request('screen');
+    lock.addEventListener('release', () => { lock = null; });
     D.log('ok', 'screen wake lock held');
   } catch (e) { D.log('warn', 'wake lock refused: ' + e.message); }
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && client) keepAwake();
+  if (document.visibilityState === 'visible' && client && !lock) keepAwake();
 });
 
 $('tog').addEventListener('click', () => {
-  const w = $('diagwrap');
-  w.hidden = !w.hidden;
-  $('tog').textContent = w.hidden ? 'show diagnostics' : 'hide diagnostics';
+  const w = $('diagwrap'); w.hidden = !w.hidden;
 });
-
 window.addEventListener('pagehide', () => { if (client) client.close(); });
 
-function fmtTime(s) {
-  const m = Math.floor(s / 60), r = s % 60;
-  return m + 'm ' + (r < 10 ? '0' : '') + r + 's';
-}
-
-/* ── auto-join ──────────────────────────────────────────────────────
- * Last, so everything join() touches is already initialised. Scanning the
- * QR lands here with #ABCD and skips the form entirely. */
+/* ── auto-join ──────────────────────────────────────────────────── */
 const fromHash = (location.hash || '').replace('#', '').trim().toUpperCase();
-if (/^[A-Z0-9]{4}$/.test(fromHash)) {
-  $('code').value = fromHash;
-  join();
-} else {
-  $('code').focus();
-}
+if (/^[A-Z0-9]{4}$/.test(fromHash)) { $('code').value = fromHash; join(); }
+else $('code').focus();
 </script>
 </body>
 </html>

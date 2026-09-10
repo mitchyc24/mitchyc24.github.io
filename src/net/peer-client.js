@@ -1,7 +1,8 @@
 /* Phone side of the transport.
  *
- * Connects to a room code, sends input at INPUT_HZ, measures round-trip
- * latency from the host's telemetry echo, and reconnects with backoff.
+ * Connects to a room code, streams the two axes and the hike button at
+ * INPUT_HZ, measures round-trip latency from the host's telemetry echo, and
+ * reconnects with backoff.
  */
 
 import { loadPeerJS } from '../shared/peer-loader.js';
@@ -22,17 +23,23 @@ export class PeerClient {
     this.peer = null;
     this.conn = null;
     this.seq = 0;
-    this.value = 0;
     this.rtt = null;
     this.state = 'idle';
     this.attempt = 0;
+
+    /* Latest control state. The send loop samples this; touch handlers write
+     * it. Never queue inputs — the newest one is the only one that matters. */
+    this.controls = { r: 0, s: 0.25, h: 0 };
+
     this._sendTimer = null;
     this._closing = false;
-    this._sentAt = new Map();   // seq -> performance.now()
+    this._sentAt = new Map();
   }
 
-  setValue(v) {
-    this.value = Math.max(-1, Math.min(1, Number(v) || 0));
+  setControls(c) {
+    if (c.r !== undefined) this.controls.r = Math.max(-1, Math.min(1, Number(c.r) || 0));
+    if (c.s !== undefined) this.controls.s = Math.max(0, Math.min(1, Number(c.s) || 0));
+    if (c.h !== undefined) this.controls.h = c.h ? 1 : 0;
   }
 
   _setState(s, detail) {
@@ -47,11 +54,8 @@ export class PeerClient {
     this._setState('connecting');
 
     let Peer;
-    try {
-      Peer = await loadPeerJS();
-    } catch (e) {
-      return this._retry('could not load PeerJS');
-    }
+    try { Peer = await loadPeerJS(); }
+    catch (e) { return this._retry('could not load PeerJS'); }
 
     if (this.peer) { try { this.peer.destroy(); } catch (e) { /* ignore */ } }
     this.peer = new Peer(undefined, cfg().PEER_OPTS);
@@ -69,7 +73,7 @@ export class PeerClient {
     this.peer.on('open', () => {
       log('info', 'dialling ' + hostId);
       const conn = this.peer.connect(hostId, {
-        reliable: false,      // input is lossy by design; latest wins
+        reliable: false,        // input is lossy by design; latest wins
         serialization: 'json',
         metadata: { pid: this.profile.pid }
       });
@@ -78,7 +82,7 @@ export class PeerClient {
       conn.on('open', () => {
         clearTimeout(iceGuard);
         this.attempt = 0;
-        conn.send(hello(this.profile.pid, this.profile.name));
+        conn.send(hello(this.profile.pid, this.profile.name, this.profile.hull));
         this._setState('connected');
         this._startSending();
       });
@@ -99,19 +103,30 @@ export class PeerClient {
       const type = e && e.type ? e.type : 'unknown';
       if (type === 'peer-unavailable') {
         this._setState('failed', 'no game is hosting room ' + this.room);
-        return; // a wrong code will never succeed; don't spin on it
+        return;   // a wrong code will never succeed; don't spin on it
       }
       this._retry('broker error: ' + type);
     });
   }
 
   _onData(m) {
-    if (!m || m.t !== T.TEL) return;
+    if (!m) return;
+    if (m.t === T.WELCOME) {
+      log('ok', 'welcomed as slot ' + m.slot + ' on ' + m.host);
+      if (this.h.onWelcome) this.h.onWelcome(m);
+      return;
+    }
+    if (m.t === T.EVT) {
+      if (this.h.onEvent) this.h.onEvent(m.k, m.d);
+      return;
+    }
+    if (m.t !== T.TEL) return;
+
     if (m.ts && this._sentAt.has(m.seq)) {
       this.rtt = Math.round(performance.now() - this._sentAt.get(m.seq));
-      this._sentAt.clear();   // one sample per telemetry tick is plenty
+      this._sentAt.clear();       // one sample per telemetry tick is plenty
     }
-    if (this.h.onTelemetry) this.h.onTelemetry({ rtt: this.rtt, up: m.up, players: m.n });
+    if (this.h.onTelemetry) this.h.onTelemetry(m, this.rtt);
   }
 
   _startSending() {
@@ -123,7 +138,8 @@ export class PeerClient {
       const ts = Math.round(performance.now());
       if (seq % 10 === 0) this._sentAt.set(seq, performance.now());
       try {
-        this.conn.send(input(this.value, seq, ts));
+        const c = this.controls;
+        this.conn.send(input(c.r, c.s, c.h, seq, ts));
       } catch (e) { /* channel closing */ }
     }, period);
   }

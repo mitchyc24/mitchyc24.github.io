@@ -320,8 +320,74 @@ the machine to find it.
 
 ---
 
+---
+
+## M2 — the controller
+
+`/host/` now runs the real world: one boat per player, drawn on the shared
+renderer, with the fleet and each player's telltale state down the side.
+`/play/` is the real controller.
+
+```bash
+node --test "test/*.test.mjs"      # 35 tests, including the M2 gate
+open host/                         # then scan the QR with a phone
+```
+
+### The controls
+
+| | |
+|---|---|
+| **Tiller** | Horizontal zone. Absolute within its width, so you can slam it over; **springs back to centre** on release, because you hold a tiller against the water. |
+| **Mainsheet** | Vertical zone. **Relative and it stays put** — you cleat a sheet and leave it. Down eases, up trims in. |
+| **Hike** | Hold. Not a gesture; it has to work with cold thumbs. |
+| **Telltale strip** | The teaching device. Five states, animated ribbons, a buzz as she comes into the groove and a different one as she falls out. |
+| **Planing badge** | A second, separate lesson — see below. |
+
+### The gate, automated
+
+The milestone's real gate needs a person: can a non-sailor get upwind on the
+telltales alone? What `test/telltale-pilot.test.mjs` checks is the claim
+underneath it. The pilot in there is deliberately stupid — it reads **one
+string** (`luffing` / `edge` / `good` / `over` / `stalled` / `running`) and
+nothing else. No angle of attack, no speed, no apparent wind.
+
+It finds the groove from any starting trim, holds it >80% of the time, stays
+within ~90% of the best trim a full search can find, and beats to windward at
+2.5 kn. A slow thumb still gets there. So the strip is a sufficient signal.
+
+### What the strip cannot teach, and why it now says so
+
+Two things came out of building that test, and both changed the design:
+
+1. **Telltales cannot teach planing.** At the planing transition there are two
+   stable states at the *same angle of attack* — displacement and planing — so
+   a pilot in a perfect groove can be doing two thirds of the boat's speed.
+   That is a real limitation of telltales, not a bug, so planing got its **own
+   indicator** rather than being smuggled into the strip. It reads
+   *displacing → on the hump → PLANING*.
+2. **The strip used to nag on a run.** Squared off downwind the sail genuinely
+   is stalled — a run is drag-driven — but the sheet is already at the stop and
+   she is going as fast as she can. It said "ease out", which is advice you
+   cannot take. Now it says RUNNING and asks for nothing. The rule: only tell
+   the player to ease if easing is possible and would help.
+
+The groove also narrowed from ±6° to ±5° after measuring what "drawing well"
+actually cost in speed at each point of sail.
+
+### Where the pieces live
+
+```
+src/shared/telltales.js   ONE definition of the bands, read by host,
+                          controller, dev view and tests alike
+src/controller/surfaces.js tiller / sheet / hold, and why they differ
+src/render/scene.js       canvas renderer shared by host and dev view
+src/net/protocol.js       v2 wire format — no DOM, no PeerJS
+```
+
+---
+
 ## Next
 
-M2 — the real phone controller: tiller, mainsheet, hike and the telltale strip,
-driving this boat over the M0 transport. The gate is a non-sailor getting
-upwind using only the telltales.
+M3 — the harbour lobby: QR join into a sailable world, mode zones you sail into
+and hold to vote, and the phone-side options panel. See `claude/architecture.md`
+§10 for the vote rules.

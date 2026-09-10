@@ -36,7 +36,7 @@ export function createBoat(opts) {
 
     /* Derived, refreshed every step, for the HUD and the telltales. */
     out: {
-      aws: 0, awa: 0, aoa: 0, luffing: true, stalled: false,
+      aws: 0, awa: 0, aoa: 0, sigma: 0, luffing: true, stalled: false,
       sog: 0, u: 0, w: 0, leeway: 0,
       drive: 0, side: 0, heelDeg: 0, wave: 1
     },
@@ -171,6 +171,7 @@ export function step(boat, windFlow, dt, lockHeading) {
   o.drive = sailFwd;
   o.side = sailLat;
   o.heelDeg = boat.phi * 180 / Math.PI;
+  o.sigma = boat.sigma;
   o.wave = res.wave;
   o.induced = di;
 

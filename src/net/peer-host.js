@@ -1,14 +1,15 @@
 /* Host side of the transport.
  *
- * Claims a room code on the broker, accepts phone connections, keeps the
- * latest input per player, and pushes telemetry back.
+ * Claims a room code, accepts phone connections, keeps the latest input per
+ * player, and pushes instrument telemetry back at TEL_HZ.
  *
- * Everything PeerJS-specific lives behind this module so the Transport can be
- * swapped for a Firebase implementation later without the game noticing.
+ * It knows nothing about physics. The host page owns the world and hands this
+ * a `readBoat(pid)` callback; that keeps src/net free of src/core and means the
+ * whole transport stays swappable for the Firebase implementation later.
  */
 
 import { loadPeerJS, basePath } from '../shared/peer-loader.js';
-import { T, welcome, telemetry, isValidHello, sanitizeInput } from './protocol.js';
+import { T, welcome, telemetry, event, isValidHello, sanitizeInput } from './protocol.js';
 
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I O 0 1
 const cfg = () => window.SS_CONFIG;
@@ -24,12 +25,19 @@ function log(kind, msg) {
 }
 
 export class PeerHost {
+  /**
+   * @param handlers.onJoin(player)      give this player a boat
+   * @param handlers.onLeave(player)     take it away
+   * @param handlers.onInput(player,in)  feed the simulation
+   * @param handlers.readBoat(player)    return the telemetry payload, or null
+   * @param handlers.onPlayers(list)     roster changed
+   */
   constructor(handlers) {
     this.h = handlers || {};
     this.peer = null;
     this.code = null;
     this.joinUrl = null;
-    this.players = new Map();   // pid -> { pid, name, slot, conn, last, lastSeen, bytes, msgs }
+    this.players = new Map();   // pid -> player
     this.slots = 0;
     this.startedAt = Date.now();
     this._telTimer = null;
@@ -37,15 +45,10 @@ export class PeerHost {
     this._msgsIn = 0;
   }
 
-  get uptimeSeconds() {
-    return Math.floor((Date.now() - this.startedAt) / 1000);
-  }
+  get uptimeSeconds() { return Math.floor((Date.now() - this.startedAt) / 1000); }
+  get stats() { return { bytesIn: this._bytesIn, msgsIn: this._msgsIn, players: this.players.size }; }
 
-  get stats() {
-    return { bytesIn: this._bytesIn, msgsIn: this._msgsIn, players: this.players.size };
-  }
-
-  /** Claim a room on the broker, retrying on ID collision. Resolves with the code. */
+  /** Claim a room on the broker, retrying on ID collision. */
   async open(attempt = 0) {
     const Peer = await loadPeerJS();
     const c = code(4);
@@ -60,10 +63,8 @@ export class PeerHost {
       await new Promise((resolve, reject) => {
         let settled = false;
         const done = (fn, arg) => { if (!settled) { settled = true; fn(arg); } };
-        const timer = setTimeout(
-          () => done(reject, new Error('broker timeout')),
-          cfg().ROOM_CLAIM_TIMEOUT_MS
-        );
+        const timer = setTimeout(() => done(reject, new Error('broker timeout')),
+                                 cfg().ROOM_CLAIM_TIMEOUT_MS);
         peer.on('open', () => { clearTimeout(timer); done(resolve); });
         peer.on('error', (e) => { clearTimeout(timer); done(reject, e); });
       });
@@ -72,10 +73,8 @@ export class PeerHost {
       const taken = err && String(err.type) === 'unavailable-id';
       log('warn', 'room claim failed: ' + (err && err.message ? err.message : err));
       if (attempt + 1 >= cfg().ROOM_CLAIM_ATTEMPTS) {
-        throw new Error(
-          taken ? 'Could not find a free room code.'
-                : 'Could not reach the signalling broker. Check this device is online.'
-        );
+        throw new Error(taken ? 'Could not find a free room code.'
+                              : 'Could not reach the signalling broker. Check this device is online.');
       }
       return this.open(attempt + 1);
     }
@@ -92,7 +91,6 @@ export class PeerHost {
     peer.on('error', (e) => log('err', 'peer error: ' + (e && e.type ? e.type : e)));
     peer.on('disconnected', () => {
       log('warn', 'broker connection dropped — existing players keep playing');
-      // Existing DataChannels survive. Only new joins need the broker.
       try { peer.reconnect(); } catch (e) { /* best effort */ }
     });
 
@@ -110,27 +108,22 @@ export class PeerHost {
       }
     }, cfg().ICE_FAIL_MS);
 
-    conn.on('open', () => {
-      clearTimeout(iceGuard);
-      log('ok', 'datachannel open to ' + conn.peer);
-    });
+    conn.on('open', () => { clearTimeout(iceGuard); log('ok', 'datachannel open to ' + conn.peer); });
 
-    conn.on('data', (raw) => {
+    conn.on('data', (m) => {
       this._msgsIn++;
-      this._bytesIn += approxBytes(raw);
+      this._bytesIn += approxBytes(m);
 
-      const m = raw;
       if (isValidHello(m)) return this._join(conn, m);
 
-      const p = this.players.get(conn.metadata && conn.metadata.pid);
-      const player = p || this._byConn(conn);
+      const player = this._byConn(conn);
       if (!player) return;
 
       if (m && m.t === T.IN) {
         const s = sanitizeInput(m);
         if (!s) return;
-        // Keep the LATEST input, never a queue. A dropped packet is harmless
-        // because the next one arrives ~33 ms later with current state.
+        /* Keep the LATEST input, never a queue. A dropped packet is harmless
+         * because the next one arrives ~33 ms later carrying current state. */
         player.last = s;
         player.lastSeen = Date.now();
         player.msgs++;
@@ -145,7 +138,6 @@ export class PeerHost {
       const player = this._byConn(conn);
       if (player) this._drop(player, 'connection closed');
     });
-
     conn.on('error', (e) => log('err', 'conn error: ' + (e && e.message ? e.message : e)));
   }
 
@@ -157,11 +149,13 @@ export class PeerHost {
   _join(conn, m) {
     const existing = this.players.get(m.pid);
     if (existing) {
-      // Reconnect: same profile id reclaims the same slot.
-      log('ok', 'player ' + m.pid.slice(0, 6) + ' reconnected to slot ' + existing.slot);
+      /* Reconnect: same profile id reclaims the same slot and the same boat,
+       * still where they left it. */
+      log('ok', 'player ' + existing.name + ' reconnected to slot ' + existing.slot);
       existing.conn = conn;
       existing.lastSeen = Date.now();
-      conn.send(welcome(existing.slot, hostKind()));
+      existing.droppedAt = 0;
+      conn.send(welcome(existing.slot, hostKind(), existing.boatId));
       if (this.h.onPlayers) this.h.onPlayers(this.list());
       return;
     }
@@ -169,50 +163,71 @@ export class PeerHost {
     const player = {
       pid: m.pid,
       name: String(m.name || 'Sailor').slice(0, 16),
+      hull: typeof m.hull === 'string' ? m.hull.slice(0, 12) : '#B3117A',
       slot: this.slots++,
       conn,
-      last: { r: 0, seq: 0, ts: 0 },
+      last: { r: 0, s: 0.25, h: 0, seq: 0, ts: 0 },
       lastSeen: Date.now(),
       joinedAt: Date.now(),
+      droppedAt: 0,
       msgs: 0
     };
+    player.boatId = 'b' + player.slot;
     this.players.set(m.pid, player);
     log('ok', 'player ' + player.name + ' joined as slot ' + player.slot);
-    conn.send(welcome(player.slot, hostKind()));
+
+    if (this.h.onJoin) this.h.onJoin(player);
+    conn.send(welcome(player.slot, hostKind(), player.boatId));
     if (this.h.onPlayers) this.h.onPlayers(this.list());
   }
 
   _drop(player, why) {
     if (!player || !this.players.has(player.pid)) return;
-    log('warn', player.name + ' ' + why + ' — holding the slot for ' +
+    log('warn', player.name + ' ' + why + ' — holding the boat for ' +
                 (cfg().DROP_GRACE_MS / 1000) + 's');
     player.droppedAt = Date.now();
+    /* The boat stays in the world, drifting with the sail luffing. */
+    if (this.h.onInput) this.h.onInput(player, { r: 0, s: 1, h: 0 });
+
     setTimeout(() => {
-      if (player.droppedAt && Date.now() - player.droppedAt >= cfg().DROP_GRACE_MS - 50) {
-        this.players.delete(player.pid);
-        log('warn', player.name + ' removed');
-        if (this.h.onPlayers) this.h.onPlayers(this.list());
-      }
+      if (!player.droppedAt) return;                       // they came back
+      if (Date.now() - player.droppedAt < cfg().DROP_GRACE_MS - 50) return;
+      this.players.delete(player.pid);
+      log('warn', player.name + ' removed');
+      if (this.h.onLeave) this.h.onLeave(player);
+      if (this.h.onPlayers) this.h.onPlayers(this.list());
     }, cfg().DROP_GRACE_MS);
+
     if (this.h.onPlayers) this.h.onPlayers(this.list());
   }
 
+  /** Fire a one-off event at one player — a buzz, a message. */
+  notify(player, kind, detail) {
+    if (!player || !player.conn || !player.conn.open) return;
+    try { player.conn.send(event(kind, detail)); } catch (e) { /* channel closing */ }
+  }
+
   _pushTelemetry() {
+    if (!this.h.readBoat) return;
     const up = this.uptimeSeconds;
+    const n = this.players.size;
     for (const p of this.players.values()) {
       if (!p.conn || !p.conn.open) continue;
+      const t = this.h.readBoat(p);
+      if (!t) continue;
       try {
-        p.conn.send(telemetry(p.last.seq, p.last.ts, up, this.players.size));
+        p.conn.send(telemetry(Object.assign({ seq: p.last.seq, ts: p.last.ts, up, n }, t)));
       } catch (e) { /* channel closing */ }
     }
   }
 
   list() {
+    const now = Date.now();
     return Array.from(this.players.values()).map((p) => ({
-      pid: p.pid, name: p.name, slot: p.slot,
-      r: p.last.r, seq: p.last.seq, msgs: p.msgs,
-      connected: !!(p.conn && p.conn.open),
-      stale: Date.now() - p.lastSeen > 2000
+      pid: p.pid, name: p.name, hull: p.hull, slot: p.slot, boatId: p.boatId,
+      r: p.last.r, s: p.last.s, h: p.last.h, seq: p.last.seq, msgs: p.msgs,
+      connected: !!(p.conn && p.conn.open) && !p.droppedAt,
+      stale: now - p.lastSeen > 2000
     }));
   }
 
