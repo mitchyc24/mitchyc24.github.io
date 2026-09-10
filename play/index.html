@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0B131A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Sailing School — Controller</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../src/shared/ui.css">
+<style>
+html, body { height: 100%; overflow: hidden; }
+body {
+  display: flex; flex-direction: column;
+  padding: max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  gap: 12px;
+}
+
+/* ── join screen ────────────────────────────────────────────────── */
+#join { display: flex; flex-direction: column; gap: 16px; justify-content: center; flex: 1; }
+#join h1 { font-size: 30px; font-weight: 800; }
+#join p { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; margin: 0; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.field input {
+  font-family: var(--f-display); font-weight: 700; font-size: 26px;
+  background: var(--surface); border: 1px solid var(--rule); color: var(--ink);
+  padding: 12px 14px; width: 100%; letter-spacing: .12em; text-transform: uppercase;
+}
+.field input.name { font-size: 18px; letter-spacing: 0; text-transform: none; }
+
+/* ── controller ─────────────────────────────────────────────────── */
+#ctl { display: none; flex-direction: column; flex: 1; gap: 12px; min-height: 0; }
+#ctl.live { display: flex; }
+
+.status {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11.5px; color: var(--muted); letter-spacing: .04em;
+}
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: 0 0 auto; }
+.dot.connected { background: var(--ok); }
+.dot.connecting, .dot.reconnecting, .dot.slow { background: var(--warn); }
+.dot.failed { background: var(--err); }
+.status .right { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+.readout {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--rule); border: 1px solid var(--rule);
+}
+.readout div { background: var(--surface); padding: 9px 10px; }
+.readout dt { font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 3px; }
+.readout dd { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 19px; font-variant-numeric: tabular-nums; }
+
+/* The one M0 axis. A wide drag zone, absolute within its width, springs back
+   to centre on release — the tiller behaviour from §8 of the plan, minus the
+   boat it will eventually steer. */
+.tiller {
+  flex: 1; min-height: 160px; position: relative;
+  background: var(--surface); border: 1px solid var(--rule);
+  touch-action: none; overscroll-behavior: none;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.tiller .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.tiller .knob {
+  position: absolute; top: 8px; bottom: 8px; width: 58px;
+  background: var(--magenta); left: 50%; margin-left: -29px;
+  will-change: transform;
+}
+.tiller .hint {
+  position: absolute; left: 0; right: 0; bottom: 14px; text-align: center;
+  font-size: 11px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); pointer-events: none;
+}
+/* Gone for good once they have worked out what it does. */
+.tiller.touched .hint { display: none; }
+
+.diagwrap { max-height: 34vh; overflow-y: auto; }
+.diagwrap h3 { font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 0 0 7px; }
+.tog { background: none; border: 0; color: var(--muted); font-family: var(--f-mono); font-size: 11px; padding: 4px 0; text-decoration: underline; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<script src="../src/shared/config.js"></script>
+<script src="../src/shared/boot-diag.js"></script>
+
+<div id="fatal" hidden></div>
+
+<div id="join">
+  <div>
+    <p class="eyebrow">Sailing School · M0 spike</p>
+    <h1>Join a game</h1>
+  </div>
+  <p>Enter the four-letter code on the screen, or scan the QR code to skip this step.</p>
+  <div class="field">
+    <label for="code">Room code</label>
+    <input id="code" maxlength="4" autocomplete="off" autocapitalize="characters"
+           autocorrect="off" spellcheck="false" inputmode="text" placeholder="ABCD">
+  </div>
+  <div class="field">
+    <label for="name">Your name</label>
+    <input id="name" class="name" maxlength="16" autocomplete="off" spellcheck="false">
+  </div>
+  <button class="btn" id="go">Join</button>
+</div>
+
+<div id="ctl">
+  <div class="status">
+    <span class="dot" id="dot"></span>
+    <span id="state">connecting…</span>
+    <span class="right" id="room"></span>
+  </div>
+
+  <dl class="readout">
+    <div><dt>Axis</dt><dd id="r-val">0.00</dd></div>
+    <div><dt>Round trip</dt><dd id="r-rtt">—</dd></div>
+    <div><dt>Host uptime</dt><dd id="r-up">—</dd></div>
+  </dl>
+
+  <div class="tiller" id="tiller">
+    <div class="mid"></div>
+    <div class="knob" id="knob"></div>
+    <span class="hint">drag left / right</span>
+  </div>
+
+  <button class="tog" id="tog">show diagnostics</button>
+  <div class="diagwrap" id="diagwrap" hidden>
+    <h3>Device</h3>
+    <div class="probe" id="probe"></div>
+    <div class="verdict" id="verdict"></div>
+    <h3 style="margin-top:12px">Log</h3>
+    <div id="diag-log"></div>
+    <h3 style="margin-top:12px">User agent</h3>
+    <div class="ua" id="ua"></div>
+  </div>
+</div>
+
+<script type="module">
+import { PeerClient } from '../src/net/peer-client.js';
+import { loadProfile, saveProfile } from '../src/shared/profile.js';
+
+const D = window.SSDiag;
+D.booted();
+
+const $ = (id) => document.getElementById(id);
+$('verdict').textContent = D.verdict();
+
+const profile = loadProfile();
+$('name').value = profile.name;
+
+/* Declared before anything can call join(). The QR auto-join at the bottom of
+ * this module used to run first and touch `client` in its temporal dead zone,
+ * which broke scanning while typing the code by hand worked fine. */
+let client = null;
+
+$('go').addEventListener('click', join);
+$('code').addEventListener('keydown', (e) => { if (e.key === 'Enter') join(); });
+
+function join() {
+  const code = $('code').value.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4}$/.test(code)) {
+    D.fatal('That does not look like a room code — four letters or digits.');
+    return;
+  }
+
+  const name = $('name').value.trim() || profile.name;
+  if (name !== profile.name) { profile.name = name; saveProfile(profile); }
+
+  $('join').style.display = 'none';
+  $('ctl').classList.add('live');
+  $('room').textContent = 'room ' + code;
+
+  client = new PeerClient(code, profile, {
+    onState: (s, detail) => {
+      $('dot').className = 'dot ' + s;
+      $('state').textContent = detail ? s + ' — ' + detail : s;
+    },
+    onTelemetry: (t) => {
+      $('r-rtt').textContent = t.rtt === null ? '—' : t.rtt + ' ms';
+      $('r-up').textContent = t.up === undefined ? '—' : fmtTime(t.up);
+    }
+  });
+  client.connect();
+  keepAwake();
+}
+
+/* ── the axis ───────────────────────────────────────────────────── */
+const tiller = $('tiller');
+const knob = $('knob');
+let value = 0, dragging = false;
+
+function setFromClientX(x) {
+  const r = tiller.getBoundingClientRect();
+  const half = r.width / 2;
+  value = Math.max(-1, Math.min(1, (x - r.left - half) / half));
+  paint();
+}
+
+function paint() {
+  $('r-val').textContent = value.toFixed(2);
+  const r = tiller.getBoundingClientRect();
+  knob.style.transform = 'translateX(' + (value * (r.width / 2 - 34)) + 'px)';
+  if (client) client.setValue(value);
+}
+
+tiller.addEventListener('pointerdown', (e) => {
+  dragging = true;
+  tiller.classList.add('active', 'touched');
+  tiller.setPointerCapture(e.pointerId);
+  setFromClientX(e.clientX);
+});
+tiller.addEventListener('pointermove', (e) => { if (dragging) setFromClientX(e.clientX); });
+
+function release() {
+  if (!dragging) return;
+  dragging = false;
+  tiller.classList.remove('active');
+  /* Spring back to centre — a real tiller does this when you let go. */
+  const from = value, t0 = performance.now();
+  (function spring(now) {
+    const k = Math.min(1, ((now || performance.now()) - t0) / 180);
+    value = from * (1 - k * k);
+    paint();
+    if (k < 1 && !dragging) requestAnimationFrame(spring);
+  })();
+}
+tiller.addEventListener('pointerup', release);
+tiller.addEventListener('pointercancel', release);
+window.addEventListener('resize', paint);
+paint();
+
+/* ── screen wake lock ───────────────────────────────────────────── */
+let lock = null;
+async function keepAwake() {
+  if (!('wakeLock' in navigator)) {
+    D.log('warn', 'no Screen Wake Lock on this device — the screen may sleep mid-race');
+    return;
+  }
+  try {
+    lock = await navigator.wakeLock.request('screen');
+    D.log('ok', 'screen wake lock held');
+  } catch (e) { D.log('warn', 'wake lock refused: ' + e.message); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && client) keepAwake();
+});
+
+$('tog').addEventListener('click', () => {
+  const w = $('diagwrap');
+  w.hidden = !w.hidden;
+  $('tog').textContent = w.hidden ? 'show diagnostics' : 'hide diagnostics';
+});
+
+window.addEventListener('pagehide', () => { if (client) client.close(); });
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return m + 'm ' + (r < 10 ? '0' : '') + r + 's';
+}
+
+/* ── auto-join ──────────────────────────────────────────────────────
+ * Last, so everything join() touches is already initialised. Scanning the
+ * QR lands here with #ABCD and skips the form entirely. */
+const fromHash = (location.hash || '').replace('#', '').trim().toUpperCase();
+if (/^[A-Z0-9]{4}$/.test(fromHash)) {
+  $('code').value = fromHash;
+  join();
+} else {
+  $('code').focus();
+}
+</script>
+</body>
+</html>

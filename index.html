@@ -1,172 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>miApps | Mitchell's Collection</title>
-    <style>
-        :root {
-            --bg-color: #f9f9f9;
-            --text-color: #333;
-            --card-bg: #fff;
-            --card-border: #eee;
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #12141c;
-                --text-color: #f1f1f1;
-                --card-bg: #1e212b;
-                --card-border: #2a2e3a;
-                --primary-color: #4da3ff;
-                --primary-hover: #7bb5ff;
-            }
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            max-width: 800px;
-            padding: 40px 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        h1 span {
-            color: var(--primary-color);
-        }
-        .intro {
-            font-size: 1.2rem;
-            color: #666;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        @media (prefers-color-scheme: dark) {
-            .intro { color: #aaa; }
-        }
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .app-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 24px;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
-        .app-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        @media (prefers-color-scheme: dark) {
-            .app-card:hover {
-                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            }
-        }
-        .app-card h2 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .app-card p {
-            flex-grow: 1;
-            margin-bottom: 20px;
-            color: #555;
-        }
-        @media (prefers-color-scheme: dark) {
-            .app-card p { color: #bbb; }
-        }
-        .app-card .btn {
-            display: inline-block;
-            background: var(--primary-color);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            transition: background 0.2s;
-            margin-top: auto;
-        }
-        .app-card:hover .btn {
-            background: var(--primary-hover);
-        }
-        .coming-soon {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .coming-soon:hover {
-            transform: none;
-            box-shadow: none;
-        }
-        .coming-soon .btn {
-            background: #ccc;
-            color: #666;
-        }
-        @media (prefers-color-scheme: dark) {
-            .coming-soon .btn { background: #444; color: #888; }
-        }
-        footer {
-            margin-top: 60px;
-            text-align: center;
-            color: #888;
-            font-size: 0.9rem;
-        }
-    </style>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sailing School</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="src/shared/ui.css">
+<style>
+body { display: flex; align-items: center; justify-content: center; padding: 28px 20px; }
+.card { max-width: 620px; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(38px, 9vw, 62px); font-weight: 800; line-height: .96; }
+.lede { color: var(--ink-2); font-size: 15px; line-height: 1.65; margin: 0; max-width: 46ch; }
+.paths { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .paths { grid-template-columns: 1fr; } }
+.path {
+  display: flex; flex-direction: column; gap: 9px;
+  background: var(--surface); border: 1px solid var(--rule); padding: 18px;
+  text-decoration: none; color: inherit;
+}
+.path:hover { border-color: var(--magenta); }
+.path h2 { font-size: 19px; font-weight: 700; }
+.path .k { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--magenta); }
+.path p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
+.foot { font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--rule); padding-top: 16px; }
+.foot a { color: var(--ink-2); }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><span>mi</span>Apps</h1>
-            <p class="intro">A collection of local-first Progressive Web Applications by Mitchell. Pronounced "my", spelled "mi". Build without boundaries, right in your browser.</p>
-        </header>
+<div class="card">
+  <div>
+    <p class="eyebrow">M0 spike · proving the pipe</p>
+    <h1>Sailing School</h1>
+  </div>
 
-        <div class="app-grid">
-            <a href="./miNotes/" class="app-card">
-                <h2>📝 miNotes</h2>
-                <p>A serverless, local-first Markdown note-taking app. Your notes live as plain .md files on your own disk — no backend, no account, fully offline.</p>
-                <span class="btn">Open App</span>
-            </a>
+  <p class="lede">A multiplayer sailing simulator for a room and a screen. Phones
+    are the tiller and the mainsheet. This build has no boats yet — it exists to
+    prove a phone can drive a value on a TV, and to tell you what your Chromecast
+    can actually run.</p>
 
-            <a href="./miWork/" class="app-card">
-                <h2>💼 miWork</h2>
-                <p>A comprehensive Kanban-style task tracker. Break down tasks, track progress, and view metrics with a visually pleasing interface.</p>
-                <span class="btn">Open App</span>
-            </a>
+  <div class="paths">
+    <a class="path" href="cast/">
+      <span class="k">Primary</span>
+      <h2>Cast to a TV</h2>
+      <p>Launches the game on a Chromecast. Needs Chrome and a registered Cast
+         app ID. This tab stays open as the ignition key.</p>
+    </a>
+    <a class="path" href="host/">
+      <span class="k">Always available</span>
+      <h2>Host here</h2>
+      <p>Runs the game in this browser instead — laptop, PC, or a TV's own
+         browser. No registration, no second device, same code.</p>
+    </a>
+  </div>
 
-            <a href="./miFitness/" class="app-card">
-                <h2>🏋️ miFitness</h2>
-                <p>A local-first strength training log. Routines, rest timers, personal records and progress charts — all stored in your browser, fully offline.</p>
-                <span class="btn">Open App</span>
-            </a>
-        </div>
+  <a class="path" href="play/">
+    <span class="k">On a phone</span>
+    <h2>Join a game</h2>
+    <p>Scanning the QR on screen brings you straight here. This link is for
+       typing the room code by hand.</p>
+  </a>
 
-        <footer>
-            <p>&copy; Mitchell. All apps are installable PWAs running purely on the client side.</p>
-        </footer>
-    </div>
+  <p class="foot">
+    Every device needs to be on the same network. Controller input travels
+    phone-to-host directly over WebRTC; the signalling broker only introduces
+    them once and then drops out.
+  </p>
+</div>
 </body>
 </html>

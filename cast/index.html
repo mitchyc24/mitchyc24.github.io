@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sailing School — Cast to TV</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../src/shared/ui.css">
+<style>
+body { display: flex; align-items: center; justify-content: center; padding: 24px; }
+.card { max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 18px; }
+h1 { font-size: 32px; font-weight: 800; }
+p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+google-cast-launcher { width: 46px; height: 46px; cursor: pointer; }
+.state { font-size: 12.5px; color: var(--muted); }
+.state b { color: var(--ok); font-weight: 500; }
+.warn { background: #3A2A11; border: 1px solid var(--warn); color: #FFE9BF; padding: 12px 15px; font-size: 13px; line-height: 1.6; }
+.warn code { background: rgba(0,0,0,.3); padding: 1px 5px; }
+.keepopen { border-left: 3px solid var(--magenta); padding: 8px 0 8px 14px; font-size: 13px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+
+<script src="../src/shared/config.js"></script>
+<script src="../src/shared/boot-diag.js"></script>
+
+<div class="card">
+  <div>
+    <p class="eyebrow">Sailing School · M0 spike</p>
+    <h1>Cast to the TV</h1>
+  </div>
+
+  <div class="warn" id="noappid" hidden>
+    No Cast application ID is configured yet. Register a Custom Receiver at
+    <a href="https://cast.google.com/publish">cast.google.com/publish</a> pointing at
+    this site's <code>/host/</code> URL, then put the ID in
+    <code>src/shared/config.js</code>.
+    <br><br>
+    Until then you can still play — open <a href="../host/">/host/</a> on this
+    computer and use it as the screen.
+  </div>
+
+  <p>Press the Cast button and pick your Chromecast. The game loads on the TV;
+     phones join by scanning the code it shows.</p>
+
+  <div class="row">
+    <google-cast-launcher id="castbtn"></google-cast-launcher>
+    <span class="state" id="state">loading the Cast SDK…</span>
+  </div>
+
+  <div class="keepopen">
+    Keep this tab open. A Cast session ends when its last sender disconnects, so
+    this page is the ignition key — it heartbeats every 20 seconds to stop the
+    receiver framework shutting the game down as idle.
+  </div>
+
+  <div id="fatal" hidden></div>
+
+  <div class="panel">
+    <div class="probe" id="probe"></div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+  <div class="ua" id="ua"></div>
+  <div id="diag-log"></div>
+</div>
+
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+<script>
+/* Deliberately ES5 and framework-free — this page has one job and must work
+   in whatever Chrome the person has. */
+(function () {
+  'use strict';
+  var D = window.SSDiag;
+  var CFG = window.SS_CONFIG;
+  var el = function (id) { return document.getElementById(id); };
+
+  D.booted();
+  el('verdict').textContent = D.verdict();
+
+  var placeholder = CFG.CAST_APP_ID === 'REPLACE_WITH_YOUR_APP_ID';
+  if (placeholder) {
+    el('noappid').hidden = false;
+    el('state').textContent = 'not configured';
+  }
+
+  var heartbeat = null;
+
+  window.__onGCastApiAvailable = function (available) {
+    if (!available) {
+      D.fatal('The Cast SDK did not load. Cast needs Chrome on desktop or Android — ' +
+              'it is not available in iOS Safari. Use browser hosting instead.');
+      el('state').textContent = 'unavailable';
+      return;
+    }
+    if (placeholder) return;
+
+    var ctx = cast.framework.CastContext.getInstance();
+    ctx.setOptions({
+      receiverApplicationId: CFG.CAST_APP_ID,
+      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+    });
+    D.log('ok', 'cast sender ready — app ID ' + CFG.CAST_APP_ID);
+    el('state').textContent = 'ready — press Cast';
+
+    ctx.addEventListener(
+      cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+      function (e) {
+        var S = cast.framework.SessionState;
+        D.log('info', 'session state: ' + e.sessionState);
+
+        if (e.sessionState === S.SESSION_STARTED || e.sessionState === S.SESSION_RESUMED) {
+          el('state').innerHTML = '<b>connected</b> — the game is on the TV';
+          startHeartbeat(ctx.getCurrentSession());
+        } else if (e.sessionState === S.SESSION_ENDED) {
+          el('state').textContent = 'session ended';
+          stopHeartbeat();
+        }
+      }
+    );
+  };
+
+  function startHeartbeat(session) {
+    stopHeartbeat();
+    if (!session) return;
+
+    session.addMessageListener(CFG.CAST_NAMESPACE, function (ns, msg) {
+      try {
+        var d = JSON.parse(msg);
+        if (d.t === 'hb-ack') D.log('ok', 'heartbeat ack — host up ' + d.up + 's');
+      } catch (err) { /* not ours */ }
+    });
+
+    var beat = function () {
+      try {
+        session.sendMessage(CFG.CAST_NAMESPACE, { t: 'hb', ts: Date.now() });
+      } catch (err) {
+        D.log('warn', 'heartbeat failed: ' + err.message);
+      }
+    };
+    beat();
+    heartbeat = setInterval(beat, CFG.CAST_HEARTBEAT_MS);
+    D.log('ok', 'heartbeat every ' + (CFG.CAST_HEARTBEAT_MS / 1000) + 's');
+  }
+
+  function stopHeartbeat() {
+    if (heartbeat) clearInterval(heartbeat);
+    heartbeat = null;
+  }
+
+  window.addEventListener('beforeunload', function (e) {
+    if (!heartbeat) return;
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  });
+})();
+</script>
+</body>
+</html>

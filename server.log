@@ -1,7 +1,0 @@
-127.0.0.1 - - [25/Aug/2026 15:41:14] "GET /miFitness/ HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:14] "GET /miFitness/js/app.js HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:14] "GET /miFitness/js/db.js HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:14] "GET /miFitness/css/styles.css HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:15] "GET /miFitness/sw.js HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:15] "GET /miFitness/index.html HTTP/1.1" 200 -
-127.0.0.1 - - [25/Aug/2026 15:41:15] "GET /miFitness/manifest.webmanifest HTTP/1.1" 200 -

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sailing School — Host</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../src/shared/ui.css">
+<style>
+body { padding: 0; }
+
+/* ── start gate (browser host only) ─────────────────────────────── */
+#gate {
+  position: fixed; inset: 0; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 22px; background: var(--paper); text-align: center; padding: 24px;
+}
+#gate h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 800; }
+#gate p { color: var(--ink-2); font-size: 14px; max-width: 46ch; line-height: 1.6; margin: 0; }
+
+/* ── main layout ────────────────────────────────────────────────── */
+#app { display: none; min-height: 100vh; flex-direction: column; }
+#app.live { display: flex; }
+
+.top {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 28px;
+  padding: 28px 32px;
+  flex: 1;
+  align-items: start;
+}
+@media (max-width: 860px) { .top { grid-template-columns: 1fr; gap: 20px; padding: 18px; } }
+
+/* join card */
+.join { display: flex; flex-direction: column; gap: 14px; }
+.code {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(56px, 9vw, 104px);
+  line-height: 0.92;
+  letter-spacing: 0.08em;
+  color: var(--magenta);
+}
+.qr { width: 100%; max-width: 300px; background: #fff; padding: 10px; }
+.qr svg { display: block; width: 100%; height: auto; }
+.joinurl { font-size: 12px; color: var(--ink-2); word-break: break-all; }
+
+/* players */
+.players { display: flex; flex-direction: column; gap: 10px; }
+.pl {
+  display: grid;
+  grid-template-columns: 150px 1fr 92px;
+  gap: 14px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 12px 14px;
+}
+.pl .nm { font-family: var(--f-display); font-weight: 700; font-size: 16px; }
+.pl .nm small { display: block; font-family: var(--f-mono); font-weight: 400; font-size: 10.5px; color: var(--muted); letter-spacing: .06em; }
+.pl .num { text-align: right; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--shoal); }
+.pl.stale { opacity: .45; }
+
+/* the axis gauge — the whole point of M0, visible from the sofa */
+.gauge { position: relative; height: 30px; background: var(--surface-2); border: 1px solid var(--rule); }
+.gauge .mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.gauge .fill { position: absolute; top: 3px; bottom: 3px; background: var(--magenta); transition: none; }
+
+.empty { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.empty b { color: var(--ink-2); font-weight: 500; }
+
+/* diagnostics drawer */
+.diag {
+  border-top: 1px solid var(--rule);
+  background: #080F15;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  padding: 18px 32px 22px;
+}
+@media (max-width: 860px) { .diag { grid-template-columns: 1fr; padding: 16px 18px; } }
+.diag h3 { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 10px; }
+.diag.hidden { display: none; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+.stats b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.notice {
+  background: #3A2A11; border: 1px solid var(--warn); color: #FFE9BF;
+  padding: 10px 14px; font-size: 13px; margin: 0 32px 12px;
+}
+
+#fatal {
+  position: fixed; z-index: 40; left: 0; right: 0; bottom: 0;
+  max-height: 40vh; overflow-y: auto;
+}
+</style>
+</head>
+<body>
+
+<!-- Runs first, in ES5, so a device that cannot parse the modules below still
+     shows you why. Do not move this. -->
+<script src="../src/shared/config.js"></script>
+<script src="../src/shared/boot-diag.js"></script>
+<script src="../vendor/qrcode-generator-2.0.4.js"></script>
+
+<!-- Browser-host start gate. The Cast build hides this immediately: a
+     Chromecast has no cursor and cannot produce the user gesture that
+     fullscreen and wake lock require. -->
+<div id="gate">
+  <div>
+    <p class="eyebrow">Sailing School · M0 spike</p>
+    <h1>Host a game</h1>
+  </div>
+  <p>Claims a room code and puts a QR on screen. Phones join by scanning it.
+     Nothing is simulated yet — this build exists to prove the pipe end to end.</p>
+  <button class="btn" id="start">Start hosting</button>
+</div>
+
+<!-- Outside the gate so it stays visible after hosting begins. -->
+<div id="fatal" hidden></div>
+
+<div id="app">
+  <div class="notice" id="notice" hidden></div>
+
+  <div class="top">
+    <div class="join">
+      <div>
+        <p class="eyebrow">Room code</p>
+        <div class="code" id="code">····</div>
+      </div>
+      <div class="qr" id="qr"></div>
+      <div class="joinurl" id="joinurl"></div>
+    </div>
+
+    <div>
+      <p class="eyebrow">Connected controllers</p>
+      <div class="players" id="players"></div>
+      <div class="empty" id="empty">
+        Waiting for a phone.<br>
+        Scan the code, or open <b id="empty-url"></b> on any phone on this network.
+      </div>
+    </div>
+  </div>
+
+  <div class="diag" id="diag">
+    <div>
+      <h3>Device</h3>
+      <div class="probe" id="probe"></div>
+      <div class="verdict" id="verdict"></div>
+      <h3 style="margin-top:14px">User agent</h3>
+      <div class="ua" id="ua"></div>
+    </div>
+    <div>
+      <h3>Session</h3>
+      <div class="stats" id="stats"></div>
+      <h3>Log</h3>
+      <div id="diag-log"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { resolveCapability } from '../src/host/capability.js';
+import { PeerHost } from '../src/net/peer-host.js';
+import { qrSvg } from '../src/shared/qr.js';
+
+const D = window.SSDiag;
+D.booted();
+
+const $ = (id) => document.getElementById(id);
+const cap = resolveCapability();
+D.log('info', 'capability: ' + cap.kind + ' (' + cap.fps + ' fps, ' + cap.fidelity + ')');
+$('verdict').textContent = D.verdict();
+
+const host = new PeerHost({
+  onPlayers: renderPlayers,
+  onInput: () => { /* M0 renders from the poll below rather than per packet */ }
+});
+
+/* The app surface the shells talk to. Keeps them ignorant of the DOM. */
+const app = {
+  get uptimeSeconds() { return host.uptimeSeconds; },
+  playerCount: () => host.players.size,
+  setHostNotice: (msg) => {
+    const n = $('notice');
+    n.hidden = !msg;
+    n.textContent = msg || '';
+  },
+  toggleDiagnostics: () => $('diag').classList.toggle('hidden')
+};
+
+const shell = cap.attach(app);
+
+async function begin() {
+  $('gate').style.display = 'none';
+  $('app').classList.add('live');
+  if (shell && shell.onStartGesture) shell.onStartGesture();
+
+  try {
+    const code = await host.open();
+    $('code').textContent = code;
+    $('joinurl').textContent = host.joinUrl;
+    $('empty-url').textContent = host.joinUrl;
+    $('qr').innerHTML = qrSvg(host.joinUrl, { dark: '#0B131A', light: '#ffffff' });
+  } catch (err) {
+    D.fatal(err.message);
+    $('code').textContent = '——';
+    $('gate').style.display = 'flex';
+  }
+}
+
+/* Cast has no cursor and no gesture to wait for — start immediately. */
+if (cap.kind === 'cast') begin();
+else $('start').addEventListener('click', begin, { once: true });
+
+function renderPlayers(list) {
+  const box = $('players');
+  $('empty').style.display = list.length ? 'none' : 'block';
+  box.innerHTML = list.map((p) => `
+    <div class="pl ${p.stale ? 'stale' : ''}" data-pid="${p.pid}">
+      <div class="nm">${escapeHtml(p.name)}<small>SLOT ${p.slot} · ${p.connected ? 'live' : 'dropped'}</small></div>
+      <div class="gauge"><div class="mid"></div><div class="fill"></div></div>
+      <div class="num"><span class="v">0.00</span><br><span style="color:var(--muted);font-size:10.5px">seq 0</span></div>
+    </div>`).join('');
+  paintGauges();
+}
+
+/* Repaint the live axis at frame rate. This is what proves the pipe from
+   across the room: move the slider on a phone, the bar moves on the TV. */
+function paintGauges() {
+  for (const p of host.list()) {
+    const row = document.querySelector(`.pl[data-pid="${cssEscape(p.pid)}"]`);
+    if (!row) continue;
+    const fill = row.querySelector('.fill');
+    const pct = Math.abs(p.r) * 50;
+    if (p.r >= 0) { fill.style.left = '50%'; fill.style.right = (50 - pct) + '%'; }
+    else { fill.style.right = '50%'; fill.style.left = (50 - pct) + '%'; }
+    row.querySelector('.v').textContent = p.r.toFixed(2);
+    row.querySelector('.num span:last-child').textContent = 'seq ' + p.seq;
+    row.classList.toggle('stale', p.stale);
+  }
+}
+
+function tick() {
+  paintGauges();
+  const s = host.stats;
+  const stat = (k, v) => `<span>${k} <b>${v}</b></span>`;
+  $('stats').innerHTML =
+    stat('uptime', fmtTime(host.uptimeSeconds)) +
+    stat('host', cap.label) +
+    stat('players', s.players) +
+    stat('msgs in', s.msgsIn.toLocaleString()) +
+    stat('bytes in', (s.bytesIn / 1024).toFixed(1) + ' kB') +
+    (shell && shell.secondsSinceHeartbeat
+      ? stat('sender heartbeat', shell.secondsSinceHeartbeat() + 's ago') : '');
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return m + 'm ' + (r < 10 ? '0' : '') + r + 's';
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+</script>
+</body>
+</html>
