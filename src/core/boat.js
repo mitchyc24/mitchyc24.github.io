@@ -14,6 +14,13 @@ import {
   rudderMoment, helmMoment, trackingMoment, equilibriumHeel, basis
 } from './physics.js';
 
+/* The edge of the no-go zone, as the assist layer understands it. Matches the
+ * band POINTS_OF_SAIL calls 'nogo' so the phone and the autopilot agree about
+ * where the wall is. Nothing in the force model reads this — the real no-go
+ * zone is a sign change in the drive equation, not a number. */
+const NO_GO = rad(42);
+const BEAR_AWAY_RATE = rad(40);      // degrees per second of assisted bearing away
+
 export function createBoat(opts) {
   const o = opts || {};
   const assist = levelOf(o.assist);
@@ -114,12 +121,39 @@ export function step(boat, windFlow, dt, lockHeading) {
      * otherwise rounds an unattended boat up into irons — the single biggest
      * source of "I was doing fine and then she just stopped". */
     if (boat._holdTheta === undefined || boat._holdTheta === null) boat._holdTheta = boat.theta;
+
+    /* ...but never hold a course that cannot be sailed.
+     *
+     * Left alone, "hold what I have" will cheerfully hold head-to-wind: the
+     * boat stops, the assist keeps her pointing there, and the player whose
+     * whole reason for choosing arcade was not wanting to think about the
+     * wind is stuck forever with a control that appears to be working. The
+     * assist has to know the one thing the no-go zone means. So a held course
+     * inside it walks out to the nearest close-hauled angle.
+     *
+     * This steers, it does not push: the force model is untouched, and
+     * close-hauled is where a competent sailor would have put her anyway, so
+     * it costs nothing in speed. tools/assist-balance.js keeps that honest. */
+    const from = Math.atan2(-windFlow.y, -windFlow.x);
+    const held = wrap(from - boat._holdTheta);            // true wind angle held
+    if (Math.abs(held) < NO_GO) {
+      const side = held === 0 ? (wrap(from - boat.theta) < 0 ? -1 : 1) : Math.sign(held);
+      boat._holdTheta = wrap(boat._holdTheta -
+        side * Math.min(BEAR_AWAY_RATE * dt, NO_GO - Math.abs(held)));
+    }
+
     const err = wrap(boat._holdTheta - boat.theta);
     /* Positive rudder turns to STARBOARD, which DECREASES theta. So correcting
      * a positive error (needing more theta) takes negative rudder. Getting
      * this backwards drives her away from the course she is meant to hold,
-     * which looks exactly like the weather helm it is supposed to cancel. */
-    wantRudder = clamp(-err * 5.5 * A.headingHold, -0.75, 0.75);
+     * which looks exactly like the weather helm it is supposed to cancel.
+     *
+     * The rate term is not a refinement. On proportional gain alone the hold
+     * overshoots, and a boat leaving the no-go zone with barely any way on
+     * swings straight back into it — 50 degrees off, then 8, then 40, then 12,
+     * for as long as you care to watch. That is worse than being stuck,
+     * because it looks like the boat is possessed rather than becalmed. */
+    wantRudder = clamp(-(err * 5.5 - boat.omega * 1.8) * A.headingHold, -0.75, 0.75);
   } else {
     boat._holdTheta = null;      // the player is steering; get out of the way
   }

@@ -153,6 +153,54 @@ body {
   line-height: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
 #heelbar.hot .cap { color: #FFD9D4; }
 
+/* ── the lobby strip ────────────────────────────────────────────────
+   Voting happens by sailing, so this never asks for a decision — it reports
+   one and lets you adjust the fine print of the ring you are already in. */
+#lobby { border: 1px solid var(--rule); background: var(--surface); padding: 8px 10px; }
+#lobby[hidden] { display: none }
+#lobby.inzone { border-color: var(--shoal); }
+#lobby.counting { border-color: var(--magenta); background: #1E1420; }
+#lobby.placard { border-color: var(--ok); background: #0E241B; }
+
+#lobby .top { display: flex; align-items: baseline; gap: 8px; }
+#lobby .nm { font-family: var(--f-display); font-weight: 800; font-size: 15px; }
+#lobby .cl { margin-left: auto; font-family: var(--f-mono); font-size: 12px;
+  color: var(--shoal); font-variant-numeric: tabular-nums; }
+#lobby.counting .nm, #lobby.counting .cl { color: var(--magenta); }
+#lobby .vt { font-size: 11px; color: var(--ink-2); margin-top: 2px; line-height: 1.4; }
+
+#lobby .bar { height: 4px; background: var(--rule); margin-top: 6px; overflow: hidden; }
+#lobby .bar i { display: block; height: 100%; width: 0; background: var(--shoal);
+  transition: width .25s linear; }
+#lobby.counting .bar i { background: var(--magenta); }
+
+/* Coarse choice in the world, fine choice here. Chips, never sliders: the
+   value IS the whole state, so a dropped packet cannot leave two phones
+   disagreeing about what the room decided. */
+#lobby .opts { margin-top: 8px; display: flex; flex-direction: column; gap: 6px;
+  max-height: 140px; overflow-y: auto; overscroll-behavior: contain; }
+#lobby .opts:empty { display: none }
+#lobby .orow { display: flex; align-items: center; gap: 6px; }
+#lobby .orow > label { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); width: 62px; flex: 0 0 auto; }
+#lobby .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+#lobby .chips button {
+  background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2);
+  font-family: var(--f-mono); font-size: 11px; padding: 5px 9px;
+}
+#lobby .chips button[aria-pressed="true"] {
+  background: var(--shoal); border-color: var(--shoal); color: var(--paper); font-weight: 600;
+}
+#lobby .chips button[disabled] { opacity: .45; }
+
+#l-start {
+  width: 100%; margin-top: 8px; background: var(--shoal); color: var(--paper);
+  border: 0; padding: 10px; font-family: var(--f-display); font-weight: 700;
+  font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+}
+#l-start[hidden] { display: none }
+#l-start[disabled] { opacity: .4; }
+
 /* ── the controls ───────────────────────────────────────────────── */
 .zones { flex: 1; display: grid; grid-template-columns: 84px 1fr; gap: 8px; min-height: 150px; }
 
@@ -214,6 +262,33 @@ body {
 }
 #banner[hidden] { display: none }
 
+/* Short phones. The lobby strip is 200-odd pixels that did not exist in M2,
+   and on a 667-tall screen it pushed the tiller off the bottom — which is the
+   one control you need to hold station in a ring. So on a short screen the
+   instruments give the space back, because while you are voting the ring is
+   the thing you are reading anyway. */
+@media (max-height: 740px) {
+  body { gap: 6px; }
+  .orient { grid-template-columns: 68px 1fr; padding: 6px 10px 6px 6px; }
+  .orient .dial svg { width: 68px; height: 68px; }
+  .orient .pos .name { font-size: 14px; }
+  #tt { padding: 6px 10px; }
+  #tt .ribbons { height: 11px; margin-bottom: 4px; }
+  .readout dd { font-size: 14px; }
+  #hike { height: 50px; }
+  /* Three rows is the most any mode asks for, so this never actually
+     scrolls — it is a backstop for a mode added later, not a design. */
+  #lobby .opts { max-height: 104px; }
+
+  /* Standing in a ring, on a small phone, something has to go — and the
+     tiller is not negotiable, because holding station in a circle is the
+     whole task. So the navigation instruments fold away: you have arrived,
+     you are not looking for the wind any more, and the telltale and the ring
+     are what you are actually reading. They come straight back when you sail
+     out. */
+  body.voting .orient, body.voting #plane { display: none; }
+}
+
 .tog { background: none; border: 0; color: var(--muted); font-family: var(--f-mono); font-size: 10.5px; padding: 2px 0; text-decoration: underline; }
 .diagwrap { max-height: 30vh; overflow-y: auto; }
 </style>
@@ -257,6 +332,17 @@ body {
     <span class="dot" id="dot"></span>
     <span id="state">connecting…</span>
     <span class="right" id="rtt"></span>
+  </div>
+
+  <div id="lobby" hidden>
+    <div class="top">
+      <span class="nm" id="l-nm">Open water</span>
+      <span class="cl" id="l-cl"></span>
+    </div>
+    <div class="vt" id="l-vt"></div>
+    <div class="bar"><i id="l-bar"></i></div>
+    <div class="opts" id="l-opts"></div>
+    <button id="l-start" hidden>Start now</button>
   </div>
 
   <div id="tt">
@@ -317,6 +403,7 @@ import { makeTiller, makeSheet, makeHold } from '../src/controller/surfaces.js';
 import { EVENTS } from '../src/net/protocol.js';
 import { ASSISTS, LEVELS } from '../src/shared/assists.js';
 import { dialMarkup, updateDial } from '../src/controller/dial.js';
+import { MODES, describe as describeMode } from '../src/shared/modes.js';
 
 const D = window.SSDiag; D.booted();
 const $ = (id) => document.getElementById(id);
@@ -399,12 +486,16 @@ function join() {
       $('rtt').textContent = rtt === null ? '' : rtt + ' ms';
       paint(m);
     },
-    onEvent: (kind) => onEvent(kind)
+    onZone: (z) => paintLobby(z),
+    onEvent: (kind, detail) => onEvent(kind, detail)
   });
   /* Send the starting trim immediately so the boat is not sitting sheeted in. */
   client.setControls({ r: 0, s: sheet.value, h: 0 });
   client.connect();
   keepAwake();
+  /* Debug handle, matching window.SS on the host. Remote-debugging a phone is
+   * awkward enough without having to reach into a module scope. */
+  window.SSC = client;
 }
 
 /* ── control surfaces ───────────────────────────────────────────── */
@@ -471,6 +562,128 @@ function setPlaning(state) {
   }
 }
 
+/* ── the lobby strip ────────────────────────────────────────────── */
+
+let lobbyView = null;
+let optsSignature = '';          // what the chips currently describe
+
+$('l-start').addEventListener('click', () => {
+  if (client) { client.requestStart(); buzz(20); }
+});
+
+function paintLobby(z) {
+  lobbyView = z;
+  const box = $('lobby');
+  box.hidden = false;
+  /* Drives the small-screen layout: see the max-height media query above. */
+  document.body.classList.toggle('voting', !!z.z || z.ph !== 'harbour');
+
+  const modeName = (id) => (MODES[id] ? MODES[id].name : id);
+
+  if (z.ph === 'placard') {
+    box.className = 'placard';
+    $('l-nm').textContent = z.ch ? modeName(z.ch.mode) : 'Chosen';
+    $('l-cl').textContent = '';
+    $('l-vt').textContent = z.ch ? describeMode(z.ch.mode, z.ch.options) : '';
+    setBar(100);
+    renderOptions(null, null, true);
+    $('l-start').hidden = true;
+    return;
+  }
+
+  if (z.ph === 'countdown') {
+    box.className = 'counting';
+    $('l-nm').textContent = modeName(z.ld && MODES[z.ld] ? z.ld : (z.mo || z.ld));
+    $('l-cl').textContent = z.cd + 's';
+    $('l-vt').textContent = z.z === z.ld
+      ? 'You are in it. Hold on.'
+      : 'Sail to another ring with the others to change it.';
+    setBar(100);
+    renderOptions(z.mo, z.opts, true);
+    $('l-start').hidden = !z.hm;
+    $('l-start').disabled = false;
+    $('l-start').textContent = 'Go now';
+    return;
+  }
+
+  /* harbour */
+  if (!z.z) {
+    box.className = '';
+    $('l-nm').textContent = 'Open water';
+    $('l-cl').textContent = '';
+    $('l-vt').textContent = z.need > 1
+      ? 'Sail into a ring to vote — ' + z.need + ' boats in the same one starts it.'
+      : 'Sail into a ring to vote.';
+    setBar(0);
+    renderOptions(null, null, false);
+  } else {
+    box.className = 'inzone';
+    $('l-nm').textContent = modeName(z.mo);
+    $('l-cl').textContent = z.cl + '%';
+    const short = Math.max(0, z.need - z.vt);
+    $('l-vt').textContent = z.vt + (z.vt === 1 ? ' boat' : ' boats') + ' here' +
+      (short > 0 ? ' — ' + short + ' more and it starts' : ' — holding');
+    setBar(z.cl);
+    renderOptions(z.mo, z.opts, false);
+  }
+  $('l-start').hidden = !z.hm;
+  $('l-start').disabled = false;
+  $('l-start').textContent = 'Start now';
+}
+
+function setBar(pct) { $('l-bar').style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+
+/**
+ * Chips for the ring you are standing in. Rebuilt only when the SHAPE changes;
+ * a value arriving at 10 Hz must not tear a button out from under a thumb.
+ */
+function renderOptions(modeId, values, frozen) {
+  const m = modeId ? MODES[modeId] : null;
+  const sig = m ? modeId + ':' + m.options.map((o) => o.key).join(',') : '';
+  const box = $('l-opts');
+
+  if (sig !== optsSignature) {
+    optsSignature = sig;
+    box.innerHTML = '';
+    if (m) {
+      for (const o of m.options) {
+        const row = document.createElement('div');
+        row.className = 'orow';
+        const lab = document.createElement('label');
+        lab.textContent = o.name;
+        row.appendChild(lab);
+        const chips = document.createElement('div');
+        chips.className = 'chips';
+        o.values.forEach((v, i) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.dataset.key = o.key;
+          b.dataset.value = String(v);
+          b.textContent = o.labels[i];
+          b.addEventListener('click', () => {
+            if (b.disabled || !client) return;
+            client.setOption(o.key, v);
+            /* Light it immediately; the host's answer overwrites this on the
+             * next zone message and is the one that counts. */
+            [...chips.children].forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+            buzz(10);
+          });
+          chips.appendChild(b);
+        });
+        row.appendChild(chips);
+        box.appendChild(row);
+      }
+    }
+  }
+
+  if (!m) return;
+  for (const b of box.querySelectorAll('button')) {
+    const cur = values ? values[b.dataset.key] : undefined;
+    b.setAttribute('aria-pressed', String(cur !== undefined && String(cur) === b.dataset.value));
+    b.disabled = !!frozen;
+  }
+}
+
 const COPY = {
   luffing:  ['LUFFING', 'sail flapping — trim in'],
   edge:     ['ON THE EDGE', 'nearly luffing — trim in a touch'],
@@ -506,12 +719,24 @@ function setTelltale(m) {
   }
 }
 
-function onEvent(kind) {
+function onEvent(kind, detail) {
   if (kind === EVENTS.CAPSIZE) { banner('Capsized — sit tight', 2600); buzz([40, 60, 40, 60, 90]); }
   if (kind === EVENTS.RECOVERED) { banner('Back up — sheet is eased', 1800); buzz(25); }
   if (kind === EVENTS.IN_IRONS) banner('In irons — no way on to steer', 2200);
   if (kind === EVENTS.TACK) buzz(15);
   if (kind === EVENTS.GYBE) buzz([15, 40, 15]);
+
+  /* The lobby speaks through the phone as well as the TV, because at the
+   * moment it matters everyone is looking down at their own hands. */
+  if (kind === EVENTS.COUNTDOWN) { banner((detail || 'A game') + ' — starting', 2400); buzz([20, 60, 20]); }
+  if (kind === EVENTS.SWITCHED) { banner('Changed to ' + (detail || 'another mode'), 2400); buzz([20, 60, 20, 60, 20]); }
+  if (kind === EVENTS.HORN) buzz([80, 50, 80]);
+  if (kind === EVENTS.RESOLVED) banner(detail || 'Chosen', 3000);
+  if (kind === EVENTS.DRIFT) banner(detail || 'The harbour shifted', 5000);
+  if (kind === EVENTS.HARBOURMASTER) {
+    banner('You are the harbourmaster — you can start early', 3600);
+    buzz([15, 40, 15]);
+  }
 }
 
 let bannerTimer = 0;

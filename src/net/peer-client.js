@@ -6,7 +6,7 @@
  */
 
 import { loadPeerJS } from '../shared/peer-loader.js';
-import { T, hello, input, setAssistMsg } from './protocol.js';
+import { T, hello, input, setAssistMsg, optMsg, startMsg } from './protocol.js';
 
 const cfg = () => window.SS_CONFIG;
 const BACKOFF = [1000, 2000, 4000, 8000, 8000];
@@ -26,6 +26,7 @@ export class PeerClient {
     this.rtt = null;
     this.state = 'idle';
     this.attempt = 0;
+    this.zone = null;          // latest lobby view, or null before the first one
 
     /* Latest control state. The send loop samples this; touch handlers write
      * it. Never queue inputs — the newest one is the only one that matters. */
@@ -39,9 +40,18 @@ export class PeerClient {
   /** Change assist level mid-game; takes effect on the next host step. */
   setAssist(level) {
     this.profile.assist = level;
-    if (this.conn && this.conn.open) {
-      try { this.conn.send(setAssistMsg(level)); } catch (e) { /* channel closing */ }
-    }
+    this._send(setAssistMsg(level));
+  }
+
+  /** Change a shared option on the ring this boat is sitting in. */
+  setOption(key, value) { this._send(optMsg(key, value)); }
+
+  /** Harbourmaster only; the host checks, not us. */
+  requestStart() { this._send(startMsg()); }
+
+  _send(m) {
+    if (!this.conn || !this.conn.open) return false;
+    try { this.conn.send(m); return true; } catch (e) { return false; }
   }
 
   setControls(c) {
@@ -127,6 +137,11 @@ export class PeerClient {
     }
     if (m.t === T.EVT) {
       if (this.h.onEvent) this.h.onEvent(m.k, m.d);
+      return;
+    }
+    if (m.t === T.ZONE) {
+      this.zone = m;
+      if (this.h.onZone) this.h.onZone(m);
       return;
     }
     if (m.t !== T.TEL) return;

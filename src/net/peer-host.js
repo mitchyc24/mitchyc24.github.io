@@ -9,8 +9,19 @@
  */
 
 import { loadPeerJS, basePath } from '../shared/peer-loader.js';
-import { T, welcome, telemetry, event, isValidHello, sanitizeInput } from './protocol.js';
+import { T, welcome, telemetry, event, isValidHello, sanitizeInput,
+         zoneMsg, zoneDigest } from './protocol.js';
 import { LEVELS } from '../shared/assists.js';
+import { ACTIVE_WINDOW_MS } from '../core/lobby.js';
+
+/* What counts as "somebody is actually holding this phone".
+ *
+ * It cannot be "a packet arrived" — a phone face-down in a pocket sends its
+ * 30 Hz of r=0 quite happily, and that would let one abandoned device hold a
+ * room of five hostage forever by sitting in the quorum denominator. So we
+ * look for a control that MOVED. */
+const MOVED_R = 0.06;
+const MOVED_S = 0.03;
 
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I O 0 1
 const cfg = () => window.SS_CONFIG;
@@ -125,10 +136,24 @@ export class PeerHost {
         if (!s) return;
         /* Keep the LATEST input, never a queue. A dropped packet is harmless
          * because the next one arrives ~33 ms later carrying current state. */
+        const prev = player.last;
+        if (Math.abs(s.r - prev.r) > MOVED_R ||
+            Math.abs(s.s - prev.s) > MOVED_S ||
+            s.h !== prev.h) {
+          player.lastActiveAt = Date.now();
+        }
         player.last = s;
         player.lastSeen = Date.now();
         player.msgs++;
         if (this.h.onInput) this.h.onInput(player, s);
+      } else if (m && m.t === T.OPT) {
+        /* Tapping an option is unambiguously a person, so it counts as
+         * activity too — you can vote from a becalmed boat. */
+        player.lastActiveAt = Date.now();
+        if (this.h.onOption) this.h.onOption(player, String(m.k), m.v);
+      } else if (m && m.t === T.START) {
+        player.lastActiveAt = Date.now();
+        if (this.h.onStart) this.h.onStart(player);
       } else if (m && m.t === T.ASSIST) {
         const lvl = LEVELS.indexOf(m.a) >= 0 ? m.a : 'strict';
         player.assist = lvl;
@@ -160,7 +185,9 @@ export class PeerHost {
       log('ok', 'player ' + existing.name + ' reconnected to slot ' + existing.slot);
       existing.conn = conn;
       existing.lastSeen = Date.now();
+      existing.lastActiveAt = Date.now();
       existing.droppedAt = 0;
+      existing._zoneDigest = null;    // resend the lobby state to a fresh page
       conn.send(welcome(existing.slot, hostKind(), existing.boatId));
       if (this.h.onPlayers) this.h.onPlayers(this.list());
       return;
@@ -175,9 +202,13 @@ export class PeerHost {
       conn,
       last: { r: 0, s: 0.25, h: 0, seq: 0, ts: 0 },
       lastSeen: Date.now(),
+      /* Freshly arrived counts as active — somebody just scanned a QR code
+       * and typed their name, which is about as present as a person gets. */
+      lastActiveAt: Date.now(),
       joinedAt: Date.now(),
       droppedAt: 0,
-      msgs: 0
+      msgs: 0,
+      _zoneDigest: null
     };
     player.boatId = 'b' + player.slot;
     this.players.set(m.pid, player);
@@ -215,17 +246,47 @@ export class PeerHost {
   }
 
   _pushTelemetry() {
-    if (!this.h.readBoat) return;
     const up = this.uptimeSeconds;
     const n = this.players.size;
     for (const p of this.players.values()) {
       if (!p.conn || !p.conn.open) continue;
-      const t = this.h.readBoat(p);
-      if (!t) continue;
-      try {
-        p.conn.send(telemetry(Object.assign({ seq: p.last.seq, ts: p.last.ts, up, n }, t)));
-      } catch (e) { /* channel closing */ }
+
+      if (this.h.readBoat) {
+        const t = this.h.readBoat(p);
+        if (t) {
+          try {
+            p.conn.send(telemetry(Object.assign({ seq: p.last.seq, ts: p.last.ts, up, n }, t)));
+          } catch (e) { /* channel closing */ }
+        }
+      }
+
+      /* Lobby state rides the same tick but only goes out when it changed.
+       * A settled harbour costs nothing; a filling ring costs a packet every
+       * few hundred ms. */
+      if (this.h.readZone) {
+        const v = this.h.readZone(p);
+        if (v) {
+          const d = zoneDigest(v);
+          if (d !== p._zoneDigest) {
+            p._zoneDigest = d;
+            try { p.conn.send(zoneMsg(v)); } catch (e) { /* channel closing */ }
+          }
+        }
+      }
     }
+  }
+
+  /** Has this player touched a control recently? The quorum denominator. */
+  isActive(p) {
+    return !!(p.conn && p.conn.open) && !p.droppedAt &&
+           (Date.now() - p.lastActiveAt) < ACTIVE_WINDOW_MS;
+  }
+
+  /** Join order, which is how the harbourmaster is chosen and inherited. */
+  byJoinOrder() {
+    return Array.from(this.players.values())
+      .filter((p) => !p.droppedAt)
+      .sort((a, b) => a.slot - b.slot);
   }
 
   list() {
@@ -235,6 +296,7 @@ export class PeerHost {
       slot: p.slot, boatId: p.boatId,
       r: p.last.r, s: p.last.s, h: p.last.h, seq: p.last.seq, msgs: p.msgs,
       connected: !!(p.conn && p.conn.open) && !p.droppedAt,
+      active: this.isActive(p),
       stale: now - p.lastSeen > 2000
     }));
   }

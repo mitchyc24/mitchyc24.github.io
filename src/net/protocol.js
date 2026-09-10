@@ -1,13 +1,14 @@
 /* Wire protocol.
  *
- * M2 carries real controls and real instruments. The full protocol (zones,
- * options, phases, results) lands with the lobby in M3.
+ * M2 carried real controls and real instruments. M3 adds the lobby: which ring
+ * you are standing in, what the room is voting for, and the options that ring
+ * carries.
  *
  * Keep this file free of DOM and PeerJS references — it is shared by both ends
  * and stays testable in Node.
  */
 
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 export const T = {
   HELLO:   'hello',   // phone -> host, once
@@ -16,6 +17,9 @@ export const T = {
   ASSIST:  'asst',    // phone -> host, on change
   TEL:     'tel',     // host  -> phone, TEL_HZ
   EVT:     'evt',     // host  -> phone, on event
+  ZONE:    'zone',    // host  -> phone, on material change (RELIABLE)
+  OPT:     'opt',     // phone -> host, on tap
+  START:   'start',   // phone -> host, harbourmaster override
   BYE:     'bye'
 };
 
@@ -66,6 +70,39 @@ export function telemetry(p) {
   };
 }
 
+/**
+ * Lobby state, as one player sees it. Sent only when something MATERIAL
+ * changes — the ring you are in, the vote count, the options, the phase, the
+ * countdown second. The claim percentage animates on the TV, which is the
+ * shared screen and the right place for it; the phone gets the coarse truth.
+ *
+ * `v` is the payload from lobby.viewFor().
+ */
+export function zoneMsg(v) {
+  return { t: T.ZONE, ph: v.ph, cd: v.cd, ld: v.ld, hm: v.hm ? 1 : 0,
+           need: v.need, z: v.z, mo: v.mo, cl: v.cl, vt: v.vt,
+           opts: v.opts, ch: v.ch };
+}
+
+/** A fingerprint of the parts worth a packet. Compared against the last one
+ *  sent to this player, so a still fleet costs nothing. */
+export function zoneDigest(v) {
+  return [v.ph, v.cd, v.ld, v.hm ? 1 : 0, v.need, v.z, v.vt,
+          Math.round(v.cl / 5),                     // 5% buckets: the ring is on the TV
+          v.opts ? JSON.stringify(v.opts) : '',
+          v.ch ? v.ch.mode : ''].join('|');
+}
+
+/** Phone -> host: change a shared option on the ring you are standing in. */
+export function optMsg(key, value) {
+  return { t: T.OPT, k: key, v: value };
+}
+
+/** Phone -> host: the harbourmaster is done waiting. */
+export function startMsg() {
+  return { t: T.START };
+}
+
 /** One-off events worth a buzz on the phone. */
 export function event(kind, detail) {
   return { t: T.EVT, k: kind, d: detail };
@@ -76,7 +113,15 @@ export const EVENTS = {
   RECOVERED: 'recovered',
   TACK: 'tack',
   GYBE: 'gybe',
-  IN_IRONS: 'irons'
+  IN_IRONS: 'irons',
+  /* Lobby */
+  COUNTDOWN: 'countdown',   // d = mode name
+  SWITCHED:  'switched',    // d = mode name
+  RESOLVED:  'resolved',    // d = one-line description
+  REOPEN:    'reopen',
+  HORN:      'horn',
+  DRIFT:     'drift',       // d = the hint
+  HARBOURMASTER: 'hm'
 };
 
 export function isValidHello(m) {

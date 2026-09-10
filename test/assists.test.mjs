@@ -185,3 +185,75 @@ test('switching level mid-game keeps the boat where it is', () => {
   run(b, 4);
   assert.ok(Number.isFinite(b.out.sog), 'she stopped working after the switch');
 });
+
+/* ══ the assist knows where the wall is ═════════════════════════════
+ *
+ * Heading hold means "keep what I have", and left literal it will keep a
+ * heading that cannot be sailed: the boat stops head to wind, the autopilot
+ * holds her there, and the player who picked arcade precisely so they would
+ * not have to think about the wind is stuck forever with a control that looks
+ * like it is working. So the hold refuses to hold a course inside the no-go
+ * zone, and walks out to the nearest sailable angle.
+ *
+ * It steers. It does not push — see the balance figures above, which are
+ * unchanged by it.
+ */
+
+test('arcade will not sit head to wind with the tiller released', () => {
+  const b = boatAt(5, 'arcade', 0.3);          // nose in it, barely moving
+  setInput(b, { r: 0, s: 0.3, h: 0 });
+  run(b, 35);
+  const twa = Math.abs(deg(wrap(FROM - b.theta)));
+  assert.ok(twa > 36, `still pinned ${twa.toFixed(0)} deg off the wind`);
+  assert.ok(msToKn(b.out.sog) > 1.2,
+    `bore away but never got going — ${msToKn(b.out.sog).toFixed(2)} kn`);
+});
+
+test('assisted points her out of irons, but you still have to trim', () => {
+  /* The level's whole promise is "holds her course, steers at any speed — you
+   * still trim". So it aims her at a sailable angle; whether she then GOES is
+   * the player's problem, and that is the difference between assisted and
+   * arcade stated as a test. Close hauled, hiking: she goes. */
+  const good = boatAt(5, 'assisted', 0.3);
+  setInput(good, { r: 0, s: 0.2, h: 1 });
+  run(good, 45);
+  const twa = Math.abs(deg(wrap(FROM - good.theta)));
+  assert.ok(twa > 36, `still pinned ${twa.toFixed(0)} deg off the wind`);
+  assert.ok(msToKn(good.out.sog) > 1.2,
+    `trimmed properly and still stopped — ${msToKn(good.out.sog).toFixed(2)} kn`);
+
+  /* Sheeted right out for a beat, she points the right way and flogs. The
+   * assist does not rescue you from your own trim. */
+  const slack = boatAt(5, 'assisted', 0.3);
+  setInput(slack, { r: 0, s: 0.85, h: 1 });
+  run(slack, 45);
+  assert.ok(msToKn(slack.out.sog) < 1.0,
+    'a sail flogging right out should not drive her — assisted must not auto-trim');
+});
+
+test('it bears away just far enough and then stops', () => {
+  /* A rescue, not a chauffeur. If this drifted off to a beam reach it would be
+   * sailing the boat for them, and upwind would stop meaning anything. */
+  const b = boatAt(2, 'arcade', 0.3);
+  setInput(b, { r: 0, s: 0.3, h: 0 });
+  run(b, 45);
+  const twa = Math.abs(deg(wrap(FROM - b.theta)));
+  assert.ok(twa < 75, `ran away to ${twa.toFixed(0)} deg off the wind`);
+});
+
+test('strict leaves you in irons, because that is the whole lesson', () => {
+  const b = boatAt(5, 'strict', 0.3);
+  setInput(b, { r: 0, s: 0.3, h: 0 });
+  run(b, 35);
+  assert.ok(msToKn(b.out.sog) < 1.2,
+    `strict sailed itself out of irons at ${msToKn(b.out.sog).toFixed(2)} kn`);
+});
+
+test('the guard never fires on a course that is already sailable', () => {
+  /* Holding a beam reach must be exactly holding a beam reach. */
+  const b = boatAt(90, 'arcade', 3);
+  setInput(b, { r: 0, s: 0.4, h: 0 });
+  run(b, 25);
+  const twa = Math.abs(deg(wrap(FROM - b.theta)));
+  assert.ok(Math.abs(twa - 90) < 12, `wandered from 90 to ${twa.toFixed(0)} deg`);
+});

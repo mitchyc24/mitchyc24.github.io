@@ -30,6 +30,19 @@ export const windFromName = (from) => compassName(from);
 /** Where the wind is going. A northerly blows to the south. */
 export const windToName = (from) => compassName(from + Math.PI);
 
+/* The English for it. You cannot build this by gluing "-erly" onto a compass
+ * abbreviation — that gives NERLY, SSWERLY, and a screen nobody trusts. The
+ * sixteen points collapse onto the eight that have an adjective, which is what
+ * a forecast does anyway: "north-easterly" covers NNE through ENE. */
+const ADJECTIVE = ['Easterly', 'North-easterly', 'Northerly', 'North-westerly',
+                   'Westerly', 'South-westerly', 'Southerly', 'South-easterly'];
+
+/** "Northerly" for a wind out of the north. */
+export function windAdjective(from) {
+  const i = Math.round(wrap(from) / (Math.PI / 4));
+  return ADJECTIVE[((i % 8) + 8) % 8];
+}
+
 /**
  * Unit vector, in SCREEN space (x right, y DOWN), pointing the way the wind
  * travels. This is what an arrow or a drifting streak should follow.

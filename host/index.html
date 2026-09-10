@@ -62,6 +62,60 @@ canvas { display: block; width: 100%; height: 100%; background: #06121C; }
   color: var(--ink-2); font-size: 14px; text-align: center;
 }
 
+/* ── the lobby ──────────────────────────────────────────────────────
+   Everything the room needs to read from a sofa, at sofa font sizes. */
+
+#hint {
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(9,20,28,.92); border: 1px solid var(--rule);
+  border-left: 4px solid var(--shoal);
+  padding: 11px 18px; color: var(--ink-2); font-size: 15px; max-width: 62ch;
+}
+#hint[hidden] { display: none }
+#hint b { color: var(--ink); font-weight: 600; }
+
+#count {
+  inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px; z-index: 15;
+  background: radial-gradient(ellipse at center, rgba(6,18,28,.72), rgba(6,18,28,0) 62%);
+}
+#count[hidden] { display: none }
+#count .who { font-family: var(--f-mono); font-size: 15px; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--ink-2); }
+#count .mode { font-family: var(--f-display); font-weight: 800;
+  font-size: clamp(32px, 5.4vw, 62px); line-height: 1; }
+#count .n {
+  font-family: var(--f-display); font-weight: 800; font-variant-numeric: tabular-nums;
+  font-size: clamp(90px, 17vw, 210px); line-height: .95; color: var(--magenta);
+}
+#count .n.pulse { animation: pop .5s ease-out; }
+@keyframes pop { from { transform: scale(1.22); opacity: .55 } to { transform: scale(1); opacity: 1 } }
+#count .sub { font-size: 13px; color: var(--muted); letter-spacing: .1em;
+  text-transform: uppercase; }
+
+#placard {
+  inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; z-index: 15;
+  background: rgba(6,18,28,.82);
+}
+#placard[hidden] { display: none }
+#placard .eyebrow { font-family: var(--f-mono); font-size: 13px; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--muted); }
+#placard .mode { font-family: var(--f-display); font-weight: 800;
+  font-size: clamp(34px, 6vw, 70px); line-height: 1.05; text-align: center; }
+#placard .opts { font-family: var(--f-mono); font-size: clamp(14px, 1.5vw, 20px);
+  color: var(--shoal); letter-spacing: .08em; }
+#placard .note {
+  margin-top: 14px; border: 1px solid var(--rule); background: rgba(9,20,28,.9);
+  padding: 10px 16px; color: var(--ink-2); font-size: 14px; max-width: 56ch;
+  text-align: center; line-height: 1.55;
+}
+
+.pl .hm { font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--paper); background: var(--shoal);
+  padding: 1px 4px; margin-left: 6px; }
+.pl .zn { color: var(--shoal); }
+
 .notice {
   position: absolute; top: 0; left: 0; right: 0; z-index: 25;
   background: #3A2A11; border-bottom: 1px solid var(--warn); color: #FFE9BF;
@@ -94,8 +148,9 @@ canvas { display: block; width: 100%; height: 100%; background: #06121C; }
     <p class="eyebrow">Sailing School</p>
     <h1>Start a game</h1>
   </div>
-  <p>Puts a room code on screen. Everyone scans it and sails. There is no course
-     yet — this is open water to learn the boat on.</p>
+  <p>Puts a room code on screen. Everyone scans it and sails into the harbour.
+     What you play is decided by sailing: hold a ring long enough, together,
+     and that is the game.</p>
   <button class="btn" id="start">Start hosting</button>
 </div>
 
@@ -114,6 +169,21 @@ canvas { display: block; width: 100%; height: 100%; background: #06121C; }
 
   <div class="hud" id="fleet"></div>
   <div class="hud" id="empty">Waiting for the first boat — scan the code with a phone.</div>
+  <div class="hud" id="hint" hidden></div>
+
+  <div class="hud" id="count" hidden>
+    <span class="who" id="c-who">the harbour has decided</span>
+    <span class="mode" id="c-mode">—</span>
+    <span class="n" id="c-n">10</span>
+    <span class="sub" id="c-sub">sail to another ring to change your mind</span>
+  </div>
+
+  <div class="hud" id="placard" hidden>
+    <span class="eyebrow">the harbour chose</span>
+    <span class="mode" id="p-mode">—</span>
+    <span class="opts" id="p-opts"></span>
+    <div class="note" id="p-note"></div>
+  </div>
 
   <div class="diag" id="diag" hidden>
     <div>
@@ -137,14 +207,20 @@ import { resolveCapability } from '../src/host/capability.js';
 import { PeerHost } from '../src/net/peer-host.js';
 import { createWorld, addBoat, removeBoat, applyInput, setBoatAssist, pump } from '../src/core/world.js';
 import { windFrom } from '../src/core/wind.js';
+import { createHarbour, berth, zoneAt, stepHarbour } from '../src/core/harbour.js';
+import { createLobby, stepLobby, requestStart, setOption, assignHarbourmaster,
+         viewFor, PHASE } from '../src/core/lobby.js';
+import { MODES, describe as describeMode } from '../src/shared/modes.js';
 import { createScene, resize, frameBoats, drawWater, drawWindStreaks, drawWakes,
-         drawBoat, drawWindIndicator, forgetBoat } from '../src/render/scene.js';
+         drawBoat, drawWindIndicator, forgetBoat, drawDock, drawZones,
+         setInset } from '../src/render/scene.js';
 import { telltale, planingState } from '../src/shared/telltales.js';
 import { qrSvg } from '../src/shared/qr.js';
 import { deg, wrap, rad } from '../src/shared/angles.js';
 import { pointOfSail, tackName } from '../src/shared/compass.js';
 import { msToKn } from '../src/shared/units.js';
 import { EVENTS } from '../src/net/protocol.js';
+import { horn, chime, wakeAudio } from '../src/host/horn.js';
 
 const D = window.SSDiag; D.booted();
 const $ = (id) => document.getElementById(id);
@@ -157,23 +233,16 @@ const world = createWorld({
           steady: Q.get('steady') === '1' }
 });
 
-let cap = null, shell = null, scene = null;
+/* The harbour is laid out against the wind's BASE direction, not the live
+ * shifting one, so the geography stays put and the shifts stay tactics. */
+const harbour = createHarbour({ from: world.wind.baseFrom });
+const lobby = createLobby(harbour);
 
-/* Where the next boat starts: spread along a line across the wind, far enough
- * apart not to interfere, all on a reach so nobody begins in irons. */
-function spawnFor(slot) {
-  const from = windFrom(world.wind);
-  const across = slot * 26 - 40;
-  return {
-    x: Math.cos(from - Math.PI / 2) * across,
-    y: Math.sin(from - Math.PI / 2) * across,
-    theta: from - rad(75)
-  };
-}
+let cap = null, shell = null, scene = null;
 
 const host = new PeerHost({
   onJoin: (player) => {
-    const sp = spawnFor(player.slot);
+    const sp = berth(harbour, player.slot);
     sp.assist = player.assist;
     const b = addBoat(world, player.boatId, sp);
     b.hull = player.hull;
@@ -209,8 +278,53 @@ const host = new PeerHost({
       cap: b.capsized
     };
   },
-  onPlayers: renderFleet
+
+  /* The lobby, as this one player sees it. peer-host only puts it on the wire
+   * when it actually changed. */
+  readZone: (player) => viewFor(lobby, player.pid, zoneOf(player)),
+
+  onOption: (player, key, value) => {
+    const z = zoneOf(player);
+    /* You may only change the rules of the ring you are standing in. Sailing
+     * there is the cost of having an opinion. */
+    if (!z) return;
+    if (setOption(lobby, z, key, value)) {
+      D.log('info', player.name + ' set ' + key + ' = ' + value + ' in ' + z);
+    }
+  },
+
+  onStart: (player) => {
+    const r = requestStart(lobby, player.pid, zoneOf(player));
+    if (!r.ok) {
+      /* Silent on the wire — the phone already knows whether it is the
+       * harbourmaster and whether anything is claimed, so a refusal here is a
+       * race, not news. */
+      D.log('info', 'start refused for ' + player.name + ': ' + r.why);
+      return;
+    }
+    D.log('ok', 'harbourmaster ' + player.name + ' — ' + r.why);
+  },
+
+  onPlayers: (list) => {
+    /* First one in is the harbourmaster; if they leave, the next longest
+     * standing inherits it without anybody being asked. */
+    const was = lobby.harbourmaster;
+    assignHarbourmaster(lobby, host.byJoinOrder().map((p) => p.pid));
+    if (lobby.harbourmaster && lobby.harbourmaster !== was) {
+      const p = host.players.get(lobby.harbourmaster);
+      if (p) { host.notify(p, EVENTS.HARBOURMASTER); D.log('ok', p.name + ' is harbourmaster'); }
+    }
+    renderFleet(list);
+  }
 });
+
+/** Which ring this player's boat is sitting in, or null. */
+function zoneOf(player) {
+  const b = world.byId.get(player.boatId);
+  if (!b) return null;
+  const z = zoneAt(harbour, b.p);
+  return z ? z.id : null;
+}
 
 /* ── the surface the lifecycle shells talk to ───────────────────── */
 const app = {
@@ -225,6 +339,9 @@ async function boot() {
   D.log('info', 'capability: ' + cap.kind + ' (' + cap.fps + ' fps, ' + cap.fidelity + ')');
   shell = cap.attach(app);
   scene = createScene($('c'), { fidelity: cap.fidelity });
+  /* Join card on the left, fleet and wind rose on the right, standing hint
+   * along the bottom. Measured off the CSS above; keep the two in step. */
+  setInset(scene, { left: 250, right: 400, top: 24, bottom: 78 });
   addEventListener('resize', () => resize(scene));
 
   if (!cap.pointer) begin();                       // no cursor on a TV
@@ -235,6 +352,10 @@ async function begin() {
   $('gate').style.display = 'none';
   $('app').classList.add('live');
   resize(scene);
+  /* Browsers want a gesture before they will make a noise. On a Chromecast
+   * there is no gesture and never will be, so this quietly fails there and
+   * the countdown on screen carries the whole message. */
+  wakeAudio();
   if (shell && shell.onStartGesture) shell.onStartGesture();
 
   try {
@@ -260,7 +381,8 @@ function renderFleet(list) {
   const box = $('fleet');
   box.innerHTML = list.map((p) => `
     <div class="pl" data-boat="${p.boatId}" style="border-left-color:${esc(p.hull)}">
-      <span class="nm">${esc(p.name)}<em>${p.assist === 'strict' ? '' : esc(p.assist)}</em></span>
+      <span class="nm">${esc(p.name)}<em>${p.assist === 'strict' ? '' : esc(p.assist)}</em>${
+        p.pid === lobby.harbourmaster ? '<span class="hm">harbourmaster</span>' : ''}</span>
       <span class="sog">—</span>
       <span class="sub">joining…</span>
     </div>`).join('');
@@ -272,9 +394,17 @@ function paintFleet() {
     const b = world.byId.get(p.boatId);
     if (!row || !b) continue;
     const tt = telltale(b.out, b.cls, b.capsized, b.assist.trimAssist, b.assist.autoTrim);
+    const z = zoneAt(harbour, b.p);
     row.className = 'pl ' + tt.band + (p.connected ? '' : ' dropped');
     row.querySelector('.sog').textContent = msToKn(b.out.sog).toFixed(1) + ' kn';
-    row.querySelector('.sub').textContent = p.connected ? tt.title : 'disconnected — drifting';
+    const sub = row.querySelector('.sub');
+    if (!p.connected) { sub.className = 'sub'; sub.textContent = 'disconnected — drifting'; }
+    else if (z) {
+      /* While you are standing in a ring, WHERE you are matters more than how
+       * well you are trimmed — so the roster says that instead. */
+      sub.className = 'sub zn';
+      sub.textContent = 'voting · ' + (MODES[z.mode] ? MODES[z.mode].name : z.id);
+    } else { sub.className = 'sub'; sub.textContent = tt.title; }
   }
 }
 
@@ -291,28 +421,140 @@ function pumpEvents() {
   }
 }
 
+/* ── the lobby ──────────────────────────────────────────────────── */
+
+/* The vote sees ONE player per person, wherever their boat happens to be, and
+ * whether or not they have touched anything lately. Both facts come from the
+ * transport, which is the only thing that knows. */
+function lobbyPlayers() {
+  const out = [];
+  for (const p of host.players.values()) {
+    const b = world.byId.get(p.boatId);
+    if (!b) continue;
+    out.push({ pid: p.pid, p: b.p, active: host.isActive(p) });
+  }
+  return out;
+}
+
+function onLobbyEvent(e) {
+  const modeName = (id) => (MODES[id] ? MODES[id].name : id);
+
+  if (e.k === 'countdown' || e.k === 'switch') {
+    $('c-who').textContent = e.k === 'switch' ? 'the harbour changed its mind'
+                                              : 'the harbour has decided';
+    $('c-mode').textContent = modeName(e.mode);
+    setCountdown(Math.ceil(e.seconds));
+    $('count').hidden = false;
+    broadcast(e.k === 'switch' ? EVENTS.SWITCHED : EVENTS.COUNTDOWN, modeName(e.mode));
+    chime(false);
+  } else if (e.k === 'tick') {
+    setCountdown(e.seconds);
+    if (e.seconds > 0) chime(e.seconds <= 3);
+  } else if (e.k === 'resolved') {
+    $('count').hidden = true;
+    horn();
+    broadcast(EVENTS.HORN);
+    const line = describeMode(e.mode, e.options);
+    $('p-mode').textContent = modeName(e.mode);
+    $('p-opts').textContent = line.replace(modeName(e.mode), '').replace(/^ · /, '');
+    $('p-note').textContent = e.ready
+      ? 'Making ready — sail to the harbour mouth.'
+      : 'That mode is still being built. Back to open water in a moment — ' +
+        'the harbour reopens and you can choose again.';
+    $('placard').hidden = false;
+    broadcast(EVENTS.RESOLVED, line);
+    D.log('ok', 'lobby chose ' + line);
+  } else if (e.k === 'reopen') {
+    $('placard').hidden = true;
+    broadcast(EVENTS.REOPEN);
+  } else if (e.k === 'drift') {
+    showHint(e.hint, 0);
+    broadcast(EVENTS.DRIFT, e.hint);
+    D.log('warn', 'harbour eased the race zone: ' + e.hint);
+  }
+}
+
+let lastN = null;
+function setCountdown(n) {
+  const el = $('c-n');
+  if (n === lastN) return;
+  lastN = n;
+  el.textContent = n;
+  el.classList.remove('pulse');
+  void el.offsetWidth;              // restart the animation
+  el.classList.add('pulse');
+}
+
+function broadcast(kind, detail) {
+  for (const p of host.players.values()) host.notify(p, kind, detail);
+}
+
+let hintUntil = 0;
+function showHint(html, seconds) {
+  const el = $('hint');
+  el.innerHTML = html;
+  el.hidden = false;
+  hintUntil = seconds ? performance.now() + seconds * 1000 : 0;
+}
+
+/* One standing instruction, rewritten as the situation changes. This is the
+ * only place on the TV that ever explains anything, and it earns its space by
+ * saying what to do NEXT rather than what is true. */
+function paintHint() {
+  if (hintUntil && performance.now() > hintUntil) { $('hint').hidden = true; hintUntil = 0; }
+  if (hintUntil || harbour.drifted) return;
+  if (lobby.phase !== PHASE.HARBOUR) { $('hint').hidden = true; return; }
+  if (!host.players.size) { $('hint').hidden = true; return; }
+
+  const leading = lobby.zones.reduce((a, z) => (z.claim > (a ? a.claim : 0) ? z : a), null);
+  if (leading && leading.claim > 0.02) {
+    const name = MODES[leading.mode] ? MODES[leading.mode].name : leading.id;
+    const short = lobby.need - leading.active;
+    showHint(short > 0
+      ? '<b>' + name + '</b> — ' + short + ' more boat' + (short > 1 ? 's' : '') +
+        ' in the ring and it starts'
+      : '<b>' + name + '</b> — hold the ring', 0);
+  } else if (lobby.activeCount > 0) {
+    showHint('Sail into a ring and stay there. When <b>' + lobby.need +
+             ' of ' + lobby.activeCount + '</b> ' +
+             (lobby.activeCount === 1 ? 'boat is' : 'boats are') +
+             ' in the same one, that is what we play.', 0);
+  } else {
+    showHint('Move a tiller to join in — a phone nobody is holding does not get a vote.', 0);
+  }
+}
+
 /* ── loop ───────────────────────────────────────────────────────── */
 let last = performance.now(), acc = 0, evtAcc = 0;
 
 function frame(now) {
-  const elapsed = (now - last) / 1000; last = now;
+  const elapsed = Math.min(0.25, (now - last) / 1000); last = now;
   pump(world, elapsed);
+
+  stepHarbour(harbour, elapsed);
+  for (const e of stepLobby(lobby, harbour, { players: lobbyPlayers() }, elapsed)) {
+    onLobbyEvent(e);
+  }
 
   evtAcc += elapsed;
   if (evtAcc > 0.2) { pumpEvents(); evtAcc = 0; }
 
   const boats = world.boats;
-  frameBoats(scene, boats);
+  /* Keep the dock in shot and hold the zoom back, so the harbour stays a
+   * place rather than a close-up of one boat. */
+  frameBoats(scene, boats, { pad: 34, maxPpm: 9, extra: [harbour.dock] });
   drawWater(scene, world.wind);
   drawWindStreaks(scene, world.wind, world.time);
+  drawDock(scene, harbour);
+  drawZones(scene, harbour, lobby, MODES);
   drawWakes(scene, boats);
   for (const b of boats) {
     drawBoat(scene, b, { hull: b.hull, label: b.name, hiking: b.input.h });
   }
-  drawWindIndicator(scene, world.wind, { right: 280 });
+  drawWindIndicator(scene, world.wind, { left: 20, bottom: 92 });
 
   acc += elapsed;
-  if (acc > 0.12) { paintFleet(); paintStats(); acc = 0; }
+  if (acc > 0.12) { paintFleet(); paintHint(); paintStats(); acc = 0; }
 
   requestAnimationFrame(frame);
 }
@@ -339,6 +581,29 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+/* ── the debug handle ───────────────────────────────────────────────
+ * Unguarded on purpose. The one place this really matters is a Chromecast,
+ * reached over the LAN at http://<ip>:9222 — you cannot add a query parameter
+ * to a receiver URL that Google has on file, so a flag-gated handle would be
+ * absent exactly where it is needed. Anyone who can run script on the host's
+ * own screen could already do anything; this only makes it convenient.
+ *
+ *   SS.put('b0', 'race')   drop a boat in a ring without sailing there
+ *   SS.lobby.zones         claim, voters, options
+ *   SS.harbour.drifted     whether the harbour gave in
+ */
+window.SS = {
+  world, harbour, lobby, host,
+  scene: () => scene,
+  put: (boatId, zoneId) => {
+    const b = world.byId.get(boatId), z = harbour.byId.get(zoneId);
+    if (!b || !z) return false;
+    b.p.x = z.p.x; b.p.y = z.p.y;
+    b.v.x = 0; b.v.y = 0; b.w = 0;
+    return true;
+  }
+};
 </script>
 </body>
 </html>

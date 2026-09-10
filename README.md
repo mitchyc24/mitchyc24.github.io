@@ -1,16 +1,18 @@
-# Sailing School — M0 spike
+# Sailing School — M3, the harbour
 
-Proving the pipe. There are no boats yet: this build exists to answer one
-question before anything expensive gets built on top of it —
+A top-down sailing simulator for a television and a pile of phones. The TV runs
+the world; everybody scans the QR code on screen and their phone becomes a
+tiller, a mainsheet and a set of instruments.
 
-> **Does WebRTC actually work in the Chromecast Ultra's browser?**
+As of M3 there is a **harbour**, and the harbour is the menu. What the room
+plays is decided by sailing: four rings float on the water, each at a deliberate
+angle to the wind, and holding one of them together is the vote. Nobody reads a
+menu, nobody needs a cursor, and choosing the race means beating to windward
+first — which is either a good time or a hint that you want the beginners' ring
+on the beam reach instead.
 
-It is not documented either way and it varies by Chromecast generation. It also
-tells you what JavaScript your device can parse, which sets the build target for
-everything after M1.
-
-Done when: dragging the slider on your phone moves the bar on both hosts, from
-the same build, and the Cast one survives a 10-minute idle.
+Everything below M0 is history, kept because the Chromecast triage in it is
+hard-won and you will want it again.
 
 ---
 
@@ -178,6 +180,13 @@ src/
     cast-loader.js      CrKey detection + fetches the receiver framework
     cast-shell.js       maxInactivity, heartbeat ack, sender events
     browser-shell.js    fullscreen, wake lock, keys, unload guard
+  core/                 DOM-free, network-free — runs headless in Node
+    physics.js          apparent wind, sail force, drags, moments
+    boat.js             one boat, plus the assist layer above the force model
+    wind.js             shifts, gusts, wind shadow — deterministic from a seed
+    world.js            fixed-step integration of the fleet
+    harbour.js          the dock and the four rings; where they sit, and why
+    lobby.js            the vote — claim, quorum, countdown, cancel, re-arm
   net/
     protocol.js         wire messages — no DOM, no PeerJS, testable in Node
     peer-host.js        room claiming, players, latest-input, telemetry
@@ -188,7 +197,17 @@ src/
     peer-loader.js      picks the modern or downlevelled PeerJS bundle
     profile.js          device-local profile, versioned key
     qr.js               inline-SVG QR
+    compass.js          wind direction, said unambiguously, in one place
+    telltales.js        the bands the strip and the fleet list both read
+    assists.js          the three levels, as constants — never a second physics
+    boats.js            hull constants
+    modes.js            what there is to play, and what can be adjusted
     ui.css
+  controller/
+    surfaces.js         tiller, mainsheet, hike
+    dial.js             the boat-up points-of-sail dial
+  render/
+    scene.js            canvas: water, wind, boats, harbour, HUD insets
 vendor/
   peerjs-1.5.5.min.js       as published — needs Chromium 80+
   peerjs-1.5.5.legacy.js    esbuild --target=chrome69
@@ -446,8 +465,111 @@ the tests share. On top of it:
 
 ---
 
+## M3 — the harbour lobby
+
+Nobody watches a menu. So the menu is made of water: four dashed rings, each
+sitting at a deliberate angle to the wind from the dock.
+
+| Ring | Where | What it asks of you |
+|---|---|---|
+| **Sailing School** | ~96° off the wind | a beam reach — the easiest thing there is |
+| **Cargo Run** | 58° to leeward side | a close reach |
+| **Squall** | 58° the other way | a close reach |
+| **Buoy Race** | **dead upwind** | unreachable except by beating |
+
+**The map is the difficulty curve.** A room that cannot yet beat cannot
+accidentally start a race, and the people who can are demonstrating it by
+arriving. Nobody is tested; the geography just asks. The dock sits well downwind
+of all four, so nothing is reachable by giving up and drifting.
+
+Sail into a ring and the arc around it starts filling. When a majority of the
+room is in the same ring for six seconds, that is the decision: ten seconds of
+countdown, a horn, and a placard saying what was chosen.
+
+### The four rules that stop it being griefable
+
+1. **The denominator is *active* players** — anyone who has actually moved a
+   control in the last 30 seconds. A phone face-down on a sofa still streams 30
+   packets a second quite happily, so "a packet arrived" is not presence; the
+   host watches for a control that *moved*. Without this, one abandoned handset
+   holds a room of five hostage forever.
+2. **A countdown is cancelled only by a majority claiming a different ring.**
+   One person leaving cannot stop a room of six. Sail somewhere else together,
+   or it happens.
+3. **Rings disarm after a decision** and only re-arm once their crowd
+   disperses — otherwise six boats parked in the race ring would re-start the
+   race every eight seconds, forever.
+4. **Three minutes with nothing claimed at all and the harbour gives in**: the
+   race ring stands off to seaward and swings round to a beam reach on the empty
+   side. The beat is not deleted, it is offered again next time; and every other
+   ring is untouched.
+
+Options are coarse in the world and fine on the phone. Standing in a ring grows
+a panel of chips — laps, course size, wind strength — shared live with everyone
+else in that ring, so you watch the room's mind change rather than discovering
+it at the start gun. They are chips and never sliders, because the value *is*
+the whole state: a dropped packet cannot leave two phones disagreeing about what
+was decided.
+
+The first player to join is the **harbourmaster** and gets a *Start now* on
+their phone. It is deliberately narrow — it can only start what the room is
+already looking at, and it still fires a countdown, because a race that begins
+without a horn begins without half the fleet. If they leave, the next longest
+standing inherits it without anyone being asked.
+
+### Two bugs the tests caught, which watching would not have
+
+**The drifting ring ate another one.** Rule 4 originally eased the race ring
+onto a close reach — which is exactly where the squall ring already was. Three
+minutes into a stuck room, the race ring slid over the top of a fleet parked in
+squall, swallowed their positions and started a race nobody had voted for. It
+looked like the re-arm guard failing. It was geometry. The fix is that the ring
+stands *off to seaward first and only then swings round*, and the test asserts
+the rings stay disjoint at every instant of the move, not just at the ends.
+
+**Arcade would hold you head to wind.** The assist's heading hold means "keep
+what I have", and left literal it will keep a heading that cannot be sailed: the
+boat stops, the autopilot holds her there, and the player who chose arcade
+precisely so they would not have to think about the wind is stuck forever with a
+control that appears to be working. The hold now refuses to hold a course inside
+the no-go zone and walks out to the nearest sailable angle. It steers; it does
+not push — the balance figures above are unchanged by it, and there is a test
+that strict still leaves you in irons, because that is the whole lesson.
+
+(While fixing that: a heading hold on proportional gain alone oscillates. A boat
+leaving the no-go zone with barely any way on swung to 50° off, then 8°, then
+40°, then 12°, for as long as you cared to watch — worse than being stuck,
+because it looks possessed rather than becalmed. It has a rate term now.)
+
+### Verified
+
+`test/lobby.test.mjs` — 38 headless tests covering every rule above plus the
+geometry invariants. `verify-m3.mjs` drives two real phones over real WebRTC and
+checks the things a unit test cannot reach: that an idle phone genuinely drops
+out of the quorum while still connected, that an option tapped on one phone
+appears on another, that the countdown on the TV matches the one in a pocket,
+and that a non-harbourmaster pressing *Start now* does nothing at all.
+
+### The debug handle
+
+`window.SS` on the host — `SS.put('b0', 'race')` drops a boat in a ring without
+sailing there, `SS.lobby.zones` shows claims and voters, `SS.harbour.drifted`
+says whether the harbour gave in. `window.SSC` is the phone's client.
+
+Deliberately unguarded rather than behind a query flag: the one place it really
+matters is a Chromecast reached over the LAN at `http://<ip>:9222`, and you
+cannot add a query parameter to a receiver URL that Google has on file. Anyone
+who can run script on the host's own screen could already do anything.
+
+---
+
 ## Next
 
-M3 — the harbour lobby: QR join into a sailable world, mode zones you sail into
-and hold to vote, and the phone-side options panel. See `claude/architecture.md`
-§10 for the vote rules.
+M4 — the race. The course, the harbour-mouth start line with its 45-second
+pre-start and over-early penalty, mark rounding, results, and the trip back to
+the harbour with a placard on the dock. The lobby already hands it a mode and a
+set of options; M4 is what happens after the horn.
+
+Still owed from the television: the `chromium M<nn>` line from the diagnostics
+drawer. Everything so far is hand-written ES2019 with no build step, and that
+number is what sets Vite's `build.target` when the build step arrives.
