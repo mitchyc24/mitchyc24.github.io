@@ -67,10 +67,17 @@ That is the right state for M0 — publish later, when someone else needs to run
 
 ### Before it will work
 
-1. **Point the receiver URL at your deployed `/host/`.** In the developer console,
-   edit the application and set the URL to
-   `https://<you>.github.io/<repo>/host/`. Cast requires HTTPS for a published
-   app and GitHub Pages provides it.
+1. **Point the receiver URL at `/host/`, not the site root.** In the developer
+   console, edit the application and set the URL to
+   `https://mitchyc24.github.io/host/` — with the trailing `host/`. The bare
+   root is the landing page, which contains no receiver code, so casting it puts
+   a page with two buttons on the TV and nothing else happens. Cast requires
+   HTTPS for a published app and GitHub Pages provides it.
+
+   > **Use Chrome for the sender, not Edge.** Edge is Chromium-based but does
+   > not reliably ship Google's media-router component, so no Cast receiver is
+   > ever discovered and the Cast button has nothing to offer. Firefox and iOS
+   > Safari cannot do it at all. `/cast/` now detects Edge and says so.
 2. **Wait 15 minutes after registering the device, then reboot the Chromecast.**
    The registration genuinely is not live before that. This is the single most
    common reason a correctly-built receiver refuses to launch.
@@ -138,6 +145,7 @@ cast/index.html       Cast sender + heartbeat
 src/
   host/               boot capability + the two lifecycle shells
     capability.js       the ONLY place that knows Cast from browser
+    cast-loader.js      CrKey detection + fetches the receiver framework
     cast-shell.js       maxInactivity, heartbeat ack, sender events
     browser-shell.js    fullscreen, wake lock, keys, unload guard
   net/
@@ -184,9 +192,26 @@ DataChannel through a real broker) checks:
 - reconnecting with the same profile id reclaims the same slot, no duplicate player
 - no uncaught errors on either page
 
-Not covered by that run, because it needs your hardware and network: the PeerJS
-*cloud* broker, phone-to-laptop over real wifi, and the Chromecast itself.
-That's the part M0 is asking you to do.
+A second run spoofs a Chromecast Ultra user agent and checks the Cast path:
+the receiver framework is actually fetched, the start gate is skipped (no
+cursor on a TV), the room still opens, and a failed framework fetch produces a
+readable banner instead of a blank screen.
+
+Not covered by either run, because it needs your hardware and network: the
+PeerJS *cloud* broker, phone-to-laptop over real wifi, and the Chromecast
+itself. That's the part M0 is asking you to do.
+
+### Two bugs these runs caught
+
+- **The receiver framework was never loaded.** `window.cast.framework` does not
+  exist on a Chromecast by magic — `cast_receiver_framework.js` defines it.
+  Without it the receiver never calls `ctx.start()`, Cast decides the app failed
+  to load, and the TV drops back to the backdrop with no error at all. Fixed in
+  `src/host/cast-loader.js`. Note the subtlety: you cannot detect Cast by looking
+  for `cast.framework`, because loading the library is what defines it — so
+  detection reads the `CrKey` token out of the user agent instead.
+- **A temporal dead zone in `play/index.html`** meant *scanning* the QR failed
+  while *typing* the code worked. Auto-join now runs last.
 
 ---
 

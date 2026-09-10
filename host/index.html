@@ -171,14 +171,18 @@ const D = window.SSDiag;
 D.booted();
 
 const $ = (id) => document.getElementById(id);
-const cap = resolveCapability();
-D.log('info', 'capability: ' + cap.kind + ' (' + cap.fps + ' fps, ' + cap.fidelity + ')');
 $('verdict').textContent = D.verdict();
 
 const host = new PeerHost({
   onPlayers: renderPlayers,
   onInput: () => { /* M0 renders from the poll below rather than per packet */ }
 });
+
+/* Resolved in boot() — a Cast device has to fetch the receiver framework
+ * first, so capability detection is async. No top-level await: the
+ * Chromecast Ultra's Chromium is older than that. */
+let cap = null;
+let shell = null;
 
 /* The app surface the shells talk to. Keeps them ignorant of the DOM. */
 const app = {
@@ -192,7 +196,15 @@ const app = {
   toggleDiagnostics: () => $('diag').classList.toggle('hidden')
 };
 
-const shell = cap.attach(app);
+async function boot() {
+  cap = await resolveCapability();
+  D.log('info', 'capability: ' + cap.kind + ' (' + cap.fps + ' fps, ' + cap.fidelity + ')');
+  shell = cap.attach(app);
+
+  /* No cursor on a TV, so nothing can click Start — begin immediately. */
+  if (!cap.pointer) begin();
+  else $('start').addEventListener('click', begin, { once: true });
+}
 
 async function begin() {
   $('gate').style.display = 'none';
@@ -212,9 +224,7 @@ async function begin() {
   }
 }
 
-/* Cast has no cursor and no gesture to wait for — start immediately. */
-if (cap.kind === 'cast') begin();
-else $('start').addEventListener('click', begin, { once: true });
+boot();
 
 function renderPlayers(list) {
   const box = $('players');
@@ -250,7 +260,7 @@ function tick() {
   const stat = (k, v) => `<span>${k} <b>${v}</b></span>`;
   $('stats').innerHTML =
     stat('uptime', fmtTime(host.uptimeSeconds)) +
-    stat('host', cap.label) +
+    stat('host', cap ? cap.label : 'detecting…') +
     stat('players', s.players) +
     stat('msgs in', s.msgsIn.toLocaleString()) +
     stat('bytes in', (s.bytesIn / 1024).toFixed(1) + ' kB') +

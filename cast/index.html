@@ -13,7 +13,7 @@ body { display: flex; align-items: center; justify-content: center; padding: 24p
 h1 { font-size: 32px; font-weight: 800; }
 p { color: var(--ink-2); font-size: 14px; line-height: 1.65; margin: 0; }
 .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-google-cast-launcher { width: 46px; height: 46px; cursor: pointer; }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
 .state { font-size: 12.5px; color: var(--muted); }
 .state b { color: var(--ok); font-weight: 500; }
 .warn { background: #3A2A11; border: 1px solid var(--warn); color: #FFE9BF; padding: 12px 15px; font-size: 13px; line-height: 1.6; }
@@ -45,9 +45,30 @@ google-cast-launcher { width: 46px; height: 46px; cursor: pointer; }
   <p>Press the Cast button and pick your Chromecast. The game loads on the TV;
      phones join by scanning the code it shows.</p>
 
+  <div class="warn" id="edge" hidden>
+    <b>This is Microsoft Edge.</b> Edge is Chromium-based but does not reliably
+    ship Google's media-router component, so Cast devices often never appear and
+    the Cast button has nothing to offer. <b>Use Google Chrome</b> for the sender.
+    <br><br>
+    Or skip Cast entirely and open <a href="../host/">/host/</a> here — browser
+    hosting needs none of this.
+  </div>
+
   <div class="row">
-    <google-cast-launcher id="castbtn"></google-cast-launcher>
+    <!-- Deliberately our own button rather than <google-cast-launcher>. That
+         element HIDES ITSELF when no receivers are discoverable, which looks
+         exactly like a broken page. A real button plus the cast-state line
+         below tells you which of the two it is. -->
+    <button class="btn" id="castbtn" disabled>Cast to TV</button>
     <span class="state" id="state">loading the Cast SDK…</span>
+  </div>
+
+  <div class="panel" id="devices" hidden>
+    <div class="probe">
+      <div class="pk">cast state</div><div class="pv" id="caststate">—</div>
+      <div class="pk">receivers found</div><div class="pv" id="devcount">—</div>
+    </div>
+    <div class="verdict" id="devhelp"></div>
   </div>
 
   <div class="keepopen">
@@ -85,12 +106,35 @@ google-cast-launcher { width: 46px; height: 46px; cursor: pointer; }
     el('state').textContent = 'not configured';
   }
 
+  /* Edge is Chromium but usually lacks Google's media-router component, so no
+   * receiver is ever discovered. Say it up front instead of letting them
+   * hunt for a button that will never have anything to show. */
+  if (/\bEdg\//.test(navigator.userAgent)) {
+    el('edge').hidden = false;
+    D.log('warn', 'Microsoft Edge detected — Cast device discovery usually does not work here');
+  }
+
   var heartbeat = null;
+
+  function describeCastState(s) {
+    var C = cast.framework.CastState;
+    if (s === C.NO_DEVICES_AVAILABLE) {
+      return ['no receivers found on this network',
+              'Nothing to cast to yet. The computer and the Chromecast must be ' +
+              'on the same network and subnet, and in Chrome — Edge and Firefox ' +
+              'cannot discover Cast devices.'];
+    }
+    if (s === C.NOT_CONNECTED) return ['receiver available — press Cast', ''];
+    if (s === C.CONNECTING) return ['connecting…', ''];
+    if (s === C.CONNECTED) return ['connected', ''];
+    return [String(s), ''];
+  }
 
   window.__onGCastApiAvailable = function (available) {
     if (!available) {
       D.fatal('The Cast SDK did not load. Cast needs Chrome on desktop or Android — ' +
-              'it is not available in iOS Safari. Use browser hosting instead.');
+              'it is not available in iOS Safari, and Edge and Firefox cannot ' +
+              'discover Cast devices. Use browser hosting instead.');
       el('state').textContent = 'unavailable';
       return;
     }
@@ -102,7 +146,35 @@ google-cast-launcher { width: 46px; height: 46px; cursor: pointer; }
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
     });
     D.log('ok', 'cast sender ready — app ID ' + CFG.CAST_APP_ID);
-    el('state').textContent = 'ready — press Cast';
+    el('devices').hidden = false;
+
+    /* Our own button, so it is always visible and always says something. */
+    el('castbtn').disabled = false;
+    el('castbtn').addEventListener('click', function () {
+      ctx.requestSession().then(
+        function () { D.log('ok', 'session requested'); },
+        function (err) { D.log('warn', 'cast cancelled or failed: ' + err); }
+      );
+    });
+
+    function paintCastState(s) {
+      var d = describeCastState(s);
+      el('caststate').textContent = d[0];
+      el('devhelp').textContent = d[1];
+      el('devcount').textContent =
+        (s === cast.framework.CastState.NO_DEVICES_AVAILABLE) ? '0' : '1 or more';
+      el('state').textContent = d[0];
+      el('castbtn').disabled = (s === cast.framework.CastState.NO_DEVICES_AVAILABLE);
+    }
+
+    paintCastState(ctx.getCastState());
+    ctx.addEventListener(
+      cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+      function (e) {
+        D.log('info', 'cast state: ' + e.castState);
+        paintCastState(e.castState);
+      }
+    );
 
     ctx.addEventListener(
       cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
