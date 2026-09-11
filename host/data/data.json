@@ -1,0 +1,80 @@
+{
+ "meta": {
+  "built_at": "2026-09-11T17:43:17+00:00",
+  "ok": [],
+  "failed": [],
+  "sample": true
+ },
+ "world": {
+  "fetched_at": "2026-09-11T17:43:17+00:00",
+  "population": {
+   "base": 8231000000,
+   "base_iso": "2025-07-01T00:00:00Z",
+   "per_year": 70000000
+  },
+  "births_per_sec": 4.2,
+  "deaths_per_sec": 1.9,
+  "co2_tonnes_per_sec": 1180,
+  "internet_users_per_sec": 5.0
+ },
+ "news": {
+  "fetched_at": "2026-09-11T17:43:17+00:00",
+  "items": [
+   {
+    "title": "Sample headline — the live feed appears after the first Actions run",
+    "url": "",
+    "source": "Sample",
+    "place": "Ottawa",
+    "lat": 45.4,
+    "lon": -75.7,
+    "kind": "rss"
+   },
+   {
+    "title": "Sample headline over Tokyo",
+    "url": "",
+    "source": "Sample",
+    "place": "Tokyo",
+    "lat": 35.7,
+    "lon": 139.7,
+    "kind": "rss"
+   },
+   {
+    "title": "Sample headline over Nairobi",
+    "url": "",
+    "source": "Sample",
+    "place": "Nairobi",
+    "lat": -1.3,
+    "lon": 36.8,
+    "kind": "rss"
+   },
+   {
+    "title": "Sample headline over São Paulo",
+    "url": "",
+    "source": "Sample",
+    "place": "São Paulo",
+    "lat": -23.5,
+    "lon": -46.6,
+    "kind": "rss"
+   },
+   {
+    "title": "Sample headline over Berlin",
+    "url": "",
+    "source": "Sample",
+    "place": "Berlin",
+    "lat": 52.5,
+    "lon": 13.4,
+    "kind": "rss"
+   }
+  ]
+ },
+ "onthisday": {
+  "fetched_at": "2026-09-11T17:43:17+00:00",
+  "date": "09-11",
+  "events": [
+   {
+    "year": 1965,
+    "text": "Sample on-this-day line — replaced by Wikipedia's feed on the first run."
+   }
+  ]
+ }
+}
