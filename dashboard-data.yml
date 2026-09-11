@@ -1,0 +1,60 @@
+name: Dashboard data + Pages deploy
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install sgp4 (GEO belt propagation)
+        run: pip install --quiet sgp4
+
+      # Previous data.json is not in git; pull the live copy so a failed
+      # source keeps its last-good block instead of blanking the screen.
+      - name: Fetch last deployed data.json
+        run: |
+          curl -sf --max-time 20 \
+            "https://mitchyc24.github.io/host/data/data.json" \
+            -o host/data/previous.json || echo "{}" > host/data/previous.json
+
+      - name: Build data.json
+        run: python .github/scripts/build_data.py host/data/previous.json host/data/data.json
+
+      - name: Remove previous.json from artifact
+        run: rm -f host/data/previous.json
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

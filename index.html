@@ -1,71 +1,550 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%E2%9B%B5%3C/text%3E%3C/svg%3E">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sailing School</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="src/shared/ui.css">
+<title>Observatory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-body { display: flex; align-items: center; justify-content: center; padding: 28px 20px; }
-.card { max-width: 620px; width: 100%; display: flex; flex-direction: column; gap: 24px; }
-h1 { font-size: clamp(38px, 9vw, 62px); font-weight: 800; line-height: .96; }
-.lede { color: var(--ink-2); font-size: 15px; line-height: 1.65; margin: 0; max-width: 46ch; }
-.paths { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-@media (max-width: 560px) { .paths { grid-template-columns: 1fr; } }
-.path {
-  display: flex; flex-direction: column; gap: 9px;
-  background: var(--surface); border: 1px solid var(--rule); padding: 18px;
-  text-decoration: none; color: inherit;
+:root {
+  --ink: #e9e5dc;
+  --ink-2: #8f8c84;
+  --ink-3: #4b4a45;
+  --amber: #f0b45a;
+  --ice: #9fd3ff;
+  --rose: #ff7a6b;
 }
-.path:hover { border-color: var(--magenta); }
-.path h2 { font-size: 19px; font-weight: 700; }
-.path .k { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--magenta); }
-.path p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
-.foot { font-size: 12px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--rule); padding-top: 16px; }
-.foot a { color: var(--ink-2); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; }
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-weight: 300;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+#stage { position: absolute; inset: 0; }
+#globe { position: absolute; display: block; }
+#lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.layer { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---------- top band ---------- */
+#clock { position: absolute; left: 4vw; top: 4.2vh; line-height: 1; }
+#clock .t { font-size: 7.2vh; font-weight: 300; letter-spacing: -0.02em; }
+#clock .t small { font-size: 3vh; color: var(--ink-2); margin-left: 0.6vh; }
+#clock .d { font-size: 2.1vh; color: var(--ink-2); margin-top: 1.4vh; }
+
+#wx { position: absolute; right: 4vw; top: 4.2vh; text-align: right; line-height: 1.2; }
+#wx .temp { font-size: 5.2vh; font-weight: 300; letter-spacing: -0.02em; }
+#wx .temp span { font-size: 2.4vh; color: var(--ink-2); vertical-align: top; }
+#wx .cond { font-size: 2vh; color: var(--ink-2); }
+#wx .sun { font-size: 1.7vh; color: var(--ink-3); margin-top: 0.8vh; }
+#wx .sun b { color: var(--ink-2); font-weight: 400; }
+
+/* ---------- stats column ---------- */
+#stats { position: absolute; left: 4vw; top: 24vh; width: 24vw; }
+.stat { margin-bottom: 3.6vh; line-height: 1.05; }
+.stat .v { font-size: 4.4vh; font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; }
+.stat .v span { font-size: 2vh; color: var(--ink-2); margin-left: 0.5vh; letter-spacing: 0; }
+.stat .l { font-size: 1.75vh; color: var(--ink-2); margin-top: 0.9vh; }
+.stat .l em { font-style: normal; color: var(--ink-3); }
+.stat.live .v { color: var(--ice); }
+.stat.est .v { color: var(--ink); }
+.stat.up .v { color: #9fe0b0; } .stat.down .v { color: var(--rose); }
+
+/* ---------- headlines ---------- */
+.headline {
+  position: absolute; width: 21vw; max-width: 420px;
+  transform: translate(0, -50%);
+  opacity: 0; transition: opacity 900ms ease;
+  will-change: opacity;
+}
+.headline.on { opacity: 1; }
+.headline .h { font-size: 2vh; font-weight: 400; line-height: 1.32; color: var(--ink); }
+.headline .m { font-size: 1.5vh; color: var(--amber); margin-top: 0.7vh; }
+.headline .m span { color: var(--ink-3); }
+.headline.left { text-align: right; }
+
+/* ---------- ticker + footer ---------- */
+#ticker { position: absolute; left: 4vw; right: 4vw; bottom: 5.4vh; height: 3vh; overflow: hidden; }
+#ticker .row { position: absolute; left: 0; right: 0; font-size: 2vh; color: var(--ink-2); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity 800ms ease; }
+#ticker .row.on { opacity: 1; }
+#ticker .row b { font-weight: 400; color: var(--ink); }
+#foot { position: absolute; left: 4vw; bottom: 2.4vh; font-size: 1.4vh; color: var(--ink-3); }
+#foot span { margin-right: 2vw; }
+#qr { position: absolute; right: 4vw; bottom: 2.4vh; display: flex; align-items: flex-end; gap: 1vw; opacity: 0.55; }
+#qr img { width: 8.5vh; height: 8.5vh; filter: invert(1) brightness(0.9); mix-blend-mode: screen; }
+#qr .cap { font-size: 1.4vh; color: var(--ink-3); line-height: 1.3; text-align: right; }
+
+/* burn-in guard: the whole overlay drifts by a few px on a long cycle */
+#drift { position: absolute; inset: 0; animation: drift 900s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translate(0,0);} to { transform: translate(6px,4px);} }
+@media (prefers-reduced-motion: reduce) { #drift { animation: none; } }
 </style>
 </head>
 <body>
-<div class="card">
-  <div>
-    <p class="eyebrow">M0 spike · proving the pipe</p>
-    <h1>Sailing School</h1>
+<div id="stage"><canvas id="globe"></canvas></div>
+<div id="drift">
+<svg id="lines"></svg>
+  <div class="layer" id="cards"></div>
+  <div class="layer">
+    <div id="clock"><div class="t">--:--</div><div class="d"></div></div>
+    <div id="wx"><div class="temp">—</div><div class="cond"></div><div class="sun"></div></div>
+    <div id="stats"></div>
+    <div id="ticker"></div>
+    <div id="foot"></div>
+    <div id="qr"></div>
   </div>
-
-  <p class="lede">A multiplayer sailing simulator for a room and a screen. Phones
-    are the tiller and the mainsheet. This build has no boats yet — it exists to
-    prove a phone can drive a value on a TV, and to tell you what your Chromecast
-    can actually run.</p>
-
-  <div class="paths">
-    <a class="path" href="cast/">
-      <span class="k">Primary</span>
-      <h2>Cast to a TV</h2>
-      <p>Launches the game on a Chromecast. Needs Chrome and a registered Cast
-         app ID. This tab stays open as the ignition key.</p>
-    </a>
-    <a class="path" href="host/">
-      <span class="k">Always available</span>
-      <h2>Host here</h2>
-      <p>Runs the game in this browser instead — laptop, PC, or a TV's own
-         browser. No registration, no second device, same code.</p>
-    </a>
-  </div>
-
-  <a class="path" href="play/">
-    <span class="k">On a phone</span>
-    <h2>Join a game</h2>
-    <p>Scanning the QR on screen brings you straight here. This link is for
-       typing the room code by hand.</p>
-  </a>
-
-  <p class="foot">
-    Every device needs to be on the same network. Controller input travels
-    phone-to-host directly over WebRTC; the signalling broker only introduces
-    them once and then drops out.
-  </p>
 </div>
+
+<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script>
+// =====================================================================
+//  CONFIG
+// =====================================================================
+const CFG = {
+  home: { name: "Gatineau", lat: 45.48, lon: -75.65, tz: "America/Toronto" },
+  dataUrl: "data/data.json",
+  remoteUrl: "https://mitchyc24.github.io/host/remote.html",
+  rotationPeriodSec: 300,      // one full turn
+  fpsCap: 30,
+  headlineEverySec: 22,
+  headlineHoldSec: 34,
+  maxHeadlines: 3,
+  tickerEverySec: 12,
+  reloadEveryMin: 12 * 60,
+  dataEveryMin: 15,
+  wikiStream: true,
+  geoBelt: true,
+};
+const DEV = /[?&]dev/.test(location.search);
+
+// =====================================================================
+//  CAST
+// =====================================================================
+if (!DEV && window.cast && cast.framework) {
+  try {
+    const ctx = cast.framework.CastReceiverContext.getInstance();
+    const opts = new cast.framework.CastReceiverOptions();
+    opts.disableIdleTimeout = true;
+    ctx.start(opts);
+  } catch (e) { console.warn("cast init", e); }
+}
+
+// =====================================================================
+//  HELPERS
+// =====================================================================
+const $ = (s) => document.querySelector(s);
+const nf = new Intl.NumberFormat("en-CA");
+const fmt = (n, d = 0) => new Intl.NumberFormat("en-CA", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+const rad = Math.PI / 180;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function latLonToVec(lat, lon, r = 1) {
+  const phi = (90 - lat) * rad, th = (lon + 180) * rad;
+  return new THREE.Vector3(-r * Math.sin(phi) * Math.cos(th), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(th));
+}
+async function fetchJSON(url, ms = 15000) {
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { signal: c.signal, cache: "no-store" }); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+const esc = (t) => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function agoMin(iso) { return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)); }
+
+// Subsolar point (declination + equation of time, accurate to ~0.3°)
+function subsolar(date) {
+  const jd = date.getTime() / 86400000 + 2440587.5, n = jd - 2451545.0;
+  const L = (280.460 + 0.9856474 * n) % 360, g = ((357.528 + 0.9856003 * n) % 360) * rad;
+  const lam = (L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * rad;
+  const eps = (23.439 - 0.0000004 * n) * rad;
+  const dec = Math.asin(Math.sin(eps) * Math.sin(lam));
+  let ra = Math.atan2(Math.cos(eps) * Math.sin(lam), Math.cos(lam)); if (ra < 0) ra += 2 * Math.PI;
+  const gmst = ((18.697374558 + 24.06570982441908 * n) % 24) * 15 * rad;
+  let lon = (ra - gmst) / rad; lon = ((lon + 540) % 360) - 180;
+  return { lat: dec / rad, lon };
+}
+
+// =====================================================================
+//  SCENE
+// =====================================================================
+const canvas = $("#globe");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "low-power" });
+renderer.setPixelRatio(1);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+camera.position.set(0, 0, 3.9);
+const tilt = new THREE.Group();
+tilt.rotation.z = -0.18;             // a gentle lean, purely for composition
+const globe = new THREE.Group();     // spins about the tilted axis
+tilt.add(globe); scene.add(tilt);
+
+const loader = new THREE.TextureLoader();
+const texDay = loader.load("assets/earth_day_2k.jpg");
+const texNight = loader.load("assets/earth_night_2k.png");
+texDay.anisotropy = 4; texNight.anisotropy = 4;
+
+const earthMat = new THREE.ShaderMaterial({
+  uniforms: { day: { value: texDay }, night: { value: texNight }, sunDir: { value: new THREE.Vector3(1, 0, 0) } },
+  vertexShader: `
+    varying vec2 vUv; varying vec3 vN;
+    void main(){ vUv = uv; vN = normalize(mat3(modelMatrix) * normal);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D day, night; uniform vec3 sunDir;
+    varying vec2 vUv; varying vec3 vN;
+    void main(){
+      float d = dot(normalize(vN), normalize(sunDir));
+      float t = smoothstep(-0.10, 0.22, d);
+      vec3 dc = texture2D(day, vUv).rgb;
+      vec3 nc = texture2D(night, vUv).rgb;
+      nc = nc * vec3(1.15, 0.92, 0.62) * 1.35 + vec3(0.012, 0.016, 0.030);
+      dc = dc * (0.22 + 0.95 * clamp(d, 0.0, 1.0));
+      vec3 c = mix(nc, dc, t);
+      gl_FragColor = vec4(c, 1.0); }`
+});
+const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), earthMat);
+globe.add(earth);
+
+// atmosphere rim (back-face fresnel, additive)
+const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.035, 48, 32), new THREE.ShaderMaterial({
+  uniforms: { sunDir: { value: earthMat.uniforms.sunDir.value } },
+  vertexShader: `varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(mat3(modelMatrix)*normal); vP=(modelMatrix*vec4(position,1.0)).xyz;
+    gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+  fragmentShader: `uniform vec3 sunDir; varying vec3 vN; varying vec3 vP;
+    void main(){ vec3 v = normalize(cameraPosition - vP); float f = pow(1.0 - abs(dot(v, vN)), 3.0);
+      float s = 0.35 + 0.65*clamp(dot(vN, normalize(sunDir))*0.8+0.4, 0.0, 1.0);
+      gl_FragColor = vec4(vec3(0.35,0.62,1.0)*f*s, f*s*0.9); }`,
+  transparent: true, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false
+}));
+globe.add(atmo);
+
+// marker layers
+const layerQuakes = new THREE.Group(), layerBelt = new THREE.Group(), layerFlick = new THREE.Group(), layerPins = new THREE.Group();
+globe.add(layerQuakes, layerBelt, layerFlick, layerPins);
+
+// ISS: true-scale altitude, small bright point + short trail
+const issMat = new THREE.MeshBasicMaterial({ color: 0x9fd3ff });
+const iss = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 8), issMat);
+iss.visible = false; globe.add(iss);
+const trailPts = new Array(90).fill(0).map(() => new THREE.Vector3());
+const trailGeo = new THREE.BufferGeometry().setFromPoints(trailPts);
+const trail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({ color: 0x9fd3ff, transparent: true, opacity: 0.35 }));
+trail.visible = false; globe.add(trail);
+let trailCount = 0;
+
+// home marker
+{
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.012, 0.018, 24), new THREE.MeshBasicMaterial({ color: 0xf0b45a, side: THREE.DoubleSide }));
+  const p = latLonToVec(CFG.home.lat, CFG.home.lon, 1.003); m.position.copy(p); m.lookAt(p.clone().multiplyScalar(2)); layerPins.add(m);
+}
+
+// flicker pool (wikipedia edits)
+const flickPool = [];
+const flickMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+for (let i = 0; i < 24; i++) {
+  const m = new THREE.Mesh(new THREE.CircleGeometry(0.006, 8), flickMat.clone()); m.visible = false; m.userData.t = 0;
+  layerFlick.add(m); flickPool.push(m);
+}
+function flick(lat, lon) {
+  const m = flickPool.find(x => !x.visible) || flickPool[Math.floor(Math.random() * flickPool.length)];
+  const p = latLonToVec(lat + (Math.random() - 0.5) * 6, lon + (Math.random() - 0.5) * 8, 1.004);
+  m.position.copy(p); m.lookAt(p.clone().multiplyScalar(2)); m.visible = true; m.userData.t = performance.now();
+}
+
+// layout: square canvas, centred at 63% of width
+let size = 0, canvasLeft = 0, canvasTop = 0;
+function layout() {
+  const W = innerWidth, H = innerHeight;
+  size = Math.round(H * 0.98);
+  canvasLeft = Math.round(W * 0.64 - size / 2); canvasTop = Math.round((H - size) / 2);
+  canvas.style.left = canvasLeft + "px"; canvas.style.top = canvasTop + "px";
+  canvas.style.width = canvas.style.height = size + "px";
+  renderer.setSize(size, size, false);
+  camera.aspect = 1; camera.updateProjectionMatrix();
+}
+addEventListener("resize", layout); layout();
+
+// =====================================================================
+//  STATE
+// =====================================================================
+const S = {
+  data: null, weather: null, iss: null, quakes: [], kp: null, wind: null,
+  headlines: [], usedIdx: new Set(), cards: [], tickerItems: [], tickerI: 0,
+};
+
+// =====================================================================
+//  LIVE FEEDS (client-side, CORS-friendly, keyless)
+// =====================================================================
+async function pollISS() {
+  try {
+    const j = await fetchJSON("https://api.wheretheiss.at/v1/satellites/25544", 8000);
+    S.iss = j;
+    const p = latLonToVec(j.latitude, j.longitude, 1 + j.altitude / 6371);
+    iss.position.copy(p); iss.visible = true;
+    trailPts.push(trailPts.shift().copy(p)); trailCount = Math.min(trailCount + 1, trailPts.length);
+    const arr = trailGeo.attributes.position.array;
+    for (let i = 0; i < trailPts.length; i++) { const q = trailPts[i]; arr[i * 3] = q.x; arr[i * 3 + 1] = q.y; arr[i * 3 + 2] = q.z; }
+    trailGeo.attributes.position.needsUpdate = true;
+    trailGeo.setDrawRange(trailPts.length - trailCount, trailCount);
+    trail.visible = trailCount > 2;
+  } catch (e) { /* keep last */ }
+}
+async function pollQuakes() {
+  try {
+    const j = await fetchJSON("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson");
+    S.quakes = j.features.map(f => ({ mag: f.properties.mag, place: f.properties.place, t: f.properties.time,
+      lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0] })).filter(q => q.mag != null);
+    while (layerQuakes.children.length) { const c = layerQuakes.children.pop(); c.geometry.dispose(); c.material.dispose(); }
+    for (const q of S.quakes.slice(0, 60)) {
+      const r = 0.006 + Math.max(0, q.mag - 2.5) * 0.012;
+      const age = (Date.now() - q.t) / 86400000;  // 0..1
+      const m = new THREE.Mesh(new THREE.RingGeometry(r * 0.65, r, 24),
+        new THREE.MeshBasicMaterial({ color: 0xff7a6b, transparent: true, opacity: 0.85 - age * 0.55, side: THREE.DoubleSide, depthWrite: false }));
+      const p = latLonToVec(q.lat, q.lon, 1.004); m.position.copy(p); m.lookAt(p.clone().multiplyScalar(2)); layerQuakes.add(m);
+    }
+  } catch (e) { /* keep last */ }
+}
+async function pollSpaceWeather() {
+  try {
+    const k = await fetchJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
+    const last = k[k.length - 1]; S.kp = parseFloat(last[1]);
+  } catch (e) { }
+  try {
+    const w = await fetchJSON("https://services.swpc.noaa.gov/products/solar-wind/plasma-5-minute.json");
+    for (let i = w.length - 1; i > 0; i--) { if (w[i][2]) { S.wind = { speed: parseFloat(w[i][2]), density: parseFloat(w[i][1]) }; break; } }
+  } catch (e) { }
+}
+async function pollWeather() {
+  try {
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${CFG.home.lat}&longitude=${CFG.home.lon}` +
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset` +
+      `&timezone=${encodeURIComponent(CFG.home.tz)}&forecast_days=1`;
+    S.weather = await fetchJSON(u);
+    renderWeather();
+  } catch (e) { }
+}
+const WMO = { 0: "Clear", 1: "Mostly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
+  61: "Light rain", 63: "Rain", 65: "Heavy rain", 66: "Freezing rain", 67: "Freezing rain", 71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
+  80: "Showers", 81: "Showers", 82: "Heavy showers", 85: "Snow showers", 86: "Snow showers", 95: "Thunderstorm", 96: "Thunderstorm, hail", 99: "Thunderstorm, hail" };
+function renderWeather() {
+  const w = S.weather; if (!w) return;
+  const c = w.current, d = w.daily;
+  $("#wx .temp").innerHTML = `${Math.round(c.temperature_2m)}<span>°C</span>`;
+  $("#wx .cond").textContent = `${WMO[c.weather_code] || "—"} · feels ${Math.round(c.apparent_temperature)}° · ${Math.round(d.temperature_2m_min[0])}° / ${Math.round(d.temperature_2m_max[0])}° · wind ${Math.round(c.wind_speed_10m)} km/h`;
+  const hm = (s) => s.slice(11, 16);
+  $("#wx .sun").innerHTML = `${CFG.home.name} &nbsp; sunrise <b>${hm(d.sunrise[0])}</b> &nbsp; sunset <b>${hm(d.sunset[0])}</b>`;
+}
+
+// Wikipedia edits by language → home region of that language. Texture, not data.
+const WIKI = {
+  en: [[39.8, -98.6], [54, -2], [-25, 134], [56, -106], [20.6, 79]], de: [[51.2, 10.5]], fr: [[46.2, 2.2], [45.5, -73.6]], es: [[40.5, -3.7], [23.6, -102.6], [-38, -63]],
+  ja: [[36.2, 138.3]], zh: [[35.9, 104.2], [23.7, 121]], ru: [[61.5, 105.3]], it: [[41.9, 12.6]], pt: [[-14.2, -51.9], [39.4, -8.2]], ar: [[26.8, 30.8], [23.9, 45.1]],
+  ko: [[35.9, 127.8]], nl: [[52.1, 5.3]], pl: [[51.9, 19.1]], sv: [[60.1, 18.6]], tr: [[38.9, 35.2]], fa: [[32.4, 53.7]], uk: [[48.4, 31.2]], he: [[31, 34.9]],
+  id: [[-0.8, 113.9]], vi: [[14.1, 108.3]], hi: [[20.6, 79]], cs: [[49.8, 15.5]], fi: [[61.9, 25.7]], no: [[60.5, 8.5]], hu: [[47.2, 19.5]], th: [[15.9, 100.9]],
+};
+let lastFlick = 0;
+function startWikiStream() {
+  if (!CFG.wikiStream || !window.EventSource) return;
+  try {
+    const es = new EventSource("https://stream.wikimedia.org/v2/stream/recentchange");
+    es.onmessage = (ev) => {
+      const now = performance.now(); if (now - lastFlick < 180) return;
+      let d; try { d = JSON.parse(ev.data); } catch { return; }
+      if (d.type !== "edit" || !d.wiki || !d.wiki.endsWith("wiki")) return;
+      const lang = d.wiki.slice(0, -4), spots = WIKI[lang]; if (!spots) return;
+      const s = spots[Math.floor(Math.random() * spots.length)]; flick(s[0], s[1]); lastFlick = now;
+    };
+    es.onerror = () => { es.close(); setTimeout(startWikiStream, 60000); };
+  } catch (e) { }
+}
+
+// =====================================================================
+//  PIPELINE DATA (data.json from GitHub Actions)
+// =====================================================================
+async function loadData() {
+  try {
+    const d = await fetchJSON(CFG.dataUrl + "?t=" + Date.now());
+    S.data = d;
+    if (d.news && d.news.items) { S.headlines = d.news.items; S.usedIdx.clear(); }
+    if (d.geo_belt && CFG.geoBelt) renderBelt(d.geo_belt.sats);
+    buildTicker();
+    renderFoot();
+  } catch (e) { console.warn("data.json", e); }
+}
+// GEO belt drawn compressed (1.3 R instead of 6.6 R) so it reads on screen.
+let beltPts = null;
+function renderBelt(sats) {
+  if (beltPts) { layerBelt.remove(beltPts); beltPts.geometry.dispose(); beltPts.material.dispose(); }
+  const pos = new Float32Array(sats.length * 3), col = new Float32Array(sats.length * 3);
+  sats.forEach((s, i) => {
+    const p = latLonToVec(s.lat, s.lon, 1.30); pos.set([p.x, p.y, p.z], i * 3);
+    const c = s.t === "wgs" ? [0.94, 0.70, 0.35] : s.t === "mil" ? [0.75, 0.55, 0.35] : [0.30, 0.38, 0.52]; col.set(c, i * 3);
+  });
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  beltPts = new THREE.Points(g, new THREE.PointsMaterial({ size: 2.2, vertexColors: true, sizeAttenuation: false, transparent: true, opacity: 0.8, depthWrite: false }));
+  layerBelt.add(beltPts);
+}
+
+// =====================================================================
+//  STATS COLUMN
+// =====================================================================
+function popNow() {
+  const w = S.data && S.data.world; if (!w) return null;
+  const yrs = (Date.now() - new Date(w.population.base_iso).getTime()) / (365.25 * 86400000);
+  return w.population.base + yrs * w.population.per_year;
+}
+function secsToday() { const d = new Date(); return d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds() + d.getUTCMilliseconds() / 1000; }
+function stat(cls, v, unit, label) {
+  return `<div class="stat ${cls}"><div class="v">${v}${unit ? `<span>${unit}</span>` : ""}</div><div class="l">${label}</div></div>`;
+}
+function renderStats() {
+  const w = S.data && S.data.world, m = S.data && S.data.markets, out = [];
+  const pop = popNow();
+  if (pop) out.push(stat("est", fmt(pop), "", "people on Earth <em>· est.</em>"));
+  if (w) out.push(stat("est", fmt(secsToday() * w.births_per_sec), "", `born today <em>· ${fmt(secsToday() * w.deaths_per_sec)} died · est.</em>`));
+  if (w) out.push(stat("est", fmt(secsToday() * w.co2_tonnes_per_sec / 1000), "kt", "CO₂ emitted today <em>· est.</em>"));
+  if (S.iss) out.push(stat("live", fmt(S.iss.altitude), "km", `ISS altitude <em>· ${fmt(S.iss.velocity)} km/h · ${S.iss.visibility}</em>`));
+  if (S.quakes.length) { const big = S.quakes.reduce((a, b) => (b.mag > a.mag ? b : a)); out.push(stat("live", S.quakes.length, "", `earthquakes M2.5+ in 24 h <em>· largest M${big.mag.toFixed(1)} ${big.place}</em>`)); }
+  if (S.kp != null) { const k = S.kp; out.push(stat("live", k.toFixed(1), "Kp", `geomagnetic index${k >= 5 ? " · storm" : k >= 4 ? " · active" : ""}${S.wind ? ` <em>· solar wind ${Math.round(S.wind.speed)} km/s</em>` : ""}`)); }
+  if (m && m.btc_usd) out.push(stat(m.btc_24h >= 0 ? "up" : "down", "$" + fmt(m.btc_usd), "", `bitcoin <em>· ${m.btc_24h >= 0 ? "+" : ""}${m.btc_24h}% 24 h${m.usd_cad ? ` · USD ${m.usd_cad.toFixed(3)} CAD` : ""}</em>`));
+  $("#stats").innerHTML = out.join("");
+}
+
+// =====================================================================
+//  HEADLINES
+// =====================================================================
+const svg = $("#lines"), cards = $("#cards");
+function pickHeadline() {
+  if (!S.headlines.length || S.cards.length >= CFG.maxHeadlines) return;
+  const camDir = new THREE.Vector3();
+  const facing = (h) => { const p = latLonToVec(h.lat, h.lon).applyMatrix4(globe.matrixWorld); camDir.copy(camera.position).sub(p).normalize(); return p.normalize().dot(camDir); };
+  // candidates: unused, on the near hemisphere, not too close to an existing card
+  let best = null, bestScore = -1;
+  S.headlines.forEach((h, i) => {
+    if (S.usedIdx.has(i)) return;
+    const f = facing(h); if (f < 0.45) return;
+    const tooClose = S.cards.some(c => Math.abs(c.h.lat - h.lat) < 14 && Math.abs(c.h.lon - h.lon) < 18);
+    if (tooClose) return;
+    const score = f + (h.kind === "rss" ? 0.3 : 0) + Math.random() * 0.4;
+    if (score > bestScore) { bestScore = score; best = i; }
+  });
+  if (best == null) { if (S.usedIdx.size >= S.headlines.length * 0.8) S.usedIdx.clear(); return; }
+  S.usedIdx.add(best);
+  const h = S.headlines[best];
+  const el = document.createElement("div"); el.className = "headline";
+  el.innerHTML = `<div class="h">${esc(h.title)}</div><div class="m">${esc(h.source)}${h.place ? ` <span>· ${esc(h.place)}</span>` : ""}</div>`;
+  cards.appendChild(el);
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  line.setAttribute("fill", "none"); line.setAttribute("stroke", "rgba(240,180,90,0.55)"); line.setAttribute("stroke-width", "1"); svg.appendChild(line);
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  dot.setAttribute("r", "3"); dot.setAttribute("fill", "#f0b45a"); svg.appendChild(dot);
+  const c = { h, el, line, dot, born: performance.now(), side: h.lon > 0 ? "right" : "left" };
+  S.cards.push(c);
+  requestAnimationFrame(() => el.classList.add("on"));
+  setTimeout(() => { el.classList.remove("on"); line.style.opacity = 0; dot.style.opacity = 0; line.style.transition = dot.style.transition = "opacity 900ms"; }, CFG.headlineHoldSec * 1000);
+  setTimeout(() => { el.remove(); line.remove(); dot.remove(); S.cards = S.cards.filter(x => x !== c); }, CFG.headlineHoldSec * 1000 + 1000);
+}
+const tmpV = new THREE.Vector3();
+function placeCards() {
+  const W = innerWidth, H = innerHeight;
+  for (const c of S.cards) {
+    tmpV.copy(latLonToVec(c.h.lat, c.h.lon, 1.002)).applyMatrix4(globe.matrixWorld);
+    const n = tmpV.clone().normalize(), toCam = camera.position.clone().sub(tmpV).normalize();
+    const f = n.dot(toCam);
+    tmpV.project(camera);
+    const ax = canvasLeft + (tmpV.x + 1) / 2 * size, ay = canvasTop + (1 - tmpV.y) / 2 * size;
+    const hide = f < 0.08; c.el.style.visibility = c.line.style.visibility = c.dot.style.visibility = hide ? "hidden" : "visible";
+    if (hide) continue;
+    // card sits off the globe, to the right when anchor is on right half of the disc
+    const cx = W * 0.64, right = ax > cx;
+    const cw = c.el.offsetWidth, gap = 0.035 * W;
+    let x = right ? Math.min(ax + gap, W - cw - 0.04 * W) : Math.max(ax - gap - cw, 0.30 * W);
+    let y = clamp(ay, H * 0.24, H * 0.78);
+    c.el.classList.toggle("left", !right);
+    c.el.style.left = x + "px"; c.el.style.top = y + "px";
+    const ex = right ? x - 8 : x + cw + 8;
+    c.line.setAttribute("d", `M${ax},${ay} L${right ? ax + gap * 0.45 : ax - gap * 0.45},${y} L${ex},${y}`);
+    c.dot.setAttribute("cx", ax); c.dot.setAttribute("cy", ay);
+  }
+}
+
+// =====================================================================
+//  TICKER / FOOT / CLOCK / QR
+// =====================================================================
+function buildTicker() {
+  const items = [];
+  if (S.data && S.data.onthisday) for (const e of S.data.onthisday.events) items.push(`<b>${e.year}</b> ${esc(e.text)}`);
+  if (S.data && S.data.news) for (const n of S.data.news.items.filter(n => n.kind === "rss").slice(0, 20)) items.push(`<b>${esc(n.source)}</b> ${esc(n.title)}`);
+  S.tickerItems = items.sort(() => Math.random() - 0.5);
+}
+let tickerRow = null;
+function nextTicker() {
+  if (!S.tickerItems.length) return;
+  const html = S.tickerItems[S.tickerI++ % S.tickerItems.length];
+  const row = document.createElement("div"); row.className = "row"; row.innerHTML = html;
+  const t = $("#ticker"); t.appendChild(row);
+  if (tickerRow) { const old = tickerRow; old.classList.remove("on"); setTimeout(() => old.remove(), 900); }
+  tickerRow = row; requestAnimationFrame(() => row.classList.add("on"));
+}
+function renderFoot() {
+  const d = S.data; if (!d) { $("#foot").textContent = "waiting for data"; return; }
+  const parts = [`news ${agoMin(d.news ? d.news.fetched_at : d.meta.built_at)} min`];
+  if (d.geo_belt) parts.push(`${d.geo_belt.count} satellites in the GEO belt · not to scale`);
+  if (d.meta.failed && d.meta.failed.length) parts.push(`stale: ${d.meta.failed.join(", ")}`);
+  $("#foot").innerHTML = parts.map(p => `<span>${p}</span>`).join("");
+}
+function renderClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString("en-CA", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: CFG.home.tz });
+  const utc = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
+  $("#clock .t").innerHTML = `${t}<small>${utc}Z</small>`;
+  $("#clock .d").textContent = now.toLocaleDateString("en-CA", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: CFG.home.tz });
+}
+function renderQR() {
+  const url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&color=000000&bgcolor=ffffff&data=" + encodeURIComponent(CFG.remoteUrl);
+  $("#qr").innerHTML = `<div class="cap">scan to<br>take the controls</div><img alt="" src="${url}">`;
+}
+
+// =====================================================================
+//  LOOP
+// =====================================================================
+const sunVec = new THREE.Vector3(), worldQ = new THREE.Quaternion();
+let lastFrame = 0, lastSun = 0, lastStats = 0;
+const frameMs = 1000 / CFG.fpsCap;
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (document.hidden || now - lastFrame < frameMs) return;
+  lastFrame = now;
+  globe.rotation.y = (now / 1000 / CFG.rotationPeriodSec) * 2 * Math.PI;
+  tilt.updateMatrixWorld(true);
+  if (now - lastSun > 200) { const s = subsolar(new Date()); sunVec.copy(latLonToVec(s.lat, s.lon)); lastSun = now; }
+  earthMat.uniforms.sunDir.value.copy(sunVec).applyQuaternion(globe.getWorldQuaternion(worldQ));
+  // flicker decay
+  for (const m of flickPool) if (m.visible) { const a = 1 - (now - m.userData.t) / 1400; if (a <= 0) m.visible = false; else m.material.opacity = a * 0.9; }
+  renderer.render(scene, camera);
+  placeCards();
+  if (now - lastStats > 1000) { renderStats(); lastStats = now; }
+}
+
+// =====================================================================
+//  BOOT
+// =====================================================================
+renderClock(); setInterval(renderClock, 1000);
+renderQR();
+loadData(); setInterval(loadData, CFG.dataEveryMin * 60000);
+pollWeather(); setInterval(pollWeather, 15 * 60000);
+pollISS(); setInterval(pollISS, 10000);
+pollQuakes(); setInterval(pollQuakes, 5 * 60000);
+pollSpaceWeather(); setInterval(pollSpaceWeather, 10 * 60000);
+setTimeout(() => { nextTicker(); setInterval(nextTicker, CFG.tickerEverySec * 1000); }, 4000);
+setTimeout(() => { pickHeadline(); setInterval(pickHeadline, CFG.headlineEverySec * 1000); }, 6000);
+setInterval(renderFoot, 60000);
+setTimeout(() => location.reload(), CFG.reloadEveryMin * 60000);
+startWikiStream();
+requestAnimationFrame(frame);
+</script>
 </body>
 </html>
