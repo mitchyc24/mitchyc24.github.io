@@ -8,15 +8,28 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
+  --bg: #000;
   --ink: #e9e5dc;
   --ink-2: #8f8c84;
   --ink-3: #4b4a45;
   --amber: #f0b45a;
   --ice: #9fd3ff;
   --rose: #ff7a6b;
+  --up: #9fe0b0;
+}
+html.light {
+  --bg: #f1efe9;
+  --ink: #1d1c1a;
+  --ink-2: #6b6964;
+  --ink-3: #a9a69f;
+  --amber: #b8791f;
+  --ice: #1f6fb2;
+  --rose: #c8442f;
+  --up: #2f8a4a;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; }
+html, body { width: 100%; height: 100%; background: var(--bg); overflow: hidden; cursor: none; transition: background 25s linear; }
+#drift * { transition: color 25s linear; }
 body {
   font-family: "IBM Plex Sans", system-ui, sans-serif;
   font-weight: 300;
@@ -43,15 +56,15 @@ body {
 #wx .sun b { color: var(--ink-2); font-weight: 400; }
 
 /* ---------- stats column ---------- */
-#stats { position: absolute; left: 4vw; top: 24vh; width: 24vw; }
-.stat { margin-bottom: 3.6vh; line-height: 1.05; }
-.stat .v { font-size: 4.4vh; font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; }
+#stats { position: absolute; left: 4vw; top: 23vh; width: 25vw; max-height: 64vh; overflow: hidden; }
+.stat { margin-bottom: 2.7vh; line-height: 1.05; }
+.stat .v { font-size: 3.9vh; font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; }
 .stat .v span { font-size: 2vh; color: var(--ink-2); margin-left: 0.5vh; letter-spacing: 0; }
-.stat .l { font-size: 1.75vh; color: var(--ink-2); margin-top: 0.9vh; }
+.stat .l { font-size: 1.7vh; color: var(--ink-2); margin-top: 0.8vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stat .l em { font-style: normal; color: var(--ink-3); }
 .stat.live .v { color: var(--ice); }
 .stat.est .v { color: var(--ink); }
-.stat.up .v { color: #9fe0b0; } .stat.down .v { color: var(--rose); }
+.stat.up .v { color: var(--up); } .stat.down .v { color: var(--rose); }
 
 /* ---------- headlines ---------- */
 .headline {
@@ -63,6 +76,7 @@ body {
 .headline.on { opacity: 1; }
 .headline .h { font-size: 2vh; font-weight: 400; line-height: 1.32; color: var(--ink); }
 .headline .m { font-size: 1.5vh; color: var(--amber); margin-top: 0.7vh; }
+.headline .h, .headline .m { transition: opacity 900ms ease, color 25s linear; }
 .headline .m span { color: var(--ink-3); }
 .headline.left { text-align: right; }
 
@@ -76,6 +90,7 @@ body {
 #foot span { margin-right: 2vw; }
 #qr { position: absolute; right: 4vw; bottom: 2.4vh; display: flex; align-items: flex-end; gap: 1vw; opacity: 0.55; }
 #qr img { width: 8.5vh; height: 8.5vh; filter: invert(1) brightness(0.9); mix-blend-mode: screen; }
+html.light #qr img { filter: none; mix-blend-mode: multiply; }
 #qr .cap { font-size: 1.4vh; color: var(--ink-3); line-height: 1.3; text-align: right; }
 
 /* burn-in guard: the whole overlay drifts by a few px on a long cycle */
@@ -119,6 +134,8 @@ const CFG = {
   dataEveryMin: 15,
   wikiStream: true,
   geoBelt: true,
+  autoTheme: true,             // light during the day, dark from dusk to dawn (home sunrise/sunset)
+  twilightMin: 35,             // switch this many minutes after sunrise / before sunset
 };
 const DEV = /[?&]dev/.test(location.search);
 
@@ -309,12 +326,17 @@ async function pollQuakes() {
 }
 async function pollSpaceWeather() {
   try {
-    const k = await fetchJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
-    const last = k[k.length - 1]; S.kp = parseFloat(last[1]);
-  } catch (e) { }
+    const k = await fetchJSON("https://services.swpc.noaa.gov/json/planetary_k_index_1m.json");
+    for (let i = k.length - 1; i >= 0; i--) { const v = parseFloat(k[i].kp_index ?? k[i].estimated_kp); if (Number.isFinite(v)) { S.kp = v; break; } }
+  } catch (e) {
+    try {
+      const k = await fetchJSON("https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json");
+      for (let i = k.length - 1; i > 0; i--) { const v = parseFloat(k[i][1]); if (Number.isFinite(v)) { S.kp = v; break; } }
+    } catch (e2) { }
+  }
   try {
     const w = await fetchJSON("https://services.swpc.noaa.gov/products/solar-wind/plasma-5-minute.json");
-    for (let i = w.length - 1; i > 0; i--) { if (w[i][2]) { S.wind = { speed: parseFloat(w[i][2]), density: parseFloat(w[i][1]) }; break; } }
+    for (let i = w.length - 1; i > 0; i--) { const sp = parseFloat(w[i][2]); if (Number.isFinite(sp)) { S.wind = { speed: sp, density: parseFloat(w[i][1]) }; break; } }
   } catch (e) { }
 }
 async function pollWeather() {
@@ -323,7 +345,7 @@ async function pollWeather() {
       `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset` +
       `&timezone=${encodeURIComponent(CFG.home.tz)}&forecast_days=1`;
     S.weather = await fetchJSON(u);
-    renderWeather();
+    renderWeather(); updateTheme();
   } catch (e) { }
 }
 const WMO = { 0: "Clear", 1: "Mostly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
@@ -408,8 +430,8 @@ function renderStats() {
   if (w) out.push(stat("est", fmt(secsToday() * w.co2_tonnes_per_sec / 1000), "kt", "CO₂ emitted today <em>· est.</em>"));
   if (S.iss) out.push(stat("live", fmt(S.iss.altitude), "km", `ISS altitude <em>· ${fmt(S.iss.velocity)} km/h · ${S.iss.visibility}</em>`));
   if (S.quakes.length) { const big = S.quakes.reduce((a, b) => (b.mag > a.mag ? b : a)); out.push(stat("live", S.quakes.length, "", `earthquakes M2.5+ in 24 h <em>· largest M${big.mag.toFixed(1)} ${big.place}</em>`)); }
-  if (S.kp != null) { const k = S.kp; out.push(stat("live", k.toFixed(1), "Kp", `geomagnetic index${k >= 5 ? " · storm" : k >= 4 ? " · active" : ""}${S.wind ? ` <em>· solar wind ${Math.round(S.wind.speed)} km/s</em>` : ""}`)); }
-  if (m && m.btc_usd) out.push(stat(m.btc_24h >= 0 ? "up" : "down", "$" + fmt(m.btc_usd), "", `bitcoin <em>· ${m.btc_24h >= 0 ? "+" : ""}${m.btc_24h}% 24 h${m.usd_cad ? ` · USD ${m.usd_cad.toFixed(3)} CAD` : ""}</em>`));
+  if (Number.isFinite(S.kp)) { const k = S.kp; out.push(stat("live", k.toFixed(1), "Kp", `geomagnetic index${k >= 5 ? " · storm" : k >= 4 ? " · active" : ""}${S.wind ? ` <em>· solar wind ${Math.round(S.wind.speed)} km/s</em>` : ""}`)); }
+  if (m && m.btc_cad) out.push(stat(m.btc_24h >= 0 ? "up" : "down", "$" + fmt(m.btc_cad), "CAD", `bitcoin <em>· ${m.btc_24h >= 0 ? "+" : ""}${m.btc_24h}% 24 h${m.usd_cad ? ` · USD ${m.usd_cad.toFixed(3)} CAD` : ""}</em>`));
   $("#stats").innerHTML = out.join("");
 }
 
@@ -438,9 +460,9 @@ function pickHeadline() {
   el.innerHTML = `<div class="h">${esc(h.title)}</div><div class="m">${esc(h.source)}${h.place ? ` <span>· ${esc(h.place)}</span>` : ""}</div>`;
   cards.appendChild(el);
   const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  line.setAttribute("fill", "none"); line.setAttribute("stroke", "rgba(240,180,90,0.55)"); line.setAttribute("stroke-width", "1"); svg.appendChild(line);
+  line.setAttribute("fill", "none"); line.style.stroke = "var(--amber)"; line.style.opacity = 0.6; line.setAttribute("stroke-width", "1"); svg.appendChild(line);
   const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  dot.setAttribute("r", "3"); dot.setAttribute("fill", "#f0b45a"); svg.appendChild(dot);
+  dot.setAttribute("r", "3"); dot.style.fill = "var(--amber)"; svg.appendChild(dot);
   const c = { h, el, line, dot, born: performance.now(), side: h.lon > 0 ? "right" : "left" };
   S.cards.push(c);
   requestAnimationFrame(() => el.classList.add("on"));
@@ -449,25 +471,44 @@ function pickHeadline() {
 }
 const tmpV = new THREE.Vector3();
 function placeCards() {
-  const W = innerWidth, H = innerHeight;
+  const W = innerWidth, H = innerHeight, cx = W * 0.64, gap = 0.035 * W;
+  const yMin = H * 0.22, yMax = H * 0.80, pad = H * 0.025;
+  const sides = { left: [], right: [] };
   for (const c of S.cards) {
     tmpV.copy(latLonToVec(c.h.lat, c.h.lon, 1.002)).applyMatrix4(globe.matrixWorld);
     const n = tmpV.clone().normalize(), toCam = camera.position.clone().sub(tmpV).normalize();
     const f = n.dot(toCam);
     tmpV.project(camera);
-    const ax = canvasLeft + (tmpV.x + 1) / 2 * size, ay = canvasTop + (1 - tmpV.y) / 2 * size;
-    const hide = f < 0.08; c.el.style.visibility = c.line.style.visibility = c.dot.style.visibility = hide ? "hidden" : "visible";
-    if (hide) continue;
-    // card sits off the globe, to the right when anchor is on right half of the disc
-    const cx = W * 0.64, right = ax > cx;
-    const cw = c.el.offsetWidth, gap = 0.035 * W;
-    let x = right ? Math.min(ax + gap, W - cw - 0.04 * W) : Math.max(ax - gap - cw, 0.30 * W);
-    let y = clamp(ay, H * 0.24, H * 0.78);
-    c.el.classList.toggle("left", !right);
-    c.el.style.left = x + "px"; c.el.style.top = y + "px";
-    const ex = right ? x - 8 : x + cw + 8;
-    c.line.setAttribute("d", `M${ax},${ay} L${right ? ax + gap * 0.45 : ax - gap * 0.45},${y} L${ex},${y}`);
-    c.dot.setAttribute("cx", ax); c.dot.setAttribute("cy", ay);
+    c.ax = canvasLeft + (tmpV.x + 1) / 2 * size; c.ay = canvasTop + (1 - tmpV.y) / 2 * size;
+    c.hide = f < 0.08;
+    c.el.style.visibility = c.line.style.visibility = c.dot.style.visibility = c.hide ? "hidden" : "visible";
+    if (c.hide) continue;
+    // a card keeps its side once chosen, so it doesn't jump as the globe turns
+    if (!c.sideLocked) { c.right = c.ax > cx; c.sideLocked = true; }
+    c.hh = c.el.offsetHeight / 2; c.cw = c.el.offsetWidth;
+    c.y = clamp(c.ay, yMin + c.hh, yMax - c.hh);
+    sides[c.right ? "right" : "left"].push(c);
+  }
+  // 1-D separation per side: push overlapping cards apart, then pull back inside the band
+  for (const list of [sides.left, sides.right]) {
+    list.sort((a, b) => a.ay - b.ay);
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1], b = list[i], need = a.hh + b.hh + pad;
+      if (b.y - a.y < need) b.y = a.y + need;
+    }
+    for (let i = list.length - 1; i >= 0; i--) {
+      const b = list[i];
+      if (b.y + b.hh > yMax) b.y = yMax - b.hh;
+      if (i > 0) { const a = list[i - 1], need = a.hh + b.hh + pad; if (b.y - a.y < need) a.y = b.y - need; }
+    }
+    for (const c of list) {
+      const x = c.right ? Math.min(c.ax + gap, W - c.cw - 0.04 * W) : Math.max(c.ax - gap - c.cw, 0.31 * W);
+      c.el.classList.toggle("left", !c.right);
+      c.el.style.left = x + "px"; c.el.style.top = c.y + "px";
+      const ex = c.right ? x - 8 : x + c.cw + 8;
+      c.line.setAttribute("d", `M${c.ax},${c.ay} L${c.right ? c.ax + gap * 0.45 : c.ax - gap * 0.45},${c.y} L${ex},${c.y}`);
+      c.dot.setAttribute("cx", c.ax); c.dot.setAttribute("cy", c.ay);
+    }
   }
 }
 
@@ -509,6 +550,25 @@ function renderQR() {
 }
 
 // =====================================================================
+//  THEME
+// =====================================================================
+const forcedTheme = (location.search.match(/[?&]theme=(light|dark)/) || [])[1];
+function applyTheme(light) {
+  document.documentElement.classList.toggle("light", light);
+  atmo.visible = !light;                       // additive glow has nothing to add on a light ground
+  renderer.setClearColor(0x000000, 0);
+}
+function updateTheme() {
+  if (forcedTheme) return applyTheme(forcedTheme === "light");
+  if (!CFG.autoTheme || !S.weather) return;
+  const d = S.weather.daily, now = new Date();
+  const local = now.toLocaleString("sv-SE", { timeZone: CFG.home.tz }).replace(" ", "T");   // YYYY-MM-DDTHH:MM:SS in home tz
+  const mins = (t) => parseInt(t.slice(11, 13)) * 60 + parseInt(t.slice(14, 16));
+  const m = mins(local), rise = mins(d.sunrise[0]) + CFG.twilightMin, set = mins(d.sunset[0]) - CFG.twilightMin;
+  applyTheme(m > rise && m < set);
+}
+
+// =====================================================================
 //  LOOP
 // =====================================================================
 const sunVec = new THREE.Vector3(), worldQ = new THREE.Quaternion();
@@ -533,6 +593,7 @@ function frame(now) {
 //  BOOT
 // =====================================================================
 renderClock(); setInterval(renderClock, 1000);
+updateTheme(); setInterval(updateTheme, 60000);
 renderQR();
 loadData(); setInterval(loadData, CFG.dataEveryMin * 60000);
 pollWeather(); setInterval(pollWeather, 15 * 60000);
