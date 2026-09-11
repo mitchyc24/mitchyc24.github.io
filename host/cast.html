@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cast the Observatory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;background:#000;color:#e9e5dc;font-family:system-ui,sans-serif;font-weight:300;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}
+h1{font-weight:300;font-size:26px;margin:0 0 20px}
+p{color:#8f8c84;max-width:26em;margin:16px auto 0;line-height:1.5;font-size:15px}
+google-cast-launcher{width:64px;height:64px;display:inline-block;--connected-color:#f0b45a;--disconnected-color:#e9e5dc}
+#status{color:#f0b45a;min-height:1.4em}
+</style>
+</head>
+<body>
+<div>
+  <h1>Cast the Observatory to the TV</h1>
+  <google-cast-launcher></google-cast-launcher>
+  <p id="status"></p>
+  <p>Tap the icon, pick the Chromecast, then close this page. The dashboard keeps running on the TV until you stop it from any Cast menu.</p>
+</div>
+
+<script>
+// Paste your Application ID from the Google Cast SDK Developer Console here.
+const APP_ID = "PASTE_YOUR_APP_ID";
+
+window.__onGCastApiAvailable = function (ok) {
+  if (!ok) { document.getElementById("status").textContent = "Cast isn't available in this browser. Use Chrome on desktop or Android."; return; }
+  const ctx = cast.framework.CastContext.getInstance();
+  ctx.setOptions({ receiverApplicationId: APP_ID, autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED });
+  ctx.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, (e) => {
+    const s = document.getElementById("status");
+    const st = cast.framework.SessionState;
+    s.textContent = e.sessionState === st.SESSION_STARTED || e.sessionState === st.SESSION_RESUMED
+      ? "Casting to " + ctx.getCurrentSession().getCastDevice().friendlyName
+      : e.sessionState === st.SESSION_ENDED ? "Stopped" : "";
+  });
+};
+</script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</body>
+</html>
