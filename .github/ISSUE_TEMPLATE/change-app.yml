@@ -1,0 +1,33 @@
+name: Change an existing app
+description: A feature, fix or tweak for an app that is already on the hub.
+title: "[<app id>]: "
+labels: ["app-change"]
+body:
+  - type: input
+    id: app
+    attributes:
+      label: Which app?
+      description: Its id from apps.json, which is also its folder name (for example stride-roulette).
+      placeholder: stride-roulette
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - Something is broken
+        - New feature
+        - Look and feel
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: change
+    attributes:
+      label: What should change?
+      description: For a bug, say what you did, what happened, and what you expected. Device and browser help.
+    validations:
+      required: true

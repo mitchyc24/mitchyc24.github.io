@@ -1,0 +1,42 @@
+{
+  "hub": {
+    "repo": "mitchyc24/mitchyc24.github.io",
+    "branch": "main"
+  },
+  "apps": [
+    {
+      "id": "stride-roulette",
+      "name": "Stride Roulette",
+      "tagline": "Running music made to your cadence. It counts your steps and generates tracks at your pace.",
+      "path": "apps/stride-roulette/",
+      "icon": "🏃",
+      "color": "#D7262E",
+      "category": "Fitness",
+      "tags": ["running", "music", "cadence"],
+      "platforms": ["phone"],
+      "status": "beta",
+      "added": "2026-09-24",
+      "updated": "2026-09-24",
+      "aliases": ["stride-roulette.html"]
+    },
+    {
+      "id": "observatory",
+      "name": "Observatory",
+      "tagline": "Ambient world dashboard for the TV: a live globe with news, quakes, the ISS, space weather and markets.",
+      "path": "host/",
+      "entry": "cast.html",
+      "action": "Cast to TV",
+      "icon": "🌍",
+      "color": "#F0B45A",
+      "category": "Dashboards",
+      "tags": ["chromecast", "globe", "news", "live data"],
+      "platforms": ["tv", "desktop"],
+      "status": "beta",
+      "added": "2026-09-11",
+      "updated": "2026-09-11",
+      "links": [
+        { "label": "Preview", "href": "host/?dev" }
+      ]
+    }
+  ]
+}

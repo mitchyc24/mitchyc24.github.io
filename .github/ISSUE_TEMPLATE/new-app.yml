@@ -1,0 +1,84 @@
+name: New app request
+description: Ask for a new app to be built and added to the miApps hub.
+title: "[New app]: "
+labels: ["app-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the app you want. Each app is plain HTML, CSS and JavaScript in its own folder, `apps/<id>/`,
+        and gets a card on the hub at https://mitchyc24.github.io/. Whoever builds it (you, or a coding agent)
+        follows [AGENTS.md](https://github.com/mitchyc24/mitchyc24.github.io/blob/main/AGENTS.md).
+
+  - type: input
+    id: name
+    attributes:
+      label: App name
+      placeholder: Tide Clock
+    validations:
+      required: true
+
+  - type: input
+    id: pitch
+    attributes:
+      label: One-line pitch
+      description: This becomes the tagline on the hub card.
+      placeholder: Shows when the next high and low tide is at my local beach.
+    validations:
+      required: true
+
+  - type: textarea
+    id: features
+    attributes:
+      label: What should it do?
+      description: The screens, the main actions, and what "done" looks like. Bullet points are fine.
+      placeholder: |
+        - Opens straight to a clock face with the next high/low tide
+        - Pick a station once; remember it on this device
+        - Works offline after the first load
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: Where will you use it?
+      options:
+        - label: Phone
+        - label: Tablet
+        - label: Desktop
+        - label: TV / Chromecast
+
+  - type: dropdown
+    id: data
+    attributes:
+      label: Where does its data live?
+      options:
+        - Nothing to save
+        - Saved in this browser (localStorage / IndexedDB)
+        - Files I open and save from my device
+        - Fetched live from public APIs
+        - Built on a schedule by GitHub Actions
+        - Not sure, suggest something
+    validations:
+      required: true
+
+  - type: input
+    id: category
+    attributes:
+      label: Category
+      description: Groups apps on the hub. Reuse an existing one when it fits (Fitness, Dashboards, ...).
+      placeholder: Tools
+
+  - type: textarea
+    id: look
+    attributes:
+      label: Look and feel
+      description: Optional. Colours, mood, an emoji for the icon, apps it should feel like.
+      placeholder: Calm, dark navy, big numbers. Icon 🌊.
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Optional. Links, APIs, sketches, constraints.

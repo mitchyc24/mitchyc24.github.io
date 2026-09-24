@@ -1,4 +1,4 @@
-name: Dashboard data + Pages deploy
+name: Deploy site (hub, apps, Observatory data)
 
 on:
   schedule:

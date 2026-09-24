@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>miApps</title>
+<meta name="description" content="Small web apps by Mitchell, all in one place.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="hub/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="hub/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="hub/hub.css">
+<script src="hub/hub.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1 class="wordmark"><span>mi</span>Apps</h1>
+      <p class="lede">Small web apps by Mitchell, all in one place.</p>
+    </div>
+    <a class="btn btn-primary" id="request" href="https://github.com/mitchyc24/mitchyc24.github.io/issues/new?template=new-app.yml">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Request an app
+    </a>
+  </header>
+
+  <div class="tools">
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+      <input id="q" type="search" placeholder="Search apps" autocomplete="off" spellcheck="false" aria-label="Search apps">
+      <kbd aria-hidden="true">/</kbd>
+    </label>
+    <div class="chips" id="chips" role="group" aria-label="Filter by category" hidden></div>
+  </div>
+
+  <section class="recent" id="recent-wrap" aria-labelledby="recent-label" hidden>
+    <h2 class="section-label" id="recent-label">Recently opened</h2>
+    <div class="recent-row" id="recent"></div>
+  </section>
+
+  <main>
+    <p class="status" id="status" role="status"></p>
+    <div class="grid" id="grid" aria-live="polite"></div>
+    <section id="archive-wrap" aria-labelledby="archive-label" hidden>
+      <h2 class="section-label" id="archive-label">Archive</h2>
+      <div class="grid" id="archive"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span id="count"></span>
+    <nav aria-label="About this site">
+      <a href="https://github.com/mitchyc24/mitchyc24.github.io#adding-an-app">How apps get added</a>
+      <a href="apps.json">apps.json</a>
+      <a href="https://github.com/mitchyc24/mitchyc24.github.io">Source</a>
+    </nav>
+  </footer>
+</div>
+</body>
+</html>

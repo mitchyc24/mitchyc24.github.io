@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Not found · miApps</title>
+<meta name="color-scheme" content="light dark">
+<!-- Served by GitHub Pages at any missing path, so every URL here is root-absolute. -->
+<link rel="icon" href="/hub/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/hub/hub.css">
+</head>
+<body>
+<div class="wrap narrow notfound">
+  <p class="wordmark"><a href="/"><span>mi</span>Apps</a></p>
+  <h1 id="title">There’s no app at this address</h1>
+  <p id="msg">Nothing is published at <code id="path"></code>. It may have been renamed or moved.</p>
+  <a class="btn btn-primary" href="/">Browse all apps</a>
+</div>
+<script>
+// Old and moved URLs keep working: apps.json lists them under "aliases", and a
+// first path segment that matches an app id (e.g. /stride-roulette/) is sent there too.
+(async () => {
+  let path = location.pathname;
+  try { path = decodeURIComponent(path); } catch { /* keep it encoded */ }
+  path = path.replace(/^\/+/, "");
+  document.getElementById("path").textContent = "/" + path;
+  const bare = (p) => p.replace(/\/?(index\.html)?$/, "").toLowerCase();
+  try {
+    const res = await fetch("/apps.json", { cache: "no-cache" });
+    const { apps = [] } = await res.json();
+    const want = bare(path);
+    const first = want.split("/")[0];
+    const hit = apps.find((a) => (a.aliases || []).some((x) => bare(x) === want))
+             || apps.find((a) => a.id && a.id.toLowerCase() === first);
+    const target = hit && hit.path && !/^https?:/i.test(hit.path) ? hit.path + (hit.entry || "") : null;
+    if (target && bare(target) !== want) {   // never bounce back to the page that just 404'd
+      document.getElementById("title").textContent = `${hit.name} has moved`;
+      location.replace("/" + target + location.search + location.hash);
+    }
+  } catch { /* registry unreachable: the plain 404 stands */ }
+})();
+</script>
+</body>
+</html>
