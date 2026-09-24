@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+  Starter for a new miApps app. Copy this folder to apps/<id>/ and edit freely.
+  Split into style.css / app.js next to this file whenever it grows; keep URLs relative.
+  The rules every app follows are in AGENTS.md at the repo root.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>New App</title>
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
+<style>
+:root {
+  --bg: #F4F3EF; --surface: #FFFFFF; --ink: #16171A; --muted: #5E6168; --line: #E1DFD8; --accent: #2E55E6;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0E0F11; --surface: #17191C; --ink: #ECEDEF; --muted: #A2A6AD; --line: #262A30; --accent: #7B97FF; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 560px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 40px; }
+.home { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--muted); text-decoration: none; font-size: 14px; }
+.home:hover { color: var(--ink); }
+h1 { margin: 8px 0 4px; font-size: 28px; letter-spacing: -0.02em; }
+p { color: var(--muted); margin: 0 0 20px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; text-align: center; }
+.count { font-size: 56px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+button { min-height: 44px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <!-- ../../ is the hub from apps/<id>/. -->
+  <a class="home" href="../../">&larr; miApps</a>
+  <h1>New App</h1>
+  <p>Replace this with the real thing.</p>
+
+  <div class="panel">
+    <div class="count" id="count">0</div>
+    <button id="bump" type="button">Tap</button>
+  </div>
+</main>
+
+<script>
+// Every app on mitchyc24.github.io shares one origin, so localStorage, IndexedDB
+// and Cache Storage are shared too. Prefix every key with this app's id.
+const APP_ID = "new-app";   // same as the folder name and the id in apps.json
+
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(`${APP_ID}.${key}`); return v == null ? fallback : JSON.parse(v); }
+    catch { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(`${APP_ID}.${key}`, JSON.stringify(value)); } catch { /* private mode or full */ }
+  },
+};
+
+let count = store.get("count", 0);
+const out = document.getElementById("count");
+out.textContent = count;
+document.getElementById("bump").addEventListener("click", () => {
+  out.textContent = ++count;
+  store.set("count", count);
+});
+</script>
+</body>
+</html>

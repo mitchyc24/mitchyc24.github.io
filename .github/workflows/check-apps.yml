@@ -1,0 +1,20 @@
+name: Check app registry
+
+# Catches a broken apps.json (missing folder, bad field, unregistered app) on the
+# PR, before it reaches the hub. Deploys are handled by dashboard-data.yml.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check apps.json against the repo
+        run: python3 .github/scripts/check_apps.py
