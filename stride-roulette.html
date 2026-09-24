@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D7262E">
+<title>Stride Roulette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#E7EAE4; --paper:#F7F8F5; --ink:#16181B; --muted:#5E646B; --line:#D2D6CF;
+  --red:#D7262E; --red-deep:#A81B22; --blue:#1F4FA8; --ok:#1D7A45;
+  --display:"Barlow Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --page:#14171B; --paper:#1E2228; --ink:#F1F2EE; --muted:#9BA2A9; --line:#323840;
+         --red:#F0373F; --red-deep:#C92A31; --blue:#86A9FF; --ok:#5CC98B; }
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:400 16px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+main{max-width:480px;margin:0 auto;padding:12px 16px 40px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px}
+.top h1{font:700 26px/1 var(--display);margin:0;letter-spacing:.01em}
+.icon-btn{width:44px;height:44px;border:0;background:none;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:24px;height:24px}
+
+.alert{background:var(--red-deep);color:#fff;padding:10px 14px;border-radius:4px;margin:0 0 12px;font-weight:500}
+.note{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--blue);padding:10px 14px;margin:0 0 12px;border-radius:4px}
+.note p{margin:0 0 6px}
+.link-btn{background:none;border:0;padding:0;color:var(--blue);font-weight:600;text-decoration:underline;cursor:pointer}
+
+/* The race bib */
+.bib{background:var(--paper);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.bib-band{background:var(--red);color:#fff;display:flex;justify-content:space-between;align-items:baseline;padding:8px 16px;font:700 17px/1.2 var(--display);letter-spacing:.02em}
+.bib-band #runClock{font-variant-numeric:tabular-nums}
+.bib-body{position:relative;padding:14px 16px 14px}
+.pin{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--page);border:2px solid var(--line)}
+.pin.tl{top:10px;left:10px}.pin.tr{top:10px;right:10px}.pin.bl{bottom:10px;left:10px}.pin.br{bottom:10px;right:10px}
+.bib-num{font:800 clamp(128px,44vw,196px)/.82 var(--display);text-align:center;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:6px}
+.bib-num.idle{color:var(--line)}
+.bib-unit{text-align:center;color:var(--muted);font-weight:500;margin-top:6px}
+.stride{display:flex;gap:6px;margin:12px 8px 14px}
+.foot{flex:1;height:7px;border-radius:2px;background:var(--line);transition:background-color .18s ease-out}
+.foot.hit{background:var(--red);transition:none}
+.bib-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0;padding:10px 8px 4px;border-top:1px dashed var(--line)}
+.bib-foot div{min-width:0}
+.bib-foot dt{font-size:13px;color:var(--muted)}
+.bib-foot dd{margin:0;font:700 20px/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Style roulette */
+.reel{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 12px;margin:18px 0 0;padding:0 2px}
+.reel h2{grid-column:1/-1;margin:0;font:600 15px/1.2 var(--body);color:var(--muted)}
+.reel-name{font:700 34px/1.05 var(--display);min-height:1.05em}
+.reel-name.spinning{color:var(--muted)}
+.reel-range{font-size:14px;color:var(--muted)}
+
+/* Player */
+.player{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;margin:18px 0 0;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:6px}
+.cover{width:64px;height:64px;border-radius:3px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px);background-size:cover;background-position:center}
+.track-title{font:700 20px/1.15 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-sub{font-size:14px;color:var(--muted)}
+.progress{height:4px;background:var(--line);border-radius:2px;margin-top:8px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ink)}
+.job-status{grid-column:1/-1;margin:0;font-size:14px;color:var(--muted);min-height:1.45em}
+
+/* Controls */
+.controls{margin-top:16px;display:grid;gap:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{height:64px;border:0;border-radius:4px;background:var(--red);color:#fff;font:700 26px/1 var(--display);letter-spacing:.02em;cursor:pointer}
+.btn-primary.stop{background:var(--ink);color:var(--paper)}
+.btn-secondary{min-height:48px;border:1.5px solid var(--ink);border-radius:4px;background:transparent;font:700 19px/1 var(--display);padding:0 14px;cursor:pointer}
+.btn-secondary.small{min-height:40px;font-size:17px}
+button:disabled{opacity:.4;cursor:default}
+.hint{font-size:14px;color:var(--muted);margin:12px 2px 0}
+
+/* History */
+.history{margin-top:26px}
+.history h2{font:700 22px/1.2 var(--display);margin:0 0 6px}
+.history ol{list-style:none;margin:0;padding:0}
+.history li{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.h-main{min-width:0;display:grid}
+.h-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h-sub{font-size:13px;color:var(--muted)}
+.h-actions{display:flex;gap:12px;flex-shrink:0;align-items:center}
+.h-actions a,.h-actions button{color:var(--blue);font-weight:600;font-size:15px;background:none;border:0;padding:6px 0;cursor:pointer;text-decoration:underline}
+.muted{color:var(--muted);font-size:14px}
+
+/* Settings sheet */
+dialog{border:0;padding:0;width:min(520px,100%);max-height:92vh;margin:auto auto 0;border-radius:10px 10px 0 0;background:var(--paper);color:var(--ink)}
+@media (min-width:600px){dialog{margin:auto;border-radius:10px}}
+dialog::backdrop{background:rgba(10,12,14,.55)}
+.sheet{padding:0 18px calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet-head{position:sticky;top:0;background:var(--paper);display:flex;justify-content:space-between;align-items:center;padding:14px 0 10px;border-bottom:1px solid var(--line);z-index:1}
+.sheet-head h2{font:700 26px/1 var(--display);margin:0}
+.btn-text{background:none;border:0;color:var(--blue);font-weight:600;font-size:16px;padding:8px 4px;cursor:pointer}
+fieldset{border:0;margin:0;padding:16px 0 4px;border-bottom:1px solid var(--line)}
+legend{font:700 20px/1.2 var(--display);padding:0;margin-bottom:6px}
+.field{display:grid;gap:4px;margin:12px 0;font-weight:500}
+.field input[type=text],.field input[type=url],.field input[type=password],.field input[type=number],.field select{width:100%;min-height:44px;padding:8px 10px;border:1.5px solid var(--line);border-radius:4px;background:var(--page)}
+.field input[type=range]{width:100%;accent-color:var(--red)}
+.key-row{display:flex;gap:8px}
+.key-row input{flex:1}
+.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-weight:500}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--red);flex-shrink:0}
+.help{font-size:14px;color:var(--muted);margin:4px 0 10px}
+.help.good{color:var(--ok)}
+.help.bad{color:var(--red)}
+.radio-group{display:grid;gap:2px;margin:6px 0 8px}
+.radio-group .check{margin:6px 0}
+.style-list{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.style-list .check{margin:8px 0}
+.style-list small{display:block;color:var(--muted);font-weight:400}
+
+@media (prefers-reduced-motion:reduce){ .foot{transition:none} }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>Stride Roulette</h1>
+    <button id="openSettings" class="icon-btn" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </header>
+
+  <div id="alert" class="alert" role="alert" hidden></div>
+  <div id="setupNote" class="note" hidden>
+    <p>Add your music API key to generate tracks, or switch on preview mode to test step counting with a metronome.</p>
+    <button class="link-btn" data-open-settings>Open settings</button>
+  </div>
+
+  <section class="bib" aria-label="Your cadence">
+    <div class="bib-band"><span id="runState">Ready</span><span id="runClock">0:00</span></div>
+    <div class="bib-body">
+      <i class="pin tl"></i><i class="pin tr"></i><i class="pin bl"></i><i class="pin br"></i>
+      <div id="cadence" class="bib-num idle">000</div>
+      <div class="bib-unit">steps per minute</div>
+      <div class="stride" aria-hidden="true"><span class="foot" id="footL"></span><span class="foot" id="footR"></span></div>
+      <dl class="bib-foot">
+        <div><dt>Music tempo</dt><dd id="musicBpm">–</dd></div>
+        <div><dt>Beat lands on</dt><dd id="fitMode">–</dd></div>
+        <div><dt>Tempo lock</dt><dd id="lockRate">–</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="reel" aria-live="polite">
+    <h2>Style roulette</h2>
+    <div>
+      <div id="reelName" class="reel-name">Not picked yet</div>
+      <div id="reelRange" class="reel-range">Spin, or start a run and one is picked for your pace.</div>
+    </div>
+    <button id="spinBtn" class="btn-secondary">Spin</button>
+  </section>
+
+  <section class="player" aria-label="Now playing">
+    <div id="cover" class="cover" role="img" aria-label="Track cover"></div>
+    <div style="min-width:0">
+      <div id="trackTitle" class="track-title">No track yet</div>
+      <div id="trackSub" class="track-sub">Start a run and the first track is made for your pace.</div>
+      <div class="progress"><span id="progressFill"></span></div>
+    </div>
+    <p id="jobStatus" class="job-status" aria-live="polite"></p>
+  </section>
+
+  <div class="controls">
+    <button id="runBtn" class="btn-primary">Start run</button>
+    <div class="row">
+      <button id="pauseBtn" class="btn-secondary" disabled>Pause music</button>
+      <button id="skipBtn" class="btn-secondary" disabled>Skip track</button>
+    </div>
+  </div>
+  <p class="hint">Keep the screen on with this page open. Phones stop reporting motion when the screen locks or you switch apps.</p>
+
+  <section class="history">
+    <h2>Tracks</h2>
+    <ol id="historyList"></ol>
+    <p id="historyEmpty" class="muted">Tracks you generate show up here with links to the audio files. The service keeps files for about two weeks.</p>
+  </section>
+</main>
+
+<dialog id="settings" aria-labelledby="settingsTitle">
+  <form method="dialog" class="sheet">
+    <header class="sheet-head"><h2 id="settingsTitle">Settings</h2><button value="close" class="btn-text">Done</button></header>
+
+    <fieldset>
+      <legend>Music service</legend>
+      <label class="field" for="keyInput">API key</label>
+      <div class="key-row">
+        <input id="keyInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key">
+        <button type="button" id="showKey" class="btn-text">Show</button>
+      </div>
+      <p class="help">Create the key in your provider's dashboard. Credits are charged to the card on that account.</p>
+      <label class="check"><input type="checkbox" id="rememberKey"> Remember the key on this phone</label>
+      <p class="help">The key is kept only in this browser and is sent only to the service address below. Anyone using this phone could read it, so clear it before lending the phone.</p>
+      <div class="row">
+        <button type="button" id="checkKey" class="btn-secondary small">Check key</button>
+        <button type="button" id="clearKey" class="btn-secondary small">Clear key</button>
+      </div>
+      <p id="keyResult" class="help" aria-live="polite"></p>
+      <label class="field">Service address<input id="baseUrl" type="url" autocomplete="off" spellcheck="false"></label>
+      <p class="help">Any sunoapi.org-compatible service or your own proxy. The app calls /api/v1/generate and /api/v1/generate/record-info on it.</p>
+      <label class="field">Model
+        <select id="model">
+          <option value="V6">V6 (best quality)</option>
+          <option value="V6_MINI">V6 Mini (faster)</option>
+          <option value="V6_WILD">V6 Wild (more adventurous)</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tracks</legend>
+      <label class="check"><input type="checkbox" id="vocals"> Vocals with auto-written lyrics</label>
+      <label class="field">Track length (instrumental)
+        <select id="trackLen">
+          <option value="120">2 minutes</option>
+          <option value="180">3 minutes</option>
+          <option value="240">4 minutes</option>
+          <option value="300">5 minutes</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="spinEach"> Spin a new style for every request</label>
+      <p class="help">Each request makes two versions. The second plays next, so you pay for one request about every two songs.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tempo</legend>
+      <div class="radio-group" role="radiogroup" aria-label="How music tempo follows your steps">
+        <label class="check"><input type="radio" name="mapping" value="auto"> Automatic: every step or every other step, whichever suits the style</label>
+        <label class="check"><input type="radio" name="mapping" value="match"> A beat on every step</label>
+        <label class="check"><input type="radio" name="mapping" value="half"> A beat on every other step (half-time)</label>
+      </div>
+      <label class="check"><input type="checkbox" id="tempoLock"> Tempo lock: speed playback up or down by up to 8% to stay on your steps</label>
+      <label class="check"><input type="checkbox" id="retune"> Make a new track when my pace changes and stays changed for 30 seconds</label>
+      <label class="field">Pace change that counts
+        <select id="retuneThreshold">
+          <option value="6">6 steps per minute</option>
+          <option value="10">10 steps per minute</option>
+          <option value="15">15 steps per minute</option>
+        </select>
+      </label>
+      <label class="field">Starting cadence (used until your steps are detected)<input id="startCadence" type="number" min="100" max="220" step="1" inputmode="numeric"></label>
+      <label class="field">Step correction
+        <select id="stepMult">
+          <option value="1">Normal</option>
+          <option value="2">Double it: the reading shows about half my real cadence</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Testing</legend>
+      <label class="check"><input type="checkbox" id="preview"> Preview mode: play a metronome instead of calling the service (no credits used)</label>
+      <label class="check"><input type="checkbox" id="simOn"> Simulate steps, for testing at a desk</label>
+      <label class="field">Simulated cadence: <output id="simOut">165</output> steps per minute<input id="simCadence" type="range" min="110" max="210" step="1"></label>
+    </fieldset>
+
+    <fieldset style="border-bottom:0">
+      <legend>Styles in the roulette</legend>
+      <div id="styleList" class="style-list"></div>
+      <p class="help">Ranges are the tempos each style sounds natural at. The roulette only lands on styles that fit your current pace.</p>
+    </fieldset>
+  </form>
+</dialog>
+
+<audio id="deckA" preload="auto" playsinline></audio>
+<audio id="deckB" preload="auto" playsinline></audio>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const store = {
+  get(k, fallback) { try { const v = localStorage.getItem(k); return v == null ? fallback : JSON.parse(v); } catch { return fallback; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const fmtClock = ms => {
+  const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
+};
+
+// The service requires a callback URL; this app polls for results instead, so a placeholder is fine.
+const CALLBACK_URL = 'https://example.com/stride-roulette-callback';
+
+/* ---------- styles for the roulette ---------- */
+const STYLES = [
+  { id: 'dnb',       name: 'Drum & Bass',   min: 164, max: 178, tags: 'drum and bass, rolling breakbeats, deep sub bass, bright pads' },
+  { id: 'jungle',    name: 'Jungle',        min: 160, max: 175, tags: 'jungle, chopped amen breaks, reggae sub bass, rave stabs' },
+  { id: 'footwork',  name: 'Footwork',      min: 155, max: 165, tags: 'footwork, juke, rapid kick patterns, chopped vocal samples' },
+  { id: 'eurobeat',  name: 'Eurobeat',      min: 150, max: 160, tags: 'eurobeat, fast synth arpeggios, driving octave bass' },
+  { id: 'hardstyle', name: 'Hardstyle',     min: 145, max: 160, tags: 'hardstyle, distorted kicks, euphoric leads' },
+  { id: 'poppunk',   name: 'Pop Punk',      min: 150, max: 190, tags: 'pop punk, fast palm-muted guitars, punchy snare' },
+  { id: 'metal',     name: 'Melodic Metal', min: 150, max: 190, tags: 'melodic metal, double kick drums, soaring guitar leads' },
+  { id: 'chiptune',  name: 'Chiptune',      min: 140, max: 180, tags: 'chiptune, 8-bit square leads, fast arpeggios, retro game energy' },
+  { id: 'trap',      name: 'Trap',          min: 135, max: 160, tags: 'trap, hard 808s, rolling hi-hats, dark synths' },
+  { id: 'trance',    name: 'Trance',        min: 132, max: 145, tags: 'uplifting trance, rolling bassline, euphoric supersaw leads' },
+  { id: 'techno',    name: 'Techno',        min: 125, max: 140, tags: 'peak-time techno, pounding kick, hypnotic percussion' },
+  { id: 'bigbeat',   name: 'Big Beat',      min: 125, max: 140, tags: 'big beat, heavy breakbeats, distorted acid bass, 90s' },
+  { id: 'indie',     name: 'Indie Rock',    min: 120, max: 160, tags: 'indie rock, driving guitars, anthemic drums' },
+  { id: 'house',     name: 'House',         min: 118, max: 128, tags: 'house, four-on-the-floor, piano stabs, disco groove' },
+  { id: 'funk',      name: 'Funk',          min: 100, max: 120, tags: 'funk, slap bass, tight horns, syncopated drums' },
+  { id: 'afrobeats', name: 'Afrobeats',     min: 100, max: 118, tags: 'afrobeats, bouncing log drums, bright percussion' },
+  { id: 'synthwave', name: 'Synthwave',     min: 80,  max: 118, tags: 'synthwave, retro 80s synths, gated reverb drums' },
+  { id: 'boombap',   name: 'Boom Bap',      min: 85,  max: 98,  tags: 'boom bap hip hop instrumental, dusty drums, jazzy samples' }
+];
+
+/* ---------- settings ---------- */
+const DEFAULTS = {
+  baseUrl: 'https://api.sunoapi.org', model: 'V6', vocals: false, trackLen: 180, spinEach: true,
+  mapping: 'auto', tempoLock: true, retune: true, retuneThreshold: 10, startCadence: 165, stepMult: 1,
+  preview: false, simOn: false, simCadence: 165, remember: true, styles: STYLES.map(s => s.id)
+};
+const S = Object.assign({}, DEFAULTS, store.get('sr.settings', {}));
+let apiKey = S.remember ? store.get('sr.key', '') : '';
+const saveSettings = () => store.set('sr.settings', S);
+const saveKey = () => { if (S.remember && apiKey) store.set('sr.key', apiKey); else store.del('sr.key'); };
+
+/* ---------- run state ---------- */
+const run = {
+  active: false, startedAt: 0, style: null, current: null, queue: [], pending: null,
+  offSince: null, cooldownUntil: 0, spinning: null, motionEvents: 0, musicPaused: false,
+  rate: 1, lastCadence: 0, unlocked: false
+};
+let history = store.get('sr.history', []);
+const decks = [$('#deckA'), $('#deckB')];
+let active = 0;
+
+/* ---------- cadence detection ---------- */
+const Cad = {
+  g: 9.81, s: 0, s1: 0, s2: 0, env: 3, lastStep: 0, intervals: [], value: 0, moving: false, foot: 0,
+  reset() { Object.assign(this, { s: 0, s1: 0, s2: 0, env: 3, lastStep: 0, intervals: [], value: 0, moving: false }); },
+  onMotion(e) {
+    const a = e.accelerationIncludingGravity;
+    if (!a || a.x == null) return;
+    const mag = Math.hypot(a.x, a.y, a.z);
+    this.g += 0.02 * (mag - this.g);           // slow gravity estimate
+    const lin = mag - this.g;                   // bounce above/below gravity
+    this.s2 = this.s1; this.s1 = this.s;
+    this.s += 0.35 * (lin - this.s);            // light smoothing
+    this.env = Math.max(this.env * 0.997, Math.abs(this.s));
+    const thr = Math.max(1.2, 0.4 * this.env); // adaptive threshold in m/s²
+    if (this.s1 > this.s2 && this.s1 >= this.s && this.s1 > thr) this.step(performance.now(), S.stepMult);
+  },
+  median() {
+    if (!this.intervals.length) return 0;
+    const a = [...this.intervals].sort((x, y) => x - y);
+    return a[a.length >> 1];
+  },
+  step(t, mult) {
+    const med = this.median();
+    const minGap = med ? clamp(0.55 * med, 230, 600) : 230;
+    if (this.lastStep && t - this.lastStep < minGap) return;
+    if (this.lastStep) {
+      const iv = t - this.lastStep;
+      if (iv < 1500) { this.intervals.push(iv); if (this.intervals.length > 10) this.intervals.shift(); }
+      else this.intervals = [];
+    }
+    this.lastStep = t;
+    this.foot ^= 1;
+    flashFoot(this.foot);
+    const m = this.median();
+    if (m && this.intervals.length >= 4) {
+      const spm = 60000 / m * mult;
+      this.value = this.moving ? this.value + 0.3 * (spm - this.value) : spm;
+      this.moving = true;
+      run.lastCadence = this.value;
+    }
+  },
+  tick(t) {
+    if (this.moving && t - this.lastStep > 2500) { this.moving = false; this.intervals = []; }
+  }
+};
+const onMotion = e => { run.motionEvents++; Cad.onMotion(e); };
+const currentCadence = () => Cad.moving ? Cad.value : (run.lastCadence || S.startCadence);
+
+function flashFoot(f) {
+  const el = f ? $('#footR') : $('#footL');
+  el.classList.add('hit');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('hit'), 140);
+}
+
+const Sim = {
+  timer: null,
+  start() {
+    this.stop();
+    const tick = () => {
+      Cad.step(performance.now(), 1);
+      const iv = 60000 / S.simCadence * (1 + (Math.random() - 0.5) * 0.04);
+      this.timer = setTimeout(tick, iv);
+    };
+    tick();
+  },
+  stop() { clearTimeout(this.timer); this.timer = null; }
+};
+
+/* ---------- metronome for preview mode ---------- */
+const Metro = {
+  ctx: null, bpm: 120, on: false, next: 0, beat: 0, timer: null,
+  ensure() {
+    if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (C) this.ctx = new C(); }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  start(bpm) {
+    if (!this.ensure()) return;
+    this.bpm = bpm;
+    if (this.on) return;
+    this.on = true; this.beat = 0; this.next = this.ctx.currentTime + 0.1;
+    this.timer = setInterval(() => this.schedule(), 25);
+  },
+  stop() { this.on = false; clearInterval(this.timer); },
+  schedule() {
+    const c = this.ctx;
+    while (this.next < c.currentTime + 0.12) {
+      const accent = this.beat % 4 === 0, t = this.next;
+      const o = c.createOscillator(), g = c.createGain();
+      o.frequency.value = accent ? 1320 : 880;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(accent ? 0.5 : 0.3, t + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+      o.connect(g).connect(c.destination);
+      o.start(t); o.stop(t + 0.07);
+      this.next += 60 / this.bpm; this.beat++;
+    }
+  }
+};
+
+/* ---------- style fitting and roulette ---------- */
+function fitStyle(style, cad) {
+  const ratios = S.mapping === 'match' ? [1] : S.mapping === 'half' ? [0.5] : [1, 0.5];
+  for (const r of ratios) {
+    const b = Math.round(cad * r);
+    if (b >= style.min && b <= style.max) return { bpm: b, ratio: r, fits: true };
+  }
+  let best = null;
+  for (const r of ratios) {
+    const b = cad * r, d = b < style.min ? style.min - b : b - style.max;
+    if (!best || d < best.d) best = { d, ratio: r, bpm: Math.round(clamp(b, style.min, style.max)) };
+  }
+  return { bpm: best.bpm, ratio: best.ratio, fits: false };
+}
+function enabledStyles() {
+  const on = STYLES.filter(s => S.styles.includes(s.id));
+  return on.length ? on : STYLES;
+}
+function pickStyle(cad, avoid) {
+  const all = enabledStyles();
+  let pool = all.filter(s => fitStyle(s, cad).fits && s !== avoid);
+  if (!pool.length) pool = all.filter(s => fitStyle(s, cad).fits);
+  if (!pool.length) pool = all;
+  return pool[(Math.random() * pool.length) | 0];
+}
+function spin(cad) {
+  if (run.spinning) return run.spinning;
+  const target = pickStyle(cad, run.style);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const nameEl = $('#reelName');
+  const p = new Promise(resolve => {
+    const pool = enabledStyles();
+    let delay = 45;
+    nameEl.classList.add('spinning');
+    const stepFn = () => {
+      if (reduce || delay > 240 || pool.length < 2) {
+        nameEl.classList.remove('spinning');
+        nameEl.textContent = target.name;
+        run.style = target;
+        render();
+        resolve(target);
+        return;
+      }
+      nameEl.textContent = pool[(Math.random() * pool.length) | 0].name;
+      delay *= 1.18;
+      setTimeout(stepFn, delay);
+    };
+    stepFn();
+  });
+  run.spinning = p;
+  p.then(() => { run.spinning = null; });
+  return p;
+}
+
+/* ---------- API ---------- */
+const CODE_TEXT = {
+  400: 'The service rejected the request.',
+  401: 'The API key was refused. Check it in Settings.',
+  404: 'The service address looks wrong. Check it in Settings.',
+  405: 'Too many requests. Waiting before trying again.',
+  413: 'The style text is too long for this model.',
+  429: 'Your account is out of credits. Top up with your provider, then try again.',
+  430: 'Requests are too frequent. Waiting before trying again.',
+  455: 'The service is under maintenance. Try again shortly.',
+  500: 'The service had an internal error. Try again shortly.'
+};
+const explain = (code, msg) => (CODE_TEXT[code] || `The service returned code ${code}.`) + (msg && !/^success$/i.test(msg) ? ` (${msg})` : '');
+
+async function api(path, opts = {}) {
+  const url = S.baseUrl.replace(/\/+$/, '') + path;
+  let res;
+  try {
+    res = await fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' } });
+  } catch {
+    throw new Error("Couldn't reach the music service. Check your signal. If it keeps happening, the service may block requests from web pages; set a proxy in Settings.");
+  }
+  let body = null;
+  try { body = await res.json(); } catch {}
+  if (!body) throw new Error(res.ok ? 'The service sent back an empty reply.' : explain(res.status));
+  if (body.code !== 200) throw new Error(explain(body.code, body.msg));
+  return body.data;
+}
+
+function buildBody(style, bpm, cad) {
+  const feel = cad < 150 ? 'steady, easy-paced' : cad < 170 ? 'driving, focused' : 'high energy, relentless';
+  const styleText = `${style.tags}, ${bpm} BPM, constant tempo, ${feel}, running workout music`;
+  if (!S.vocals) {
+    return {
+      customMode: true, instrumental: true, model: S.model,
+      title: `${style.name} ${bpm}`, style: styleText,
+      negativeTags: 'tempo changes, slow intro, ballad, rubato, long ambient breakdown',
+      duration: Number(S.trackLen), callBackUrl: CALLBACK_URL
+    };
+  }
+  return {
+    customMode: false, instrumental: false, model: S.model,
+    prompt: `An energetic ${style.name.toLowerCase()} song for running at ${bpm} BPM, about keeping pace and pushing through the last mile`,
+    style: styleText, callBackUrl: CALLBACK_URL
+  };
+}
+
+/* ---------- generation jobs ---------- */
+const FAILED = new Set(['CREATE_TASK_FAILED', 'GENERATE_AUDIO_FAILED', 'CALLBACK_EXCEPTION', 'SENSITIVE_WORD_ERROR']);
+const STATUS_TEXT = { PENDING: 'Waiting at the service', TEXT_SUCCESS: 'Composing', FIRST_SUCCESS: 'First version ready', SUCCESS: 'Done' };
+
+async function requestTrack(reason) {
+  if (run.pending || Date.now() < run.cooldownUntil) return;
+  if (!S.preview && !apiKey) { showError('Add your API key in Settings to generate music.'); return; }
+  const job = { id: uid(), reason, status: 'Picking a style', started: Date.now(), tracks: [], taskId: null, errors: 0 };
+  run.pending = job; render();
+
+  const cad = currentCadence();
+  let style = run.style;
+  if (!style || (reason === 'next' && S.spinEach && run.current)) style = await spin(cad);
+  let fit = fitStyle(style, cad);
+  if (!fit.fits && reason === 'retune') { style = await spin(cad); fit = fitStyle(style, cad); }
+  Object.assign(job, { style, bpm: fit.bpm, ratio: fit.ratio, cadence: Math.round(cad), status: 'Sending request' });
+  render();
+
+  if (S.preview) {
+    setTimeout(() => {
+      upsertTrack(job, { id: job.id + '-p', title: `${style.name} ${fit.bpm} (preview)`, duration: 60 }, 0, true);
+      deliver(job);
+    }, 1200);
+    return;
+  }
+  try {
+    const d = await api('/api/v1/generate', { method: 'POST', body: JSON.stringify(buildBody(style, fit.bpm, cad)) });
+    if (!d || !d.taskId) throw new Error('The service accepted the request but sent no task ID.');
+    job.taskId = d.taskId;
+    job.status = 'Composing';
+    render();
+    setTimeout(() => poll(job), 8000);
+  } catch (e) {
+    if (run.pending === job) run.pending = null;
+    run.cooldownUntil = Date.now() + 30000;
+    showError(e.message);
+    render();
+  }
+}
+
+async function poll(job) {
+  let d;
+  try {
+    d = await api('/api/v1/generate/record-info?taskId=' + encodeURIComponent(job.taskId));
+  } catch (e) {
+    if (++job.errors > 5) return failJob(job, e.message);
+    return setTimeout(() => poll(job), 6000);
+  }
+  const st = d && d.status;
+  if (FAILED.has(st)) return failJob(job, d.errorMessage || `Generation failed (${st}).`);
+  job.status = STATUS_TEXT[st] || 'Composing';
+  const items = (d && d.response && (d.response.sunoData || d.response.data)) || [];
+  items.forEach((it, i) => upsertTrack(job, it, i, false));
+  if (!job.delivered && job.tracks.some(t => t.src)) deliver(job);
+  saveHistory(); renderHistory(); render();
+  if (st === 'SUCCESS' && job.tracks.length && job.tracks.every(t => t.audioUrl)) return;
+  if (Date.now() - job.started > 8 * 60000) return failJob(job, 'The track took too long to generate.');
+  setTimeout(() => poll(job), 5000);
+}
+
+function failJob(job, msg) {
+  if (run.pending === job) run.pending = null;
+  run.cooldownUntil = Date.now() + 20000;
+  showError(msg);
+  render();
+}
+
+function upsertTrack(job, it, i, preview) {
+  const id = it.id || `${job.id}-${i}`;
+  let t = job.tracks.find(x => x.id === id);
+  if (!t) {
+    t = { id, jobId: job.id, title: it.title || `${job.style.name} ${job.bpm}`, style: job.style, styleName: job.style.name,
+          bpm: job.bpm, ratio: job.ratio, cadence: job.cadence, preview, created: Date.now(), played: false };
+    job.tracks.push(t);
+    if (job.reason === 'next') run.queue.push(t);
+    else run.queue.splice(job.tracks.length - 1, 0, t);
+    if (!preview) history.unshift(t);
+  }
+  if (it.title) t.title = it.title;
+  if (it.imageUrl) t.image = it.imageUrl;
+  if (it.streamAudioUrl) t.streamUrl = it.streamAudioUrl;
+  if (it.audioUrl) t.audioUrl = it.audioUrl;
+  if (it.duration) t.duration = it.duration;
+  if (!t.played) t.src = preview ? 'preview' : (t.audioUrl || t.streamUrl || null);
+  return t;
+}
+
+function deliver(job) {
+  job.delivered = true;
+  if (run.pending === job) run.pending = null;
+  if (job.reason !== 'next') {
+    // A retune or manual spin: drop older queued tracks that no longer suit the pace, then switch now.
+    run.queue = run.queue.filter(t => t.jobId === job.id || Math.abs(t.cadence - job.cadence) <= S.retuneThreshold);
+    const first = job.tracks.find(t => t.src);
+    if (first && (run.active || run.current)) {
+      run.queue = run.queue.filter(t => t !== first);
+      playTrack(first, true);
+    }
+  } else if (run.active && !run.current) {
+    next(false);
+  }
+  renderHistory(); render();
+}
+
+/* ---------- playback ---------- */
+function fadeDeck(el, target, ms, pauseAfter) {
+  clearInterval(el._fade);
+  if (!ms) { try { el.volume = target; } catch {} if (pauseAfter) el.pause(); return; }
+  const start = el.volume, t0 = performance.now();
+  el._fade = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / ms);
+    try { el.volume = start + (target - start) * k; } catch {}
+    if (k >= 1) { clearInterval(el._fade); if (pauseAfter) el.pause(); }
+  }, 50);
+}
+
+function playTrack(t, fade) {
+  t.played = true;
+  run.current = t;
+  run.musicPaused = false;
+  const from = decks[active];
+  if (t.preview) {
+    fadeDeck(from, 0, fade ? 800 : 0, true);
+    t.startedAt = performance.now();
+    Metro.start(t.bpm);
+  } else {
+    Metro.stop();
+    const to = decks[1 - active];
+    const crossfade = fade && !from.paused;
+    to.dataset.trackId = t.id;
+    to.src = t.src;
+    to.preservesPitch = true;
+    try { to.volume = crossfade ? 0 : 1; } catch {}
+    const p = to.play();
+    if (p) p.catch(() => showError('The browser blocked playback. Tap Pause music twice to start it.'));
+    if (crossfade) { fadeDeck(to, 1, 1500); fadeDeck(from, 0, 1500, true); }
+    else from.pause();
+    active = 1 - active;
+  }
+  setMediaSession(t);
+  render();
+}
+
+function next(fade) {
+  const i = run.queue.findIndex(t => t.src);
+  if (i < 0) {
+    if (run.current && !run.current.preview) fadeDeck(decks[active], 0, fade ? 600 : 0, true);
+    Metro.stop();
+    run.current = null;
+    if (run.active && !run.pending) requestTrack('next');
+    render();
+    return;
+  }
+  const [t] = run.queue.splice(i, 1);
+  playTrack(t, fade);
+}
+
+function togglePause() {
+  const t = run.current;
+  if (!t) return;
+  if (t.preview) {
+    if (Metro.on) { Metro.stop(); run.musicPaused = true; } else { Metro.start(t.bpm * run.rate); run.musicPaused = false; }
+  } else {
+    const d = decks[active];
+    if (d.paused) { try { d.volume = 1; } catch {} d.play().catch(() => {}); run.musicPaused = false; }
+    else { d.pause(); run.musicPaused = true; }
+  }
+  render();
+}
+
+function skip() { if (run.current || run.queue.length) next(true); }
+
+decks.forEach(d => {
+  d.addEventListener('ended', () => {
+    if (d === decks[active] && run.current && d.dataset.trackId === run.current.id) next(false);
+  });
+  d.addEventListener('error', () => {
+    const t = run.current;
+    if (d !== decks[active] || !t || d.dataset.trackId !== t.id) return;
+    if (t.audioUrl && t.src !== t.audioUrl) { t.src = t.audioUrl; d.src = t.src; d.play().catch(() => {}); return; }
+    showError(`Couldn't load "${t.title}". Skipping to the next track.`);
+    next(false);
+  });
+});
+
+function silentWavUrl() {
+  const n = 800, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  w(36, 'data'); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function unlockAudio() {
+  Metro.ensure();
+  if (run.unlocked) return;
+  run.unlocked = true;
+  const u = silentWavUrl();
+  decks.forEach(d => {
+    if (!d.getAttribute('src')) { d.src = u; d.play().then(() => d.pause()).catch(() => {}); }
+  });
+}
+
+function setMediaSession(t) {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.title, artist: `${t.styleName} at ${t.bpm} BPM`, album: 'Stride Roulette',
+      artwork: t.image ? [{ src: t.image, sizes: '512x512' }] : []
+    });
+  } catch {}
+}
+if ('mediaSession' in navigator) {
+  try {
+    navigator.mediaSession.setActionHandler('play', () => { if (run.musicPaused) togglePause(); });
+    navigator.mediaSession.setActionHandler('pause', () => { if (!run.musicPaused) togglePause(); });
+    navigator.mediaSession.setActionHandler('nexttrack', skip);
+  } catch {}
+}
+
+/* ---------- run lifecycle ---------- */
+let wakeLock = null;
+async function keepAwake() { try { wakeLock = await navigator.wakeLock.request('screen'); } catch {} }
+function releaseAwake() { try { wakeLock && wakeLock.release(); } catch {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && run.active) keepAwake();
+});
+
+async function startRun() {
+  if (!S.preview && !apiKey) {
+    showError('Add your API key first, or switch on preview mode to test with a metronome.');
+    openSettings();
+    return;
+  }
+  unlockAudio();
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try {
+      const r = await DeviceMotionEvent.requestPermission();
+      if (r !== 'granted') showError("Motion access was declined, so steps can't be counted. Allow it in the browser settings, or use simulated steps.");
+    } catch {}
+  }
+  window.addEventListener('devicemotion', onMotion);
+  Cad.reset();
+  run.active = true;
+  run.startedAt = Date.now();
+  run.motionEvents = 0;
+  run.offSince = null;
+  if (S.simOn) Sim.start();
+  keepAwake();
+
+  if (run.current && run.musicPaused) togglePause();
+  else if (!run.current) {
+    if (run.queue.some(t => t.src)) next(false);
+    else requestTrack('next');
+  }
+  setTimeout(() => {
+    if (run.active && run.motionEvents === 0 && !S.simOn) {
+      showError(window.isSecureContext
+        ? "No motion data is coming in. Check that this site is allowed to use motion sensors in your browser's site settings."
+        : 'Motion sensors only work on a secure page. Open this app from an https:// address, for example on Netlify or GitHub Pages.');
+    }
+  }, 4000);
+  render();
+}
+
+function stopRun() {
+  run.active = false;
+  window.removeEventListener('devicemotion', onMotion);
+  Sim.stop();
+  releaseAwake();
+  if (run.current && !run.musicPaused) togglePause();
+  Cad.moving = false;
+  render();
+}
+
+/* ---------- control loop ---------- */
+function remaining() {
+  const t = run.current;
+  if (!t) return Infinity;
+  if (t.preview) return t.duration - (performance.now() - t.startedAt) / 1000;
+  const d = decks[active];
+  const dur = isFinite(d.duration) && d.duration > 0 ? d.duration : (t.duration || S.trackLen);
+  return (dur - d.currentTime) / (d.playbackRate || 1);
+}
+
+function control() {
+  const now = performance.now();
+  Cad.tick(now);
+  const t = run.current;
+
+  // Tempo lock: nudge playback speed toward the beat your feet are asking for.
+  let target = 1;
+  if (S.tempoLock && t && Cad.moving) target = clamp(Cad.value * t.ratio / t.bpm, 0.92, 1.08);
+  run.rate += (target - run.rate) * 0.35;
+  if (t) {
+    if (t.preview) Metro.bpm = t.bpm * run.rate;
+    else { const d = decks[active]; const r = Math.round(run.rate * 1000) / 1000; if (Math.abs(d.playbackRate - r) > 0.002) d.playbackRate = r; }
+  }
+
+  if (run.active) {
+    const ready = run.queue.some(q => q.src);
+    if (!t && ready) next(false);
+    else if (!t && !run.pending && (S.preview || apiKey)) requestTrack('next');
+    // Queue the next song early: streaming usually starts 30 to 60 seconds after a request.
+    if (t && !run.pending && !run.queue.length && remaining() < 90) requestTrack('next');
+    if (t && t.preview && remaining() <= 0) next(true);
+
+    // Retune when your pace has drifted and stayed there.
+    if (S.retune && t && Cad.moving) {
+      const basis = t.bpm / t.ratio;
+      if (Math.abs(Cad.value - basis) > S.retuneThreshold) {
+        run.offSince = run.offSince || Date.now();
+        if (Date.now() - run.offSince > 30000 && !run.pending) { run.offSince = null; requestTrack('retune'); }
+      } else run.offSince = null;
+    }
+  }
+  render();
+}
+setInterval(control, 500);
+
+/* ---------- rendering ---------- */
+function showError(msg) {
+  const el = $('#alert');
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.hidden = true; }, 12000);
+}
+
+function render() {
+  const cadEl = $('#cadence');
+  if (Cad.moving) { cadEl.textContent = Math.round(Cad.value); cadEl.classList.remove('idle'); }
+  else { cadEl.textContent = '000'; cadEl.classList.add('idle'); }
+
+  $('#runState').textContent = !run.active ? (run.startedAt ? 'Run stopped' : 'Ready') : (Cad.moving ? 'Running' : 'Finding your stride');
+  if (run.active) $('#runClock').textContent = fmtClock(Date.now() - run.startedAt);
+
+  const t = run.current;
+  $('#musicBpm').textContent = t ? `${Math.round(t.bpm * run.rate)} BPM` : '–';
+  $('#fitMode').textContent = t ? (t.ratio === 1 ? 'Every step' : 'Every 2nd step') : '–';
+  if (!S.tempoLock) $('#lockRate').textContent = 'Off';
+  else if (!t) $('#lockRate').textContent = 'On';
+  else {
+    const pct = (run.rate - 1) * 100;
+    $('#lockRate').textContent = Math.abs(pct) < 0.5 ? 'Even' : `${pct > 0 ? '+' : '−'}${Math.abs(pct).toFixed(1)}%`;
+  }
+
+  if (!run.spinning) {
+    if (run.style) {
+      $('#reelName').textContent = run.style.name;
+      const f = fitStyle(run.style, currentCadence());
+      $('#reelRange').textContent = `Natural range ${run.style.min}–${run.style.max} BPM. ${f.fits ? `Plays at ${f.bpm} BPM for your pace.` : `Closest it gets is ${f.bpm} BPM.`}`;
+    }
+  }
+
+  if (t) {
+    $('#trackTitle').textContent = t.title;
+    $('#trackSub').textContent = `${t.styleName} at ${t.bpm} BPM, made for ${t.cadence} steps per minute`;
+    $('#cover').style.backgroundImage = t.image ? `url("${t.image}")` : '';
+    let frac = 0;
+    if (t.preview) frac = (performance.now() - t.startedAt) / 1000 / t.duration;
+    else { const d = decks[active]; const dur = isFinite(d.duration) && d.duration > 0 ? d.duration : (t.duration || S.trackLen); frac = d.currentTime / dur; }
+    $('#progressFill').style.width = `${clamp(frac, 0, 1) * 100}%`;
+  } else {
+    $('#trackTitle').textContent = run.pending ? 'Making your first track' : 'No track yet';
+    $('#trackSub').textContent = run.pending ? 'Music starts as soon as it can stream.' : 'Start a run and the first track is made for your pace.';
+    $('#cover').style.backgroundImage = '';
+    $('#progressFill').style.width = '0';
+  }
+
+  const pj = run.pending;
+  let status = '';
+  if (pj) {
+    const secs = Math.round((Date.now() - pj.started) / 1000);
+    const what = pj.style ? `${pj.style.name} at ${pj.bpm} BPM` : 'next track';
+    const why = pj.reason === 'retune' ? ' to match your new pace' : '';
+    status = `${pj.status}: ${what}${why}, ${secs}s so far.`;
+  } else {
+    const up = run.queue.find(q => q.src);
+    if (up) status = `Up next: ${up.title} (${up.bpm} BPM).`;
+    else if (run.queue.length) status = 'Next track is still being made.';
+  }
+  $('#jobStatus').textContent = status;
+
+  const rb = $('#runBtn');
+  rb.textContent = run.active ? 'Stop run' : (run.startedAt ? 'Resume run' : 'Start run');
+  rb.classList.toggle('stop', run.active);
+  $('#pauseBtn').disabled = !t;
+  $('#pauseBtn').textContent = run.musicPaused ? 'Play music' : 'Pause music';
+  $('#skipBtn').disabled = !t;
+  $('#setupNote').hidden = !!(apiKey || S.preview);
+}
+
+function saveHistory() {
+  const plain = history.filter(h => !h.preview).slice(0, 40).map(h => ({
+    id: h.id, title: h.title, styleName: h.styleName, bpm: h.bpm, ratio: h.ratio, cadence: h.cadence,
+    audioUrl: h.audioUrl || null, streamUrl: h.streamUrl || null, image: h.image || null, created: h.created, duration: h.duration || null
+  }));
+  store.set('sr.history', plain);
+}
+
+function renderHistory() {
+  const list = $('#historyList');
+  list.textContent = '';
+  history.slice(0, 30).forEach(h => {
+    const li = document.createElement('li');
+    const main = document.createElement('div'); main.className = 'h-main';
+    const title = document.createElement('span'); title.className = 'h-title'; title.textContent = h.title;
+    const sub = document.createElement('span'); sub.className = 'h-sub';
+    const date = new Date(h.created).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    sub.textContent = `${h.styleName}, ${h.bpm} BPM for ${h.cadence} spm, ${date}`;
+    main.append(title, sub);
+    const act = document.createElement('div'); act.className = 'h-actions';
+    const src = h.audioUrl || h.streamUrl;
+    if (src) {
+      const play = document.createElement('button');
+      play.type = 'button'; play.textContent = 'Play';
+      play.addEventListener('click', () => {
+        unlockAudio();
+        const tr = { ...h, id: uid(), style: h.style || { name: h.styleName }, ratio: h.ratio || 1, src, played: false, preview: false };
+        playTrack(tr, true);
+      });
+      act.append(play);
+    }
+    if (h.audioUrl) {
+      const a = document.createElement('a');
+      a.href = h.audioUrl; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'File';
+      act.append(a);
+    }
+    if (!src) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = 'Making'; act.append(s); }
+    li.append(main, act);
+    list.append(li);
+  });
+  $('#historyEmpty').hidden = history.length > 0;
+}
+
+/* ---------- settings sheet ---------- */
+const dlg = $('#settings');
+const BIND = [
+  ['baseUrl', 'text'], ['model', 'text'], ['vocals', 'check'], ['trackLen', 'num'], ['spinEach', 'check'],
+  ['tempoLock', 'check'], ['retune', 'check'], ['retuneThreshold', 'num'], ['startCadence', 'num'],
+  ['stepMult', 'num'], ['preview', 'check'], ['simOn', 'check'], ['simCadence', 'num']
+];
+
+function openSettings() {
+  BIND.forEach(([k, type]) => { const el = $('#' + k); if (type === 'check') el.checked = !!S[k]; else el.value = S[k]; });
+  document.querySelectorAll('input[name=mapping]').forEach(r => { r.checked = r.value === S.mapping; });
+  $('#keyInput').value = apiKey;
+  $('#rememberKey').checked = !!S.remember;
+  $('#simOut').textContent = S.simCadence;
+  $('#keyResult').textContent = '';
+  const list = $('#styleList');
+  list.textContent = '';
+  STYLES.forEach(s => {
+    const lab = document.createElement('label'); lab.className = 'check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = S.styles.includes(s.id);
+    cb.addEventListener('change', () => {
+      S.styles = cb.checked ? [...new Set([...S.styles, s.id])] : S.styles.filter(x => x !== s.id);
+      saveSettings();
+    });
+    const txt = document.createElement('span');
+    txt.textContent = s.name;
+    const small = document.createElement('small'); small.textContent = `${s.min}–${s.max} BPM`;
+    txt.append(small);
+    lab.append(cb, txt);
+    list.append(lab);
+  });
+  dlg.showModal();
+}
+
+BIND.forEach(([k, type]) => {
+  const el = $('#' + k);
+  el.addEventListener(type === 'check' ? 'change' : 'input', () => {
+    if (type === 'check') S[k] = el.checked;
+    else if (type === 'num') { const v = Number(el.value); if (!Number.isFinite(v)) return; S[k] = v; }
+    else S[k] = el.value.trim();
+    if (k === 'baseUrl' && !S.baseUrl) S.baseUrl = DEFAULTS.baseUrl;
+    if (k === 'startCadence') S.startCadence = clamp(S.startCadence, 100, 220);
+    if (k === 'simCadence') $('#simOut').textContent = S.simCadence;
+    if (k === 'simOn' && run.active) { if (S.simOn) Sim.start(); else Sim.stop(); }
+    saveSettings(); render();
+  });
+});
+document.querySelectorAll('input[name=mapping]').forEach(r => r.addEventListener('change', () => { S.mapping = r.value; saveSettings(); render(); }));
+$('#keyInput').addEventListener('input', e => { apiKey = e.target.value.trim(); saveKey(); render(); });
+$('#rememberKey').addEventListener('change', e => { S.remember = e.target.checked; saveSettings(); saveKey(); });
+$('#showKey').addEventListener('click', e => {
+  const inp = $('#keyInput'), show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  e.target.textContent = show ? 'Hide' : 'Show';
+});
+$('#clearKey').addEventListener('click', () => {
+  apiKey = ''; $('#keyInput').value = ''; store.del('sr.key');
+  const r = $('#keyResult'); r.className = 'help'; r.textContent = 'Key cleared from this phone.';
+  render();
+});
+$('#checkKey').addEventListener('click', async () => {
+  const r = $('#keyResult');
+  if (!apiKey) { r.className = 'help bad'; r.textContent = 'Paste a key first.'; return; }
+  r.className = 'help'; r.textContent = 'Checking…';
+  try {
+    const credits = await api('/api/v1/generate/credit');
+    r.className = 'help good';
+    r.textContent = `Key works. Credits left: ${credits}.`;
+  } catch (e) {
+    r.className = 'help bad';
+    r.textContent = e.message;
+  }
+});
+
+/* ---------- wire up main controls ---------- */
+$('#openSettings').addEventListener('click', openSettings);
+document.querySelectorAll('[data-open-settings]').forEach(b => b.addEventListener('click', openSettings));
+$('#runBtn').addEventListener('click', () => { run.active ? stopRun() : startRun(); });
+$('#pauseBtn').addEventListener('click', () => { unlockAudio(); togglePause(); });
+$('#skipBtn').addEventListener('click', skip);
+$('#spinBtn').addEventListener('click', async () => {
+  const hadTrack = !!run.current;
+  await spin(currentCadence());
+  if (run.active && hadTrack) {
+    if (run.pending) showError(`${run.style.name} will be used for the next request. One is already being made.`);
+    else requestTrack('spin');
+  }
+});
+
+if (!('DeviceMotionEvent' in window)) {
+  showError("This browser doesn't report motion, so steps can't be counted. Use simulated steps in Settings to try the app.");
+}
+renderHistory();
+render();
+})();
+</script>
+</body>
+</html>
