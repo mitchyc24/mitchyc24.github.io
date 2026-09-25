@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Local Events</title>
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F6EFE8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15171B" media="(prefers-color-scheme: dark)">
+<style>
+:root {
+  --bg: #F6EFE8;
+  --paper: #FFFDF9;
+  --ink: #1D1E22;
+  --muted: #5D6069;
+  --line: #D8D2C9;
+  --accent: #8A9BC8;
+  --accent-2: #D6A6B3;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171B;
+    --paper: #20242B;
+    --ink: #F4F2EE;
+    --muted: #A6AAB3;
+    --line: #353B44;
+    --accent: #9CB4F2;
+    --accent-2: #E4AABB;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font: 16px/1.5 "Patrick Hand", "Comic Sans MS", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: max(14px, env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));
+}
+a { color: inherit; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.home, .icon {
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+}
+.icon { cursor: pointer; }
+h1 { margin: 8px 0 0; font-size: clamp(30px, 5vw, 44px); line-height: 1; letter-spacing: .01em; }
+.sub { margin: 6px 0 0; color: var(--muted); }
+
+.panel {
+  margin-top: 14px;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 2px 0 rgba(0,0,0,.07);
+  padding: 14px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: color-mix(in oklab, var(--accent) 24%, var(--paper));
+  padding: 4px 12px;
+}
+.summary {
+  margin: 10px 0 0;
+  color: var(--muted);
+}
+
+.cal {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+section h2 { margin: 0 0 8px; font-size: 24px; }
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.item {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--paper);
+}
+.when {
+  border-radius: 10px;
+  border: 1.5px dashed var(--line);
+  padding: 8px;
+  text-align: center;
+  line-height: 1.2;
+  background: color-mix(in oklab, var(--accent-2) 20%, var(--paper));
+}
+.when strong { display: block; font-size: 20px; }
+.meta { color: var(--muted); font-size: 14px; }
+
+.empty, .error, .loading { margin: 0; color: var(--muted); }
+.error { color: #A32A3A; }
+
+dialog {
+  border: 0;
+  border-radius: 14px;
+  width: min(620px, 100%);
+  margin: auto;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0;
+}
+dialog::backdrop { background: rgba(8,8,12,.5); }
+form { padding: 16px; }
+fieldset { border: 0; margin: 0 0 14px; padding: 0; }
+legend { font-size: 20px; margin-bottom: 8px; }
+label, .check { display: block; margin: 8px 0; }
+select {
+  width: 100%;
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  padding: 8px;
+}
+.check { display: flex; gap: 8px; align-items: center; min-height: 44px; }
+.check input { width: 20px; height: 20px; }
+.actions { display: flex; justify-content: flex-end; gap: 10px; }
+.btn {
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  padding: 0 16px;
+  cursor: pointer;
+}
+.btn.primary {
+  background: color-mix(in oklab, var(--accent) 42%, var(--paper));
+}
+
+@media (max-width: 540px) {
+  .item { grid-template-columns: 1fr; }
+  .when { display: flex; gap: 8px; justify-content: center; align-items: baseline; }
+  .when strong { display: inline; }
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <a class="home" href="../../" id="homeLink">&larr; miApps</a>
+    <div>
+      <h1 id="title">Local Events</h1>
+      <p class="sub" id="subtitle">What's happening around you.</p>
+    </div>
+    <button class="icon" id="openSettings" type="button" aria-label="Settings">⚙️</button>
+  </header>
+
+  <div class="panel" aria-live="polite">
+    <div class="row">
+      <span class="badge" id="locationBadge"></span>
+      <span class="badge" id="updatedBadge"></span>
+    </div>
+    <p class="summary" id="summary"></p>
+  </div>
+
+  <div class="cal">
+    <section>
+      <h2 id="nearTitle">Now & next 2 weeks</h2>
+      <p class="loading" id="nearLoading">Loading events…</p>
+      <p class="error" id="nearError" hidden></p>
+      <ul class="list" id="nearList"></ul>
+      <p class="empty" id="nearEmpty" hidden>No nearby events found for this period.</p>
+    </section>
+
+    <section>
+      <h2 id="farTitle">Bigger events ahead</h2>
+      <p class="loading" id="farLoading">Loading future highlights…</p>
+      <p class="error" id="farError" hidden></p>
+      <ul class="list" id="farList"></ul>
+      <p class="empty" id="farEmpty" hidden>No larger events found yet.</p>
+    </section>
+  </div>
+</main>
+
+<dialog id="settings" aria-labelledby="settingsTitle">
+  <form method="dialog">
+    <h2 id="settingsTitle">Settings</h2>
+
+    <fieldset>
+      <legend id="langLegend">Language</legend>
+      <label for="langSelect" id="langLabel">Display language</label>
+      <select id="langSelect">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend id="cityLegend">Location</legend>
+      <label for="citySelect" id="cityLabel">Choose city</label>
+      <select id="citySelect"></select>
+    </fieldset>
+
+    <fieldset>
+      <legend id="typesLegend">Event types</legend>
+      <div id="typeChecks"></div>
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn" value="cancel" id="cancelBtn">Cancel</button>
+      <button class="btn primary" type="button" id="saveBtn">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const APP_ID = "local-events";
+const STORAGE_KEY = `${APP_ID}.settings`;
+
+const CITIES = [
+  { id: "ottawa", qid: "Q1933", en: "Ottawa", fr: "Ottawa", nagerCountry: "CA" },
+  { id: "gatineau", qid: "Q1931", en: "Gatineau", fr: "Gatineau", nagerCountry: "CA" },
+  { id: "montreal", qid: "Q340", en: "Montreal", fr: "Montréal", nagerCountry: "CA" },
+  { id: "toronto", qid: "Q172", en: "Toronto", fr: "Toronto", nagerCountry: "CA" }
+];
+
+const TYPE_DEFS = [
+  { id: "music", en: "Music", fr: "Musique", patterns: [/music|concert|opera|orchestra|festival/i] },
+  { id: "sports", en: "Sports", fr: "Sports", patterns: [/sport|game|match|tournament|cup|league/i] },
+  { id: "arts", en: "Arts", fr: "Arts", patterns: [/art|exhibition|theatre|theater|film|cinema|dance/i] },
+  { id: "community", en: "Community", fr: "Communauté", patterns: [/community|parade|celebration|holiday|carnival/i] },
+  { id: "education", en: "Education", fr: "Éducation", patterns: [/conference|summit|forum|workshop|symposium|congress/i] }
+];
+
+const TEXT = {
+  en: {
+    title: "Local Events",
+    subtitle: "What's happening around you.",
+    nearTitle: "Now & next 2 weeks",
+    farTitle: "Bigger events ahead",
+    settings: "Settings",
+    language: "Language",
+    displayLanguage: "Display language",
+    location: "Location",
+    chooseCity: "Choose city",
+    eventTypes: "Event types",
+    cancel: "Cancel",
+    save: "Save",
+    loadingNear: "Loading events…",
+    loadingFar: "Loading future highlights…",
+    nearEmpty: "No nearby events found for this period.",
+    farEmpty: "No larger events found yet.",
+    fetchError: "Couldn't load event data right now.",
+    updated: "Updated",
+    summary: (city, nearCount, farCount) => `${nearCount} nearby and ${farCount} larger upcoming events in ${city}.`,
+    source: "Source",
+    holidayType: "Public holiday"
+  },
+  fr: {
+    title: "Événements locaux",
+    subtitle: "Ce qui se passe autour de vous.",
+    nearTitle: "En cours et 2 prochaines semaines",
+    farTitle: "Grands événements à venir",
+    settings: "Paramètres",
+    language: "Langue",
+    displayLanguage: "Langue d'affichage",
+    location: "Lieu",
+    chooseCity: "Choisir une ville",
+    eventTypes: "Types d'événement",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    loadingNear: "Chargement des événements…",
+    loadingFar: "Chargement des temps forts futurs…",
+    nearEmpty: "Aucun événement proche trouvé pour cette période.",
+    farEmpty: "Aucun grand événement trouvé pour le moment.",
+    fetchError: "Impossible de charger les données d'événements pour le moment.",
+    updated: "Mis à jour",
+    summary: (city, nearCount, farCount) => `${nearCount} événements proches et ${farCount} grands événements à venir à ${city}.`,
+    source: "Source",
+    holidayType: "Jour férié"
+  }
+};
+
+const store = {
+  get() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  },
+  set(value) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    } catch {}
+  }
+};
+
+const defaultSettings = () => ({
+  lang: navigator.language && navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en",
+  cityId: "ottawa",
+  enabledTypes: TYPE_DEFS.map(t => t.id)
+});
+
+let state = {
+  settings: Object.assign(defaultSettings(), store.get() || {}),
+  nearEvents: [],
+  farEvents: []
+};
+
+const $ = (s) => document.querySelector(s);
+const els = {
+  title: $("#title"), subtitle: $("#subtitle"), homeLink: $("#homeLink"),
+  nearTitle: $("#nearTitle"), farTitle: $("#farTitle"), summary: $("#summary"),
+  locationBadge: $("#locationBadge"), updatedBadge: $("#updatedBadge"),
+  nearLoading: $("#nearLoading"), farLoading: $("#farLoading"),
+  nearError: $("#nearError"), farError: $("#farError"),
+  nearList: $("#nearList"), farList: $("#farList"), nearEmpty: $("#nearEmpty"), farEmpty: $("#farEmpty"),
+  openSettings: $("#openSettings"), settings: $("#settings"), settingsTitle: $("#settingsTitle"),
+  langLegend: $("#langLegend"), langLabel: $("#langLabel"), langSelect: $("#langSelect"),
+  cityLegend: $("#cityLegend"), cityLabel: $("#cityLabel"), citySelect: $("#citySelect"),
+  typesLegend: $("#typesLegend"), typeChecks: $("#typeChecks"),
+  cancelBtn: $("#cancelBtn"), saveBtn: $("#saveBtn")
+};
+
+function cityLabel(cityId, lang) {
+  const c = CITIES.find((x) => x.id === cityId) || CITIES[0];
+  return lang === "fr" ? c.fr : c.en;
+}
+
+function ui() {
+  const t = TEXT[state.settings.lang] || TEXT.en;
+  document.documentElement.lang = state.settings.lang;
+  els.title.textContent = t.title;
+  els.subtitle.textContent = t.subtitle;
+  els.openSettings.setAttribute("aria-label", t.settings);
+  els.nearTitle.textContent = t.nearTitle;
+  els.farTitle.textContent = t.farTitle;
+  els.nearLoading.textContent = t.loadingNear;
+  els.farLoading.textContent = t.loadingFar;
+  els.nearEmpty.textContent = t.nearEmpty;
+  els.farEmpty.textContent = t.farEmpty;
+  els.settingsTitle.textContent = t.settings;
+  els.langLegend.textContent = t.language;
+  els.langLabel.textContent = t.displayLanguage;
+  els.cityLegend.textContent = t.location;
+  els.cityLabel.textContent = t.chooseCity;
+  els.typesLegend.textContent = t.eventTypes;
+  els.cancelBtn.textContent = t.cancel;
+  els.saveBtn.textContent = t.save;
+  els.updatedBadge.textContent = `${t.updated}: ${new Intl.DateTimeFormat(state.settings.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date())}`;
+  els.locationBadge.textContent = cityLabel(state.settings.cityId, state.settings.lang);
+  els.summary.textContent = t.summary(cityLabel(state.settings.cityId, state.settings.lang), state.nearEvents.length, state.farEvents.length);
+}
+
+function classifyType(event) {
+  const haystack = `${event.type || ""} ${event.title || ""}`;
+  const hit = TYPE_DEFS.find((d) => d.patterns.some((re) => re.test(haystack)));
+  return hit ? hit.id : "community";
+}
+
+function formatWhen(dt) {
+  const d = new Date(dt);
+  const day = new Intl.DateTimeFormat(state.settings.lang, { weekday: "short" }).format(d);
+  const date = new Intl.DateTimeFormat(state.settings.lang, { day: "numeric", month: "short" }).format(d);
+  const time = new Intl.DateTimeFormat(state.settings.lang, { hour: "numeric", minute: "2-digit" }).format(d);
+  return { day, date, time };
+}
+
+function renderList(el, items, emptyEl) {
+  const lang = state.settings.lang;
+  const t = TEXT[lang] || TEXT.en;
+  const enabled = new Set(state.settings.enabledTypes);
+  const filtered = items.filter((x) => enabled.has(x.category));
+  el.innerHTML = "";
+  emptyEl.hidden = filtered.length > 0;
+  for (const item of filtered) {
+    const when = formatWhen(item.start);
+    const li = document.createElement("li");
+    li.className = "item";
+    li.innerHTML = `
+      <div class="when"><strong>${when.day}</strong><span>${when.date}</span> <span>${when.time}</span></div>
+      <div>
+        <div>${escapeHtml(item.title)}</div>
+        <div class="meta">${escapeHtml(item.type)} · ${escapeHtml(item.place)} · ${t.source}: ${escapeHtml(item.source)}</div>
+      </div>`;
+    el.appendChild(li);
+  }
+}
+
+function escapeHtml(v) {
+  return String(v || "").replace(/[&<>'"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c]));
+}
+
+function getRange(daysFromNow) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + daysFromNow);
+  return d.toISOString();
+}
+
+async function fetchWikidataEvents(cityQid) {
+  const lang = state.settings.lang;
+  const startIso = getRange(-1);
+  const endIso = getRange(365);
+  const query = `
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?event ?eventLabel ?typeLabel ?start ?placeLabel WHERE {
+  VALUES ?city { wd:${cityQid} }
+  ?event wdt:P31/wdt:P279* wd:Q1656682 .
+  ?event wdt:P276 ?place .
+  ?place (wdt:P131*|wdt:P361*) ?city .
+  OPTIONAL { ?event wdt:P31 ?type . }
+  OPTIONAL { ?event wdt:P580 ?startA . }
+  OPTIONAL { ?event wdt:P585 ?startB . }
+  BIND(COALESCE(?startA, ?startB) AS ?start)
+  FILTER(BOUND(?start))
+  FILTER(?start >= "${startIso}"^^xsd:dateTime && ?start <= "${endIso}"^^xsd:dateTime)
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "${lang},en,fr". }
+}
+ORDER BY ?start
+LIMIT 120`;
+
+  const url = "https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(query);
+  const r = await fetch(url, { headers: { "Accept": "application/sparql-results+json" } });
+  if (!r.ok) throw new Error(`wikidata-${r.status}`);
+  const data = await r.json();
+  return (data.results?.bindings || []).map((b) => {
+    const event = {
+      title: b.eventLabel?.value || (state.settings.lang === "fr" ? "Événement" : "Event"),
+      type: b.typeLabel?.value || (state.settings.lang === "fr" ? "Événement" : "Event"),
+      place: b.placeLabel?.value || cityLabel(state.settings.cityId, state.settings.lang),
+      start: b.start?.value,
+      source: "Wikidata"
+    };
+    event.category = classifyType(event);
+    return event;
+  }).filter((e) => e.start);
+}
+
+async function fetchHolidays(city) {
+  const lang = state.settings.lang;
+  const t = TEXT[lang] || TEXT.en;
+  const r = await fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${city.nagerCountry}`);
+  if (!r.ok) throw new Error(`nager-${r.status}`);
+  const data = await r.json();
+  return (Array.isArray(data) ? data : []).slice(0, 8).map((h) => ({
+    title: lang === "fr" && h.localName ? h.localName : h.name,
+    type: t.holidayType,
+    place: cityLabel(state.settings.cityId, lang),
+    start: `${h.date}T10:00:00Z`,
+    category: "community",
+    source: "Nager.Date"
+  }));
+}
+
+async function loadEvents() {
+  const t = TEXT[state.settings.lang] || TEXT.en;
+  const city = CITIES.find((c) => c.id === state.settings.cityId) || CITIES[0];
+
+  els.nearLoading.hidden = false;
+  els.farLoading.hidden = false;
+  els.nearError.hidden = true;
+  els.farError.hidden = true;
+
+  let wikidata = [];
+  let holidays = [];
+
+  try {
+    wikidata = await fetchWikidataEvents(city.qid);
+  } catch {
+    els.nearError.hidden = false;
+    els.nearError.textContent = t.fetchError;
+  }
+
+  try {
+    holidays = await fetchHolidays(city);
+  } catch {
+    if (!wikidata.length) {
+      els.farError.hidden = false;
+      els.farError.textContent = t.fetchError;
+    }
+  }
+
+  const now = Date.now();
+  const nearCutoff = now + 1000 * 60 * 60 * 24 * 14;
+  const farStart = now + 1000 * 60 * 60 * 24 * 15;
+
+  const merged = [...wikidata, ...holidays].sort((a, b) => new Date(a.start) - new Date(b.start));
+  state.nearEvents = merged.filter((e) => {
+    const ts = new Date(e.start).getTime();
+    return ts >= now - 86400000 && ts <= nearCutoff;
+  }).slice(0, 24);
+
+  state.farEvents = merged.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
+
+  els.nearLoading.hidden = true;
+  els.farLoading.hidden = true;
+
+  renderList(els.nearList, state.nearEvents, els.nearEmpty);
+  renderList(els.farList, state.farEvents, els.farEmpty);
+  ui();
+}
+
+function buildSettings() {
+  const lang = state.settings.lang;
+  els.langSelect.value = lang;
+  els.citySelect.innerHTML = CITIES.map((c) => `<option value="${c.id}">${escapeHtml(lang === "fr" ? c.fr : c.en)}</option>`).join("");
+  els.citySelect.value = state.settings.cityId;
+
+  els.typeChecks.innerHTML = "";
+  for (const type of TYPE_DEFS) {
+    const label = document.createElement("label");
+    label.className = "check";
+    label.innerHTML = `<input type="checkbox" value="${type.id}"> <span>${escapeHtml(lang === "fr" ? type.fr : type.en)}</span>`;
+    label.querySelector("input").checked = state.settings.enabledTypes.includes(type.id);
+    els.typeChecks.appendChild(label);
+  }
+}
+
+function saveSettings() {
+  const prev = { ...state.settings };
+  const selectedTypes = [...els.typeChecks.querySelectorAll("input:checked")].map((i) => i.value);
+  state.settings = {
+    lang: els.langSelect.value === "fr" ? "fr" : "en",
+    cityId: CITIES.some((c) => c.id === els.citySelect.value) ? els.citySelect.value : "ottawa",
+    enabledTypes: selectedTypes.length ? selectedTypes : TYPE_DEFS.map((t) => t.id)
+  };
+  store.set(state.settings);
+  ui();
+  renderList(els.nearList, state.nearEvents, els.nearEmpty);
+  renderList(els.farList, state.farEvents, els.farEmpty);
+
+  if (prev.cityId !== state.settings.cityId || prev.lang !== state.settings.lang) {
+    loadEvents();
+  }
+
+  els.settings.close();
+}
+
+els.openSettings.addEventListener("click", () => {
+  buildSettings();
+  els.settings.showModal();
+});
+els.saveBtn.addEventListener("click", saveSettings);
+els.langSelect.addEventListener("change", () => {
+  const nextLang = els.langSelect.value === "fr" ? "fr" : "en";
+  const original = state.settings.lang;
+  state.settings.lang = nextLang;
+  ui();
+  buildSettings();
+  state.settings.lang = original;
+});
+
+ui();
+loadEvents();
+</script>
+</body>
+</html>

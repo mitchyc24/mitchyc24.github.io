@@ -37,6 +37,20 @@
       "links": [
         { "label": "Preview", "href": "host/?dev" }
       ]
+    },
+    {
+      "id": "local-events",
+      "name": "Local Events",
+      "tagline": "Shows local events happening now and soon, with larger upcoming highlights for your city.",
+      "path": "apps/local-events/",
+      "icon": "🗓️",
+      "color": "#B892A5",
+      "category": "Dashboard",
+      "tags": ["events", "calendar", "local", "français", "english"],
+      "platforms": ["phone", "desktop"],
+      "status": "prototype",
+      "added": "2026-09-25",
+      "updated": "2026-09-25"
     }
   ]
 }
