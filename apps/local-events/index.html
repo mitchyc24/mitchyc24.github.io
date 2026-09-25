@@ -480,7 +480,7 @@ async function fetchHolidays(city) {
   return (Array.isArray(data) ? data : []).slice(0, 8).map((h) => ({
     title: lang === "fr" && h.localName ? h.localName : h.name,
     type: t.holidayType,
-    place: cityLabel(state.settings.cityId, lang),
+    place: lang === "fr" ? "Canada (national)" : "Canada (national)",
     start: `${h.date}T10:00:00Z`,
     category: "community",
     source: "Nager.Date"
@@ -498,10 +498,13 @@ async function loadEvents() {
 
   let wikidata = [];
   let holidays = [];
+  let wikidataFailed = false;
+  let holidaysFailed = false;
 
   try {
     wikidata = await fetchWikidataEvents(city.qid);
   } catch {
+    wikidataFailed = true;
     els.nearError.hidden = false;
     els.nearError.textContent = t.fetchError;
   }
@@ -509,10 +512,7 @@ async function loadEvents() {
   try {
     holidays = await fetchHolidays(city);
   } catch {
-    if (!wikidata.length) {
-      els.farError.hidden = false;
-      els.farError.textContent = t.fetchError;
-    }
+    holidaysFailed = true;
   }
 
   const now = Date.now();
@@ -526,6 +526,11 @@ async function loadEvents() {
   }).slice(0, 24);
 
   state.farEvents = merged.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
+
+  if (!state.farEvents.length && (holidaysFailed || wikidataFailed)) {
+    els.farError.hidden = false;
+    els.farError.textContent = t.fetchError;
+  }
 
   els.nearLoading.hidden = true;
   els.farLoading.hidden = true;
