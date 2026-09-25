@@ -1,0 +1,51 @@
+name: Check data sources
+
+# Runs Observatory's data builder against the live sources whenever it changes, so a
+# dead feed URL shows up on the branch (one warning per failed source) before it
+# reaches main. The deploy itself is dashboard-data.yml.
+on:
+  push:
+    branches-ignore: [main]
+    paths: [".github/scripts/build_data.py", ".github/workflows/check-data.yml"]
+  pull_request:
+    paths: [".github/scripts/build_data.py", ".github/workflows/check-data.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install --quiet sgp4
+
+      - name: Build data.json from live sources
+        run: |
+          echo "{}" > "$RUNNER_TEMP/previous.json"
+          python .github/scripts/build_data.py "$RUNNER_TEMP/previous.json" "$RUNNER_TEMP/data.json"
+
+      - name: Summarise sources
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          d = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "data.json")))
+          news = d.get("news", {})
+          srcs = news.get("sources", [])
+          rows = ["| source | lang | region | ok | items |", "|---|---|---|---|---|"]
+          rows += [f"| {s['name']} (`{s['id']}`) | {s['lang']} | {s.get('region') or 'world'} | {'yes' if s['ok'] else '**no**'} | {s['n']} |" for s in srcs]
+          otd = d.get("onthisday", {}).get("by_lang", {})
+          summary = [f"**News:** {len(news.get('items', []))} headlines from {sum(1 for s in srcs if s['n'])} of {len(srcs)} sources",
+                     f"**On this day:** {', '.join(f'{k} {len(v)}' for k, v in otd.items()) or 'none'}",
+                     f"**Failed blocks:** {', '.join(d['meta']['failed']) or 'none'}", "", *rows]
+          print("\n".join(summary))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(summary) + "\n")
+          raise SystemExit(1 if "news" in d["meta"]["failed"] else 0)
+          EOF

@@ -65,6 +65,10 @@ body {
 .stat.live .v { color: var(--ice); }
 .stat.est .v { color: var(--ink); }
 .stat.up .v { color: var(--up); } .stat.down .v { color: var(--rose); }
+/* seven or eight stats: tighten so the column still fits above the ticker */
+#stats.dense .stat { margin-bottom: 1.6vh; }
+#stats.dense .stat .v { font-size: 3.3vh; }
+#stats.dense .stat .l { margin-top: 0.5vh; }
 
 /* ---------- headlines ---------- */
 .headline {
@@ -116,6 +120,7 @@ html.light #qr img { filter: none; mix-blend-mode: multiply; }
 
 <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="settings.js"></script>
 <script>
 // =====================================================================
 //  CONFIG
@@ -140,23 +145,66 @@ const CFG = {
 const DEV = /[?&]dev/.test(location.search);
 
 // =====================================================================
+//  SETTINGS  (chosen on the phone in remote.html; see settings.js)
+// =====================================================================
+// Kept in this device's localStorage so the TV comes back the way it was left.
+// In a desktop preview (?dev) that storage is shared with remote.html, so the
+// preview follows the controls live through the "storage" event.
+let { settings: SET, stored: SET_STORED } = OBS.load();
+let LOCALE = OBS.LANGS[SET.lang].locale;
+const T = (key, vars) => OBS.t(SET.lang, key, vars);
+document.documentElement.lang = SET.lang;
+
+function applySettings(raw, from) {
+  SET = OBS.normalize(raw);
+  SET_STORED = true;
+  LOCALE = OBS.LANGS[SET.lang].locale;
+  document.documentElement.lang = SET.lang;
+  if (from !== "storage") OBS.save(SET);
+  S.shown.clear();
+  rebuildNews();
+  renderStats(); renderWeather(); renderFoot(); renderClock(); renderQR(); updateTheme();
+  castSend();                     // every connected phone sees the new state
+}
+addEventListener("storage", (e) => {
+  if (e.key !== OBS.KEY || !e.newValue) return;
+  try { applySettings(JSON.parse(e.newValue), "storage"); } catch (err) { console.warn("settings", err); }
+});
+
+// =====================================================================
 //  CAST
 // =====================================================================
+// Phones talk to the TV on a custom channel: {type:"hello"} asks for the current
+// state, {type:"settings"} replaces it. The TV answers with {type:"state"}.
+let castCtx = null;
 if (!DEV && window.cast && cast.framework) {
   try {
-    const ctx = cast.framework.CastReceiverContext.getInstance();
+    castCtx = cast.framework.CastReceiverContext.getInstance();
+    castCtx.addCustomMessageListener(OBS.NS, (ev) => {
+      const m = ev.data || {};
+      if (m.type === "settings") applySettings(m.settings, "cast");
+      else if (m.type === "hello") castSend(ev.senderId);
+    });
     const opts = new cast.framework.CastReceiverOptions();
     opts.disableIdleTimeout = true;
-    ctx.start(opts);
-  } catch (e) { console.warn("cast init", e); }
+    opts.customNamespaces = { [OBS.NS]: cast.framework.system.MessageType.JSON };
+    castCtx.start(opts);
+  } catch (e) { console.warn("cast init", e); castCtx = null; }
+}
+function castSend(senderId) {    // no senderId: broadcast to every connected phone
+  if (!castCtx) return;
+  try { castCtx.sendCustomMessage(OBS.NS, senderId, { type: "state", settings: SET, stored: SET_STORED }); }
+  catch (e) { console.warn("cast send", e); }
 }
 
 // =====================================================================
 //  HELPERS
 // =====================================================================
 const $ = (s) => document.querySelector(s);
-const nf = new Intl.NumberFormat("en-CA");
-const fmt = (n, d = 0) => new Intl.NumberFormat("en-CA", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+const fmt = (n, d = 0) => new Intl.NumberFormat(LOCALE, { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
+const pct = (v, d = 1) => new Intl.NumberFormat(LOCALE, { style: "percent", signDisplay: "always", maximumFractionDigits: d }).format(v / 100);
+const cap = (s) => s ? s.charAt(0).toLocaleUpperCase(LOCALE) + s.slice(1) : s;
+const mins = (t) => parseInt(t.slice(11, 13)) * 60 + parseInt(t.slice(14, 16));   // "YYYY-MM-DDTHH:MM" -> minutes
 const rad = Math.PI / 180;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function latLonToVec(lat, lon, r = 1) {
@@ -288,8 +336,10 @@ addEventListener("resize", layout); layout();
 //  STATE
 // =====================================================================
 const S = {
-  data: null, weather: null, iss: null, quakes: [], kp: null, wind: null,
-  headlines: [], usedIdx: new Set(), cards: [], tickerItems: [], tickerI: 0,
+  data: null, weather: null, air: null, iss: null, quakes: [], kp: null, wind: null,
+  pools: { world: [], local: [] },   // headlines that pass the news settings, split by scope
+  used: new Set(), shown: new Map(), // items already on screen; cards shown per source
+  cards: [], tickerItems: [], tickerI: 0,
 };
 
 // =====================================================================
@@ -341,23 +391,33 @@ async function pollSpaceWeather() {
 }
 async function pollWeather() {
   try {
+    // past_days=1 adds yesterday (index 0) so the daylight stat can show the change; today is the last entry
     const u = `https://api.open-meteo.com/v1/forecast?latitude=${CFG.home.lat}&longitude=${CFG.home.lon}` +
       `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset` +
-      `&timezone=${encodeURIComponent(CFG.home.tz)}&forecast_days=1`;
+      `&timezone=${encodeURIComponent(CFG.home.tz)}&past_days=1&forecast_days=1`;
     S.weather = await fetchJSON(u);
     renderWeather(); updateTheme();
   } catch (e) { }
 }
-const WMO = { 0: "Clear", 1: "Mostly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Rime fog", 51: "Light drizzle", 53: "Drizzle", 55: "Heavy drizzle",
-  61: "Light rain", 63: "Rain", 65: "Heavy rain", 66: "Freezing rain", 67: "Freezing rain", 71: "Light snow", 73: "Snow", 75: "Heavy snow", 77: "Snow grains",
-  80: "Showers", 81: "Showers", 82: "Heavy showers", 85: "Snow showers", 86: "Snow showers", 95: "Thunderstorm", 96: "Thunderstorm, hail", 99: "Thunderstorm, hail" };
+async function pollAir() {
+  try {
+    const u = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${CFG.home.lat}&longitude=${CFG.home.lon}` +
+      `&current=us_aqi,pm2_5&timezone=${encodeURIComponent(CFG.home.tz)}`;
+    S.air = (await fetchJSON(u)).current;
+  } catch (e) { }
+}
+const WMO = { 0: "clear", 1: "mostlyclear", 2: "partly", 3: "overcast", 45: "fog", 48: "rimefog", 51: "drizzle1", 53: "drizzle", 55: "drizzle3",
+  56: "fdrizzle", 57: "fdrizzle", 61: "rain1", 63: "rain", 65: "rain3", 66: "frain", 67: "frain", 71: "snow1", 73: "snow", 75: "snow3", 77: "grains",
+  80: "showers", 81: "showers", 82: "showers3", 85: "snowshowers", 86: "snowshowers", 95: "storm", 96: "hail", 99: "hail" };
 function renderWeather() {
   const w = S.weather; if (!w) return;
-  const c = w.current, d = w.daily;
+  const c = w.current, d = w.daily, i = d.time.length - 1;
   $("#wx .temp").innerHTML = `${Math.round(c.temperature_2m)}<span>°C</span>`;
-  $("#wx .cond").textContent = `${WMO[c.weather_code] || "—"} · feels ${Math.round(c.apparent_temperature)}° · ${Math.round(d.temperature_2m_min[0])}° / ${Math.round(d.temperature_2m_max[0])}° · wind ${Math.round(c.wind_speed_10m)} km/h`;
+  $("#wx .cond").textContent = T("wx.line", {
+    cond: WMO[c.weather_code] ? cap(T("wx." + WMO[c.weather_code])) : "—", feels: Math.round(c.apparent_temperature),
+    min: Math.round(d.temperature_2m_min[i]), max: Math.round(d.temperature_2m_max[i]), wind: Math.round(c.wind_speed_10m) });
   const hm = (s) => s.slice(11, 16);
-  $("#wx .sun").innerHTML = `${CFG.home.name} &nbsp; sunrise <b>${hm(d.sunrise[0])}</b> &nbsp; sunset <b>${hm(d.sunset[0])}</b>`;
+  $("#wx .sun").innerHTML = `${esc(CFG.home.name)} &nbsp; ${T("wx.sunrise")} <b>${hm(d.sunrise[i])}</b> &nbsp; ${T("wx.sunset")} <b>${hm(d.sunset[i])}</b>`;
 }
 
 // Wikipedia edits by language → home region of that language. Texture, not data.
@@ -368,11 +428,30 @@ const WIKI = {
   id: [[-0.8, 113.9]], vi: [[14.1, 108.3]], hi: [[20.6, 79]], cs: [[49.8, 15.5]], fi: [[61.9, 25.7]], no: [[60.5, 8.5]], hu: [[47.2, 19.5]], th: [[15.9, 100.9]],
 };
 let lastFlick = 0;
+// Edits per minute across all Wikipedias: 60 one-second buckets, counted from the raw
+// event text so the stream isn't parsed any more often than the flicker needs.
+const WK = { buckets: new Array(60).fill(0), sec: 0, since: 0 };
+const WIKI_EDIT = /"type":\s*"edit"/;
+function wikiAdvance(sec) {
+  if (sec - WK.sec >= 60) WK.buckets.fill(0);
+  else for (let k = WK.sec + 1; k <= sec; k++) WK.buckets[k % 60] = 0;
+  WK.sec = sec;
+}
+function wikiPerMin() {
+  if (!WK.since) return null;
+  const now = Math.floor(Date.now() / 1000); wikiAdvance(now);
+  const sum = WK.buckets.reduce((a, b) => a + b, 0), span = Math.min(60, now - WK.since + 1);
+  return span < 10 ? null : sum * 60 / span;
+}
 function startWikiStream() {
   if (!CFG.wikiStream || !window.EventSource) return;
   try {
     const es = new EventSource("https://stream.wikimedia.org/v2/stream/recentchange");
     es.onmessage = (ev) => {
+      if (WIKI_EDIT.test(ev.data) && ev.data.includes('.wikipedia.org"')) {
+        const sec = Math.floor(Date.now() / 1000); if (!WK.since) WK.since = sec;
+        wikiAdvance(sec); WK.buckets[sec % 60]++;
+      }
       const now = performance.now(); if (now - lastFlick < 180) return;
       let d; try { d = JSON.parse(ev.data); } catch { return; }
       if (d.type !== "edit" || !d.wiki || !d.wiki.endsWith("wiki")) return;
@@ -390,9 +469,8 @@ async function loadData() {
   try {
     const d = await fetchJSON(CFG.dataUrl + "?t=" + Date.now());
     S.data = d;
-    if (d.news && d.news.items) { S.headlines = d.news.items; S.usedIdx.clear(); }
     if (d.geo_belt && CFG.geoBelt) renderBelt(d.geo_belt.sats);
-    buildTicker();
+    rebuildNews();
     renderFoot();
   } catch (e) { console.warn("data.json", e); }
 }
@@ -422,40 +500,156 @@ function secsToday() { const d = new Date(); return d.getUTCHours() * 3600 + d.g
 function stat(cls, v, unit, label) {
   return `<div class="stat ${cls}"><div class="v">${v}${unit ? `<span>${unit}</span>` : ""}</div><div class="l">${label}</div></div>`;
 }
+// One renderer per stat id in OBS.STATS. Each returns markup, or null while its data is missing.
+const home = () => esc(CFG.home.name);
+const trend = (v) => (v >= 0 ? "up" : "down");
+function aqiLevel(v) { return v <= 50 ? 0 : v <= 100 ? 1 : v <= 150 ? 2 : v <= 200 ? 3 : v <= 300 ? 4 : 5; }
+function moonNow(date) {
+  const P = 29.530588853, age = (((date - Date.UTC(2000, 0, 6, 18, 14)) / 864e5) % P + P) % P;
+  return { lit: (1 - Math.cos(2 * Math.PI * age / P)) / 2, phase: Math.floor(age / P * 8 + 0.5) % 8 };
+}
+function clockIn(tz) { return new Date().toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: tz }); }
+const STAT = {
+  population() { const p = popNow(); return p && stat("est", fmt(p), "", `${T("stat.population.l")} <em>· ${T("est")}</em>`); },
+  births() {
+    const w = S.data && S.data.world; if (!w) return null;
+    return stat("est", fmt(secsToday() * w.births_per_sec), "", `${T("stat.births.l")} <em>· ${T("stat.births.died", { n: fmt(secsToday() * w.deaths_per_sec) })} · ${T("est")}</em>`);
+  },
+  co2() {
+    const w = S.data && S.data.world; if (!w) return null;
+    return stat("est", fmt(secsToday() * w.co2_tonnes_per_sec / 1000), "kt", `${T("stat.co2.l")} <em>· ${T("est")}</em>`);
+  },
+  iss() {
+    const i = S.iss; if (!i) return null;
+    return stat("live", fmt(i.altitude), "km", `${T("stat.iss.l")} <em>· ${fmt(i.velocity)} km/h · ${T(i.visibility === "eclipsed" ? "stat.iss.eclipsed" : "stat.iss.daylight")}</em>`);
+  },
+  quakes() {
+    if (!S.quakes.length) return null;
+    const big = S.quakes.reduce((a, b) => (b.mag > a.mag ? b : a));
+    return stat("live", fmt(S.quakes.length), "", `${T("stat.quakes.l")} <em>· ${T("stat.quakes.largest", { m: fmt(big.mag, 1), place: esc(big.place || "") })}</em>`);
+  },
+  kp() {
+    if (!Number.isFinite(S.kp)) return null;
+    const k = S.kp, level = k >= 5 ? ` · ${T("stat.kp.storm")}` : k >= 4 ? ` · ${T("stat.kp.active")}` : "";
+    return stat("live", fmt(k, 1), "Kp", `${T("stat.kp.l")}${level}${S.wind ? ` <em>· ${T("stat.kp.wind", { v: fmt(S.wind.speed) })}</em>` : ""}`);
+  },
+  aqi() {
+    const a = S.air; if (!a || !Number.isFinite(a.us_aqi)) return null;
+    const lvl = aqiLevel(a.us_aqi);
+    return stat(lvl <= 1 ? "live" : "down", fmt(a.us_aqi), "AQI",
+      `${T("stat.aqi.l", { home: home() })} <em>· ${T("aqi." + lvl)}${Number.isFinite(a.pm2_5) ? ` · PM2.5 ${fmt(a.pm2_5, 1)} µg/m³` : ""}</em>`);
+  },
+  daylight() {
+    const w = S.weather; if (!w) return null;
+    const d = w.daily, i = d.time.length - 1, len = (k) => mins(d.sunset[k]) - mins(d.sunrise[k]);
+    const today = len(i), delta = i > 0 ? today - len(i - 1) : null;
+    const v = `${Math.floor(today / 60)} h ${String(today % 60).padStart(2, "0")}`;
+    const change = delta == null ? "" : ` <em>· ${T("stat.daylight.delta", { d: (delta < 0 ? "−" : "+") + Math.abs(delta) })}</em>`;
+    return stat("", v, "", T("stat.daylight.l", { home: home() }) + change);
+  },
+  moon() {
+    const m = moonNow(Date.now());
+    return stat("", fmt(m.lit * 100), "%", `${T("stat.moon.lit")} <em>· ${T("moon." + m.phase)}</em>`);
+  },
+  year() {
+    const local = new Date(new Date().toLocaleString("en-US", { timeZone: CFG.home.tz }));
+    const y = local.getFullYear(), start = new Date(y, 0, 1), days = Math.round((new Date(y + 1, 0, 1) - start) / 864e5);
+    const frac = (local - start) / (days * 864e5);
+    return stat("", fmt(frac * 100, 1), "%", `${T("stat.year.l", { year: y })} <em>· ${T("stat.year.day", { d: Math.floor(frac * days) + 1, n: days })}</em>`);
+  },
+  clocks() {
+    return stat("", clockIn("Asia/Tokyo"), T("city.tokyo"),
+      `${T("city.london")} ${clockIn("Europe/London")} <em>· ${T("city.delhi")} ${clockIn("Asia/Kolkata")}</em>`);
+  },
+  wiki() {
+    const r = wikiPerMin(); if (r == null) return null;
+    return stat("live", fmt(r), "", `${T("stat.wiki.l")} <em>· ${T("stat.wiki.all")}</em>`);
+  },
+  satellites() {
+    const g = S.data && S.data.geo_belt; if (!g || !g.count) return null;
+    return stat("", fmt(g.count), "", `${T("stat.satellites.l")} <em>· ${T("stat.satellites.src")}</em>`);
+  },
+  btc() {
+    const m = S.data && S.data.markets; if (!m || !m.btc_cad) return null;
+    return stat(trend(m.btc_24h), fmt(m.btc_cad), "CAD", `${T("stat.btc.l")} <em>· ${pct(m.btc_24h)} 24 h${m.usd_cad ? ` · USD ${fmt(m.usd_cad, 3)} CAD` : ""}</em>`);
+  },
+  eth() {
+    const m = S.data && S.data.markets; if (!m || !m.eth_usd) return null;
+    return stat(trend(m.eth_24h), fmt(m.eth_usd), "USD", `${T("stat.eth.l")} <em>· ${pct(m.eth_24h)} 24 h</em>`);
+  },
+  fx() {
+    const m = S.data && S.data.markets; if (!m || !m.usd_cad) return null;
+    const more = [["usd_eur", "EUR", 3], ["usd_gbp", "GBP", 3], ["usd_jpy", "JPY", 1]].filter(([k]) => m[k]).map(([k, c, d]) => `${fmt(m[k], d)} ${c}`);
+    return stat("", fmt(m.usd_cad, 3), "CAD", `${T("stat.fx.l")}${more.length ? ` <em>· ${more.join(" · ")}</em>` : ""}`);
+  },
+};
 function renderStats() {
-  const w = S.data && S.data.world, m = S.data && S.data.markets, out = [];
-  const pop = popNow();
-  if (pop) out.push(stat("est", fmt(pop), "", "people on Earth <em>· est.</em>"));
-  if (w) out.push(stat("est", fmt(secsToday() * w.births_per_sec), "", `born today <em>· ${fmt(secsToday() * w.deaths_per_sec)} died · est.</em>`));
-  if (w) out.push(stat("est", fmt(secsToday() * w.co2_tonnes_per_sec / 1000), "kt", "CO₂ emitted today <em>· est.</em>"));
-  if (S.iss) out.push(stat("live", fmt(S.iss.altitude), "km", `ISS altitude <em>· ${fmt(S.iss.velocity)} km/h · ${S.iss.visibility}</em>`));
-  if (S.quakes.length) { const big = S.quakes.reduce((a, b) => (b.mag > a.mag ? b : a)); out.push(stat("live", S.quakes.length, "", `earthquakes M2.5+ in 24 h <em>· largest M${big.mag.toFixed(1)} ${big.place}</em>`)); }
-  if (Number.isFinite(S.kp)) { const k = S.kp; out.push(stat("live", k.toFixed(1), "Kp", `geomagnetic index${k >= 5 ? " · storm" : k >= 4 ? " · active" : ""}${S.wind ? ` <em>· solar wind ${Math.round(S.wind.speed)} km/s</em>` : ""}`)); }
-  if (m && m.btc_cad) out.push(stat(m.btc_24h >= 0 ? "up" : "down", "$" + fmt(m.btc_cad), "CAD", `bitcoin <em>· ${m.btc_24h >= 0 ? "+" : ""}${m.btc_24h}% 24 h${m.usd_cad ? ` · USD ${m.usd_cad.toFixed(3)} CAD` : ""}</em>`));
-  $("#stats").innerHTML = out.join("");
+  const out = [];
+  for (const id of SET.stats) {
+    try { const html = STAT[id] && STAT[id](); if (html) out.push(html); } catch (e) { console.warn("stat", id, e); }
+  }
+  const el = $("#stats");
+  el.classList.toggle("dense", out.length > 6);
+  el.innerHTML = out.join("");
 }
 
 // =====================================================================
 //  HEADLINES
 // =====================================================================
+// Split headlines into world and local pools, keeping only enabled sources in the chosen
+// languages. Items from an older data.json (no src/lang) count as English world news.
+function rebuildNews() {
+  const news = S.data && S.data.news, items = (news && news.items) || [];
+  const meta = new Map(((news && news.sources) || []).map((src) => [src.id, src]));
+  const scope = OBS.regionScope(SET.news.region);
+  const world = [], local = [];
+  for (const it of items) {
+    it.src = it.src || (it.kind === "gdelt" ? "gdelt" : String(it.source || "").toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+    if (!OBS.sourceOn(SET, meta.get(it.src) || { id: it.src })) continue;
+    if (!SET.news.langs.includes(it.lang || "en")) continue;
+    if (!it.region) world.push(it);
+    else if (scope.includes(it.region)) local.push(it);
+  }
+  S.pools = { world, local };
+  S.used.clear();
+  buildTicker();
+}
+const localShare = () => (SET.news.region && S.pools.local.length ? SET.news.local : 0);
+
 const svg = $("#lines"), cards = $("#cards");
+const camDir = new THREE.Vector3();
+function facing(h) { const p = latLonToVec(h.lat, h.lon).applyMatrix4(globe.matrixWorld); camDir.copy(camera.position).sub(p).normalize(); return p.normalize().dot(camDir); }
 function pickHeadline() {
-  if (!S.headlines.length || S.cards.length >= CFG.maxHeadlines) return;
-  const camDir = new THREE.Vector3();
-  const facing = (h) => { const p = latLonToVec(h.lat, h.lon).applyMatrix4(globe.matrixWorld); camDir.copy(camera.position).sub(p).normalize(); return p.normalize().dot(camDir); };
-  // candidates: unused, on the near hemisphere, not too close to an existing card
-  let best = null, bestScore = -1;
-  S.headlines.forEach((h, i) => {
-    if (S.usedIdx.has(i)) return;
-    const f = facing(h); if (f < 0.45) return;
-    const tooClose = S.cards.some(c => Math.abs(c.h.lat - h.lat) < 14 && Math.abs(c.h.lon - h.lon) < 18);
-    if (tooClose) return;
-    const score = f + (h.kind === "rss" ? 0.3 : 0) + Math.random() * 0.4;
-    if (score > bestScore) { bestScore = score; best = i; }
-  });
-  if (best == null) { if (S.usedIdx.size >= S.headlines.length * 0.8) S.usedIdx.clear(); return; }
-  S.usedIdx.add(best);
-  const h = S.headlines[best];
+  if (S.cards.length >= CFG.maxHeadlines) return;
+  const { world, local } = S.pools;
+  const order = Math.random() * 100 < localShare() ? [local, world] : [world, local];
+  for (const pool of order) if (pool.length && pickFrom(pool)) return;
+}
+// Candidates: placed on the globe, unused, on the near hemisphere, not crowding a card
+// already up. The outlet that has had the fewest cards goes next, so no source dominates.
+function pickFrom(pool) {
+  const bySrc = new Map();
+  for (const h of pool) {
+    if (h.lat == null || h.lon == null || S.used.has(h)) continue;
+    const f = facing(h); if (f < 0.45) continue;
+    if (S.cards.some(c => Math.abs(c.h.lat - h.lat) < 14 && Math.abs(c.h.lon - h.lon) < 18)) continue;
+    if (!bySrc.has(h.src)) bySrc.set(h.src, []);
+    bySrc.get(h.src).push([h, f]);
+  }
+  if (!bySrc.size) {
+    const placed = pool.filter(h => h.lat != null), used = placed.filter(h => S.used.has(h)).length;
+    if (placed.length && used >= placed.length * 0.8) for (const h of placed) S.used.delete(h);
+    return false;
+  }
+  let src = null, least = Infinity;
+  for (const k of bySrc.keys()) { const n = (S.shown.get(k) || 0) + Math.random() * 0.5; if (n < least) { least = n; src = k; } }
+  let h = null, best = -1;
+  for (const [cand, f] of bySrc.get(src)) { const score = f + Math.random() * 0.4; if (score > best) { best = score; h = cand; } }
+  S.used.add(h); S.shown.set(src, (S.shown.get(src) || 0) + 1);
+  showCard(h);
+  return true;
+}
+function showCard(h) {
   const el = document.createElement("div"); el.className = "headline";
   el.innerHTML = `<div class="h">${esc(h.title)}</div><div class="m">${esc(h.source)}${h.place ? ` <span>· ${esc(h.place)}</span>` : ""}</div>`;
   cards.appendChild(el);
@@ -515,11 +709,37 @@ function placeCards() {
 // =====================================================================
 //  TICKER / FOOT / CLOCK / QR
 // =====================================================================
+// The ticker weaves news and "on this day": two headlines, then one event. Headlines are
+// taken one source at a time (newest first) and local ones are spread through at the chosen share.
+function roundRobin(items, n) {
+  const bySrc = new Map();
+  for (const it of [...items].sort((a, b) => String(b.ts || "").localeCompare(String(a.ts || "")))) {
+    if (!bySrc.has(it.src)) bySrc.set(it.src, []);
+    bySrc.get(it.src).push(it);
+  }
+  const lists = [...bySrc.values()].sort(() => Math.random() - 0.5), out = [];
+  while (out.length < n && lists.some(l => l.length)) for (const l of lists) if (l.length && out.length < n) out.push(l.shift());
+  return out;
+}
+function onThisDay() {
+  const o = S.data && S.data.onthisday; if (!o) return [];
+  const ev = (o.by_lang && (o.by_lang[SET.lang] || o.by_lang.en)) || o.events || [];
+  return ev.map(e => `<b>${esc(e.year)}</b> ${esc(e.text)}`).sort(() => Math.random() - 0.5).slice(0, 10);
+}
 function buildTicker() {
-  const items = [];
-  if (S.data && S.data.onthisday) for (const e of S.data.onthisday.events) items.push(`<b>${e.year}</b> ${esc(e.text)}`);
-  if (S.data && S.data.news) for (const n of S.data.news.items.filter(n => n.kind === "rss").slice(0, 20)) items.push(`<b>${esc(n.source)}</b> ${esc(n.title)}`);
-  S.tickerItems = items.sort(() => Math.random() - 0.5);
+  const total = 24, share = localShare();
+  const L = roundRobin(S.pools.local, Math.round(total * share / 100)), W = roundRobin(S.pools.world, total - L.length);
+  const news = [];
+  for (let a = 0, b = 0; a < W.length || b < L.length;) {
+    const takeLocal = b < L.length && (a >= W.length || (b + 0.5) / L.length <= (a + 0.5) / W.length);
+    news.push(takeLocal ? L[b++] : W[a++]);
+  }
+  const heads = news.map(n => `<b>${esc(n.source)}</b> ${esc(n.title)}`), days = onThisDay(), items = [];
+  while (heads.length || days.length) {
+    items.push(...heads.splice(0, 2));
+    if (days.length) items.push(days.shift());
+  }
+  S.tickerItems = items; S.tickerI = 0;
 }
 let tickerRow = null;
 function nextTicker() {
@@ -531,22 +751,25 @@ function nextTicker() {
   tickerRow = row; requestAnimationFrame(() => row.classList.add("on"));
 }
 function renderFoot() {
-  const d = S.data; if (!d) { $("#foot").textContent = "waiting for data"; return; }
-  const parts = [`news ${agoMin(d.news ? d.news.fetched_at : d.meta.built_at)} min`];
-  if (d.geo_belt) parts.push(`${d.geo_belt.count} satellites in the GEO belt · not to scale`);
-  if (d.meta.failed && d.meta.failed.length) parts.push(`stale: ${d.meta.failed.join(", ")}`);
+  const d = S.data; if (!d) { $("#foot").textContent = T("foot.waiting"); return; }
+  const parts = [T("foot.news", { n: agoMin(d.news ? d.news.fetched_at : d.meta.built_at) })];
+  if (d.geo_belt) parts.push(T("foot.geo", { n: fmt(d.geo_belt.count) }));
+  if (d.meta.failed && d.meta.failed.length) parts.push(T("foot.stale", { list: esc(d.meta.failed.join(", ")) }));
   $("#foot").innerHTML = parts.map(p => `<span>${p}</span>`).join("");
 }
 function renderClock() {
   const now = new Date();
-  const t = now.toLocaleTimeString("en-CA", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: CFG.home.tz });
+  const t = now.toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: CFG.home.tz });
   const utc = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
   $("#clock .t").innerHTML = `${t}<small>${utc}Z</small>`;
-  $("#clock .d").textContent = now.toLocaleDateString("en-CA", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: CFG.home.tz });
+  $("#clock .d").textContent = cap(now.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: CFG.home.tz }));
 }
 function renderQR() {
-  const url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&color=000000&bgcolor=ffffff&data=" + encodeURIComponent(CFG.remoteUrl);
-  $("#qr").innerHTML = `<div class="cap">scan to<br>take the controls</div><img alt="" src="${url}">`;
+  if (!$("#qr img")) {
+    const url = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&color=000000&bgcolor=ffffff&data=" + encodeURIComponent(CFG.remoteUrl);
+    $("#qr").innerHTML = `<div class="cap"></div><img alt="" src="${url}">`;
+  }
+  $("#qr .cap").innerHTML = T("qr");
 }
 
 // =====================================================================
@@ -559,12 +782,12 @@ function applyTheme(light) {
   renderer.setClearColor(0x000000, 0);
 }
 function updateTheme() {
-  if (forcedTheme) return applyTheme(forcedTheme === "light");
+  const fixed = forcedTheme || (SET.theme !== "auto" ? SET.theme : null);   // ?theme= beats the setting
+  if (fixed) return applyTheme(fixed === "light");
   if (!CFG.autoTheme || !S.weather) return;
-  const d = S.weather.daily, now = new Date();
+  const d = S.weather.daily, i = d.time.length - 1, now = new Date();
   const local = now.toLocaleString("sv-SE", { timeZone: CFG.home.tz }).replace(" ", "T");   // YYYY-MM-DDTHH:MM:SS in home tz
-  const mins = (t) => parseInt(t.slice(11, 13)) * 60 + parseInt(t.slice(14, 16));
-  const m = mins(local), rise = mins(d.sunrise[0]) + CFG.twilightMin, set = mins(d.sunset[0]) - CFG.twilightMin;
+  const m = mins(local), rise = mins(d.sunrise[i]) + CFG.twilightMin, set = mins(d.sunset[i]) - CFG.twilightMin;
   applyTheme(m > rise && m < set);
 }
 
@@ -597,6 +820,7 @@ updateTheme(); setInterval(updateTheme, 60000);
 renderQR();
 loadData(); setInterval(loadData, CFG.dataEveryMin * 60000);
 pollWeather(); setInterval(pollWeather, 15 * 60000);
+pollAir(); setInterval(pollAir, 30 * 60000);
 pollISS(); setInterval(pollISS, 10000);
 pollQuakes(); setInterval(pollQuakes, 5 * 60000);
 pollSpaceWeather(); setInterval(pollSpaceWeather, 10 * 60000);

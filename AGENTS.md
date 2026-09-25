@@ -85,7 +85,7 @@ Renaming or moving an app: move the folder, update `path`, and add the old path 
 | `name` | yes | Display name. |
 | `tagline` | yes | One or two sentences for the card. Say what it does, not how it was built. |
 | `path` | yes | Folder relative to the site root, with a trailing slash: `apps/<id>/`. |
-| `entry` | no | File in `path` to open instead of `index.html` (Observatory opens `cast.html`). |
+| `entry` | no | File in `path` to open instead of `index.html` (Observatory opens `remote.html`, its controls). |
 | `action` | no | Label for the card's main action. Defaults to "Open". |
 | `icon` | yes | An emoji, or the path of an image relative to the site root (`apps/<id>/icon.svg`). |
 | `color` | no | Hex colour for the icon tile, usually the app's accent: `#D7262E`. |

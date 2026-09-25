@@ -1,7 +1,170 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>Observatory remote</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Observatory controls</title>
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f1efe9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#000;color:#e9e5dc;font-family:system-ui,sans-serif;font-weight:300;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}
-h1{font-weight:300;font-size:28px;margin:0 0 12px}p{color:#8f8c84;max-width:28em;margin:0 auto;line-height:1.5}
-</style></head><body><div><h1>The controls aren't wired up yet</h1><p>This page will let you pick what the screen shows, pin the globe, and read a headline in full. For now the dashboard runs on its own.</p></div></body></html>
+:root {
+  --bg: #f1efe9; --card: #faf9f6; --ink: #1d1c1a; --ink-2: #66645f; --ink-3: #9d9a93; --line: #e0ddd5;
+  --amber: #a86a12; --amber-ink: #fff; --live: #2f8a4a;
+  --font: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000; --card: #11110f; --ink: #e9e5dc; --ink-2: #8f8c84; --ink-3: #5d5b56; --line: #262521;
+          --amber: #f0b45a; --amber-ink: #1a1206; --live: #9fe0b0; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.wrap { max-width: 560px; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 16px max(48px, env(safe-area-inset-bottom)); }
+.home { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); text-decoration: none; font-size: 14px; }
+.home:hover { color: var(--ink); }
+.title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+h1 { margin: 0; font-size: 26px; font-weight: 400; letter-spacing: -0.015em; line-height: 1.2; }
+google-cast-launcher { width: 44px; height: 44px; flex: none; cursor: pointer; --connected-color: var(--amber); --disconnected-color: var(--ink); }
+.cast-status { display: flex; gap: 10px; align-items: baseline; margin: 10px 0 20px; color: var(--ink-2); font-size: 15px; min-height: 1.5em; }
+.cast-status::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); transform: translateY(-1px); }
+.cast-status[data-state="on"]::before { background: var(--live); box-shadow: 0 0 0 4px color-mix(in srgb, var(--live) 22%, transparent); }
+.cast-status[data-state="connecting"]::before { background: var(--amber); }
+.cast-status:empty::before { display: none; }
+
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px; margin-bottom: 14px; }
+h2 { margin: 0; font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+.head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.counter { color: var(--ink-2); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.counter.full { color: var(--amber); font-weight: 500; }
+.help { margin: 4px 0 0; color: var(--ink-2); font-size: 14px; }
+.help:empty { display: none; }
+fieldset { border: 0; margin: 18px 0 0; padding: 0; min-width: 0; }
+fieldset:first-of-type { margin-top: 14px; }
+legend { padding: 0; margin-bottom: 8px; color: var(--ink-2); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+fieldset:disabled { opacity: .45; }
+
+/* segmented choices: radios or checkboxes styled as pills */
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { position: relative; flex: 1 1 auto; }
+.seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg span {
+  display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--bg);
+  font-size: 15px; text-align: center; white-space: nowrap; transition: background .12s, border-color .12s;
+}
+.seg input:checked + span { background: var(--amber); border-color: var(--amber); color: var(--amber-ink); font-weight: 500; }
+.seg input:focus-visible + span { outline: 2px solid var(--amber); outline-offset: 2px; }
+.seg input:disabled { cursor: default; }
+.seg.quad { display: grid; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 480px) { .seg.quad { grid-template-columns: repeat(4, 1fr); } }
+
+/* rows: a native control with a name and a line of detail */
+.rows { display: grid; gap: 2px; margin-top: 10px; }
+.row {
+  display: grid; grid-template-columns: 24px 1fr; gap: 2px 12px; align-items: start;
+  padding: 11px 10px; margin: 0 -10px; border-radius: 10px; cursor: pointer;
+}
+.row:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.row input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--amber); cursor: pointer; }
+.row .name { font-weight: 500; line-height: 1.35; }
+.row .meta { grid-column: 2; color: var(--ink-2); font-size: 14px; line-height: 1.4; }
+.row:has(input:disabled) { cursor: default; opacity: .45; }
+.row:has(input:disabled):hover { background: none; }
+.row .meta.quiet { color: var(--ink-3); }
+.group-label { margin: 16px 0 0; color: var(--ink-3); font-size: 13px; font-weight: 500; }
+.note { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--bg); color: var(--ink-2); font-size: 14px; }
+
+footer { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 24px; color: var(--ink-2); font-size: 14px; }
+footer a { min-height: 44px; display: inline-flex; align-items: center; }
+
+.toast {
+  position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translate(-50%, 12px);
+  padding: 10px 18px; border-radius: 999px; background: var(--ink); color: var(--bg);
+  font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast, .seg span { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="home" href="../" data-t="ui.home">miApps</a>
+    <div class="title-row">
+      <h1 data-t="ui.title">Observatory controls</h1>
+      <google-cast-launcher id="castbtn" hidden></google-cast-launcher>
+    </div>
+    <p class="cast-status" id="castStatus" role="status" aria-live="polite"></p>
+  </header>
+
+  <main id="main">
+    <section aria-labelledby="h-lang">
+      <h2 id="h-lang" data-t="ui.language"></h2>
+      <p class="help" data-t="ui.language.help"></p>
+      <fieldset>
+        <legend class="sr-only" data-t="ui.language"></legend>
+        <div class="seg quad" id="langs"></div>
+      </fieldset>
+    </section>
+
+    <section aria-labelledby="h-news">
+      <h2 id="h-news" data-t="ui.news"></h2>
+      <fieldset>
+        <legend data-t="ui.news.langs"></legend>
+        <div class="seg quad" id="newsLangs"></div>
+        <p class="help" data-t="ui.news.langs.help"></p>
+      </fieldset>
+      <fieldset>
+        <legend data-t="ui.news.local"></legend>
+        <div class="seg" id="regions"></div>
+      </fieldset>
+      <fieldset id="shareSet">
+        <legend data-t="ui.news.share"></legend>
+        <div class="seg" id="shares"></div>
+      </fieldset>
+      <fieldset>
+        <legend data-t="ui.news.sources"></legend>
+        <p class="help" data-t="ui.news.how"></p>
+        <div id="sources"></div>
+      </fieldset>
+    </section>
+
+    <section aria-labelledby="h-stats">
+      <div class="head-row">
+        <h2 id="h-stats" data-t="ui.stats"></h2>
+        <span class="counter" id="statCount"></span>
+      </div>
+      <p class="help" id="statHelp" aria-live="polite"></p>
+      <div class="rows" id="stats"></div>
+    </section>
+
+    <section aria-labelledby="h-display">
+      <h2 id="h-display" data-t="ui.display"></h2>
+      <fieldset>
+        <legend data-t="ui.theme"></legend>
+        <div class="rows" id="themes"></div>
+      </fieldset>
+    </section>
+  </main>
+
+  <footer>
+    <a href="./?dev" target="_blank" rel="noopener" data-t="ui.preview"></a>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="settings.js"></script>
+<script src="remote.js"></script>
+<script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</body>
+</html>
