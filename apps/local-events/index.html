@@ -494,16 +494,14 @@ async function loadEvents() {
   let wikidata = [];
   let wikidataFailed = false;
 
-  const [wikidataResult] = await Promise.allSettled([fetchWikidataEvents(city.qid)]);
-  if (seq !== state.loadSeq) return;
-
-  if (wikidataResult.status === "fulfilled") {
-    wikidata = wikidataResult.value;
-  } else {
+  try {
+    wikidata = await fetchWikidataEvents(city.qid);
+  } catch {
     wikidataFailed = true;
     els.nearError.hidden = false;
     els.nearError.textContent = t.fetchError;
   }
+  if (seq !== state.loadSeq) return;
 
   const now = Date.now();
   const nearCutoff = now + 1000 * 60 * 60 * 24 * 14;
