@@ -8,7 +8,9 @@ over from previous.json (with the old fetched_at, so the receiver can show
 staleness) and the run still succeeds.
 """
 import email.utils
+import gzip
 import html
+import zlib
 import json
 import os
 import re
@@ -20,16 +22,23 @@ import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone, timedelta
 
-UA = "mitchyc24-tv-dashboard/1.0 (+https://mitchyc24.github.io/host/)"
+UA = "Mozilla/5.0 (compatible; mitchyc24-observatory/1.1; +https://mitchyc24.github.io/host/)"
+FEED_ACCEPT = "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5"
 NOW = datetime.now(timezone.utc)
 
 
 def get(url, timeout=25, as_json=True, raw=False):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    accept = FEED_ACCEPT if raw else "application/json, */*;q=0.5"
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": accept, "Accept-Encoding": "gzip"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw_bytes = r.read()
+        encoding = (r.headers.get("Content-Encoding") or "").lower()
+    if encoding == "gzip" or raw_bytes[:2] == b"\x1f\x8b":
+        raw_bytes = gzip.decompress(raw_bytes)
+    elif encoding == "deflate":
+        raw_bytes = zlib.decompress(raw_bytes)
     if raw:                      # bytes, so XML parsers honour the feed's declared encoding
-        return raw_bytes
+        return raw_bytes.lstrip(b"\xef\xbb\xbf \t\r\n")
     raw = raw_bytes
     if as_json:
         return json.loads(raw.decode("utf-8", "replace"))
@@ -44,8 +53,8 @@ def stamp(payload):
 # World news comes from news agencies and public broadcasters in several countries,
 # in each language the controls offer. The TV takes turns between sources, so the
 # list sets the balance: no outlet can crowd out the others. Sources marked
-# default=False (state-funded, or unvetted aggregators) start switched off but
-# can be turned on in the controls. Local sources carry a region and fall back to
+# default=False (state-funded outlets) start switched off but can be turned on in
+# the controls. Local sources carry a region and fall back to
 # that region's centre when a headline names no place.
 #
 # kind: wire | public | state | un | aggregator.  country: ISO 3166 code (UN for the UN).
@@ -59,7 +68,8 @@ REGIONS = {                              # keep in step with OBS.REGIONS in host
 
 
 def gnews(site, hl="en-US", gl="US", ceid="US:en"):
-    """Google News search feed for one site: the only keyless feed of AP and Reuters wires."""
+    """Google News search feed for one site (or site section): the only keyless feed of the
+    AP and Reuters wires, and the fallback when a broadcaster's own feed won't answer."""
     q = urllib.parse.quote(f"site:{site} when:1d")
     return f"https://news.google.com/rss/search?q={q}&hl={hl}&gl={gl}&ceid={ceid}"
 
@@ -77,14 +87,14 @@ NEWS_SOURCES = [
     source("dw-en", "DW", "en", "public", "DE", ["https://rss.dw.com/rdf/rss-en-world", "https://rss.dw.com/rdf/rss-en-all"]),
     source("f24-en", "France 24", "en", "public", "FR", ["https://www.france24.com/en/rss"]),
     source("npr-world", "NPR", "en", "public", "US", ["https://feeds.npr.org/1004/rss.xml"]),
-    source("cbc-world", "CBC World", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-world"]),
+    source("cbc-world", "CBC World", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-world", gnews("cbc.ca/news/world", "en-CA", "CA", "CA:en")]),
     source("un-en", "UN News", "en", "un", "UN", ["https://news.un.org/feed/subscribe/en/news/all/rss.xml"]),
     source("aljazeera", "Al Jazeera", "en", "state", "QA", ["https://www.aljazeera.com/xml/rss/all.xml"], default=False),
-    source("gdelt", "GDELT", "en", "aggregator", None, [], default=False),   # fetched by src_gdelt()
     # world, French
     source("f24-fr", "France 24", "fr", "public", "FR", ["https://www.france24.com/fr/rss"]),
     source("rfi-fr", "RFI", "fr", "public", "FR", ["https://www.rfi.fr/fr/rss"]),
-    source("dw-fr", "DW", "fr", "public", "DE", ["https://rss.dw.com/rdf/rss-fr-all"]),
+    source("dw-fr", "DW", "fr", "public", "DE", ["https://rss.dw.com/rdf/rss-fr-all", "https://rss.dw.com/xml/rss-fr-all",
+                                                 "https://rss.dw.com/rdf/rss-fr-afr", "https://rss.dw.com/rdf/rss-fr-top"]),
     source("bbc-afrique", "BBC Afrique", "fr", "public", "GB", ["https://feeds.bbci.co.uk/afrique/rss.xml"]),
     source("un-fr", "ONU Info", "fr", "un", "UN", ["https://news.un.org/feed/subscribe/fr/news/all/rss.xml"]),
     # world, Spanish
@@ -100,9 +110,9 @@ NEWS_SOURCES = [
     source("orf", "ORF", "de", "public", "AT", ["https://rss.orf.at/news.xml"]),
     source("srf", "SRF", "de", "public", "CH", ["https://www.srf.ch/news/bnf/rss/1646", "https://www.srf.ch/news/bnf/rss/1922"]),
     # local: Canada, and Ottawa–Gatineau (which also shows the Canada sources)
-    source("cbc-canada", "CBC", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-canada"], region="canada"),
+    source("cbc-canada", "CBC", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-canada", gnews("cbc.ca/news/canada", "en-CA", "CA", "CA:en")], region="canada"),
     source("rc-canada", "Radio-Canada", "fr", "public", "CA", ["https://ici.radio-canada.ca/rss/4159", "https://ici.radio-canada.ca/rss/1000524"], region="canada"),
-    source("cbc-ottawa", "CBC Ottawa", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-canada-ottawa"], region="ottawa-gatineau"),
+    source("cbc-ottawa", "CBC Ottawa", "en", "public", "CA", ["https://www.cbc.ca/webfeed/rss/rss-canada-ottawa", gnews("cbc.ca/news/canada/ottawa", "en-CA", "CA", "CA:en")], region="ottawa-gatineau"),
     source("rc-ottawa", "Radio-Canada Ottawa-Gatineau", "fr", "public", "CA", ["https://ici.radio-canada.ca/rss/6102"], region="ottawa-gatineau"),
 ]
 PER_SOURCE = 12          # newest items kept per source
@@ -387,7 +397,7 @@ def parse_feed(raw):
     return items
 
 
-WIRE_SUFFIX = re.compile(r"\s+[-–|]\s+(AP News|The Associated Press|Associated Press|Reuters)\s*$")
+GNEWS_SUFFIX = re.compile(r"\s+[-–|]\s+[^-–|]{2,40}$")     # Google News appends " - Publisher"
 
 
 def fetch_source(src):
@@ -396,7 +406,11 @@ def fetch_source(src):
     for url in src["urls"]:
         try:
             raw = get(url, timeout=20, as_json=False, raw=True)
-            items = parse_feed(raw)
+            try:
+                items = parse_feed(raw)
+            except ET.ParseError as e:
+                errors.append(f"{url}: {e} (starts {raw[:40]!r})")
+                continue
             if items:
                 return items, {"ok": True, "url": url}
             errors.append(f"{url}: no items")
@@ -405,31 +419,11 @@ def fetch_source(src):
     return [], {"ok": False, "error": "; ".join(errors)[:300]}
 
 
-def src_gdelt():
-    """GDELT GEO API: many outlets, already placed. Off by default in the controls."""
-    url = ("https://api.gdeltproject.org/api/v2/geo/geo?query=sourcelang:english"
-           "&mode=PointData&format=GeoJSON&timespan=2h&maxpoints=60")
-    out = []
-    for f in get(url).get("features", []):
-        p = f.get("properties", {})
-        g = f.get("geometry", {}).get("coordinates", [])
-        m = re.search(r'<a href="([^"]+)"[^>]*>([^<]{15,})</a>', p.get("html", ""))
-        if len(g) == 2 and m:
-            out.append({"title": html.unescape(m.group(2)).strip(), "link": m.group(1), "place": p.get("name", ""),
-                        "lat": round(float(g[1]), 2), "lon": round(float(g[0]), 2), "outlet":
-                        re.sub(r"^https?://(www\.)?([^/]+).*$", r"\2", m.group(1))})
-    return out
-
-
 def src_news():
     gha = os.environ.get("GITHUB_ACTIONS") == "true"
-    feeds = [s for s in NEWS_SOURCES if s["urls"]]
+    feeds = NEWS_SOURCES
     with ThreadPoolExecutor(max_workers=8) as pool:
         fetched = dict(zip((s["id"] for s in feeds), pool.map(fetch_source, feeds)))
-    try:
-        fetched["gdelt"] = (src_gdelt(), {"ok": True})
-    except Exception as e:  # noqa: BLE001
-        fetched["gdelt"] = ([], {"ok": False, "error": str(e)[:300]})
 
     items, seen, sources = [], set(), []
     for src in NEWS_SOURCES:
@@ -440,25 +434,21 @@ def src_news():
         for r in fresh:
             if kept >= PER_SOURCE:
                 break
-            title = WIRE_SUFFIX.sub("", r["title"]) if src["kind"] == "wire" else r["title"]
+            title = GNEWS_SUFFIX.sub("", r["title"]) if "news.google.com" in status.get("url", "") else r["title"]
             key = re.sub(r"\W+", "", title.lower())[:48]
             if not key or key in seen:
                 continue
-            if "lat" in r:                                    # GDELT: already placed
-                place, lat, lon = r["place"], r["lat"], r["lon"]
-            else:
-                hit = geocode(title) or geocode(r.get("desc", ""))
-                if hit:
-                    place, lat, lon = hit
-                elif src["region"]:                           # local news with no place named: home region
-                    place, (lat, lon) = "", REGIONS[src["region"]]
-                else:                                         # still fine for the ticker
-                    place, lat, lon = "", None, None
+            hit = geocode(title) or geocode(r.get("desc", ""))
+            if hit:
+                place, lat, lon = hit
+            elif src["region"]:                               # local news with no place named: home region
+                place, (lat, lon) = "", REGIONS[src["region"]]
+            else:                                             # still fine for the ticker
+                place, lat, lon = "", None, None
             seen.add(key)
             kept += 1
-            item = {"title": title, "url": r.get("link", ""), "src": src["id"],
-                    "source": r.get("outlet") or src["name"], "lang": src["lang"],
-                    "kind": "gdelt" if src["id"] == "gdelt" else "rss", "place": place, "lat": lat, "lon": lon}
+            item = {"title": title, "url": r.get("link", ""), "src": src["id"], "source": src["name"],
+                    "lang": src["lang"], "kind": "rss", "place": place, "lat": lat, "lon": lon}
             if r.get("ts"):
                 item["ts"] = r["ts"].isoformat(timespec="seconds")
             if src["region"]:

@@ -1,6 +1,6 @@
 {
  "meta": {
-  "built_at": "2026-09-25T00:09:19+00:00",
+  "built_at": "2026-09-25T00:37:25+00:00",
   "ok": [],
   "failed": [],
   "sample": true
@@ -18,7 +18,7 @@
   "internet_users_per_sec": 5.0
  },
  "news": {
-  "fetched_at": "2026-09-25T00:09:19+00:00",
+  "fetched_at": "2026-09-25T00:37:25+00:00",
   "items": [
    {
     "title": "Sample headline: talks resume in Geneva · AP",
@@ -30,7 +30,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · AP",
@@ -42,7 +42,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · AP",
@@ -54,7 +54,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · AP",
@@ -66,7 +66,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · AP",
@@ -78,7 +78,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · Reuters",
@@ -90,7 +90,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · Reuters",
@@ -102,7 +102,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · Reuters",
@@ -114,7 +114,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · Reuters",
@@ -126,7 +126,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · Reuters",
@@ -138,7 +138,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · BBC World",
@@ -150,7 +150,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · BBC World",
@@ -162,7 +162,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · BBC World",
@@ -174,7 +174,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · BBC World",
@@ -186,7 +186,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · BBC World",
@@ -198,7 +198,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · DW",
@@ -210,7 +210,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · DW",
@@ -222,7 +222,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · DW",
@@ -234,7 +234,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · DW",
@@ -246,7 +246,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · DW",
@@ -258,7 +258,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · France 24",
@@ -270,7 +270,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · France 24",
@@ -282,7 +282,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · France 24",
@@ -294,7 +294,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · France 24",
@@ -306,7 +306,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · France 24",
@@ -318,7 +318,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · NPR",
@@ -330,7 +330,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · NPR",
@@ -342,7 +342,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · NPR",
@@ -354,7 +354,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · NPR",
@@ -366,7 +366,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · NPR",
@@ -378,7 +378,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · CBC World",
@@ -390,7 +390,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · CBC World",
@@ -402,7 +402,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · CBC World",
@@ -414,7 +414,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · CBC World",
@@ -426,7 +426,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · CBC World",
@@ -438,7 +438,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · UN News",
@@ -450,7 +450,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · UN News",
@@ -462,7 +462,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · UN News",
@@ -474,7 +474,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · UN News",
@@ -486,7 +486,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · UN News",
@@ -498,7 +498,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: talks resume in Geneva · Al Jazeera",
@@ -510,7 +510,7 @@
     "place": "Geneva",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Sample headline: flooding in Bangladesh · Al Jazeera",
@@ -522,7 +522,7 @@
     "place": "Bangladesh",
     "lat": 23.7,
     "lon": 90.4,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Sample headline: election count in Brazil · Al Jazeera",
@@ -534,7 +534,7 @@
     "place": "Brazil",
     "lat": -14.2,
     "lon": -51.9,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Sample headline: heatwave across Australia · Al Jazeera",
@@ -546,7 +546,7 @@
     "place": "Australia",
     "lat": -25.3,
     "lon": 133.8,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Sample headline: summit in Nairobi · Al Jazeera",
@@ -558,7 +558,7 @@
     "place": "Nairobi",
     "lat": -1.3,
     "lon": 36.8,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titre d’exemple : sommet à Bruxelles · France 24",
@@ -570,7 +570,7 @@
     "place": "Bruxelles",
     "lat": 50.8,
     "lon": 4.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titre d’exemple : séisme au Japon · France 24",
@@ -582,7 +582,7 @@
     "place": "Japon",
     "lat": 36.2,
     "lon": 138.3,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titre d’exemple : élections au Sénégal · France 24",
@@ -594,7 +594,7 @@
     "place": "Sénégal",
     "lat": 14.5,
     "lon": -14.5,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titre d’exemple : sécheresse au Maroc · France 24",
@@ -606,7 +606,7 @@
     "place": "Maroc",
     "lat": 31.8,
     "lon": -7.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titre d’exemple : accord commercial avec le Mexique · France 24",
@@ -618,7 +618,7 @@
     "place": "Mexique",
     "lat": 23.6,
     "lon": -102.6,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titre d’exemple : sommet à Bruxelles · RFI",
@@ -630,7 +630,7 @@
     "place": "Bruxelles",
     "lat": 50.8,
     "lon": 4.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titre d’exemple : séisme au Japon · RFI",
@@ -642,7 +642,7 @@
     "place": "Japon",
     "lat": 36.2,
     "lon": 138.3,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titre d’exemple : élections au Sénégal · RFI",
@@ -654,7 +654,7 @@
     "place": "Sénégal",
     "lat": 14.5,
     "lon": -14.5,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titre d’exemple : sécheresse au Maroc · RFI",
@@ -666,7 +666,7 @@
     "place": "Maroc",
     "lat": 31.8,
     "lon": -7.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titre d’exemple : accord commercial avec le Mexique · RFI",
@@ -678,7 +678,7 @@
     "place": "Mexique",
     "lat": 23.6,
     "lon": -102.6,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titre d’exemple : sommet à Bruxelles · DW",
@@ -690,7 +690,7 @@
     "place": "Bruxelles",
     "lat": 50.8,
     "lon": 4.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titre d’exemple : séisme au Japon · DW",
@@ -702,7 +702,7 @@
     "place": "Japon",
     "lat": 36.2,
     "lon": 138.3,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titre d’exemple : élections au Sénégal · DW",
@@ -714,7 +714,7 @@
     "place": "Sénégal",
     "lat": 14.5,
     "lon": -14.5,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titre d’exemple : sécheresse au Maroc · DW",
@@ -726,7 +726,7 @@
     "place": "Maroc",
     "lat": 31.8,
     "lon": -7.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titre d’exemple : accord commercial avec le Mexique · DW",
@@ -738,7 +738,7 @@
     "place": "Mexique",
     "lat": 23.6,
     "lon": -102.6,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titre d’exemple : sommet à Bruxelles · BBC Afrique",
@@ -750,7 +750,7 @@
     "place": "Bruxelles",
     "lat": 50.8,
     "lon": 4.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titre d’exemple : séisme au Japon · BBC Afrique",
@@ -762,7 +762,7 @@
     "place": "Japon",
     "lat": 36.2,
     "lon": 138.3,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titre d’exemple : élections au Sénégal · BBC Afrique",
@@ -774,7 +774,7 @@
     "place": "Sénégal",
     "lat": 14.5,
     "lon": -14.5,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titre d’exemple : sécheresse au Maroc · BBC Afrique",
@@ -786,7 +786,7 @@
     "place": "Maroc",
     "lat": 31.8,
     "lon": -7.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titre d’exemple : accord commercial avec le Mexique · BBC Afrique",
@@ -798,7 +798,7 @@
     "place": "Mexique",
     "lat": 23.6,
     "lon": -102.6,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titre d’exemple : sommet à Bruxelles · ONU Info",
@@ -810,7 +810,7 @@
     "place": "Bruxelles",
     "lat": 50.8,
     "lon": 4.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titre d’exemple : séisme au Japon · ONU Info",
@@ -822,7 +822,7 @@
     "place": "Japon",
     "lat": 36.2,
     "lon": 138.3,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titre d’exemple : élections au Sénégal · ONU Info",
@@ -834,7 +834,7 @@
     "place": "Sénégal",
     "lat": 14.5,
     "lon": -14.5,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titre d’exemple : sécheresse au Maroc · ONU Info",
@@ -846,7 +846,7 @@
     "place": "Maroc",
     "lat": 31.8,
     "lon": -7.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titre d’exemple : accord commercial avec le Mexique · ONU Info",
@@ -858,7 +858,7 @@
     "place": "Mexique",
     "lat": 23.6,
     "lon": -102.6,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titular de ejemplo: cumbre en Bogotá · BBC Mundo",
@@ -870,7 +870,7 @@
     "place": "Bogotá",
     "lat": 4.7,
     "lon": -74.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titular de ejemplo: huelga en Argentina · BBC Mundo",
@@ -882,7 +882,7 @@
     "place": "Argentina",
     "lat": -38.4,
     "lon": -63.6,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titular de ejemplo: incendios en Grecia · BBC Mundo",
@@ -894,7 +894,7 @@
     "place": "Grecia",
     "lat": 39.1,
     "lon": 21.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titular de ejemplo: acuerdo en Ginebra · BBC Mundo",
@@ -906,7 +906,7 @@
     "place": "Ginebra",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titular de ejemplo: elecciones en Perú · BBC Mundo",
@@ -918,7 +918,7 @@
     "place": "Perú",
     "lat": -9.2,
     "lon": -75.0,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titular de ejemplo: cumbre en Bogotá · DW",
@@ -930,7 +930,7 @@
     "place": "Bogotá",
     "lat": 4.7,
     "lon": -74.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titular de ejemplo: huelga en Argentina · DW",
@@ -942,7 +942,7 @@
     "place": "Argentina",
     "lat": -38.4,
     "lon": -63.6,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titular de ejemplo: incendios en Grecia · DW",
@@ -954,7 +954,7 @@
     "place": "Grecia",
     "lat": 39.1,
     "lon": 21.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titular de ejemplo: acuerdo en Ginebra · DW",
@@ -966,7 +966,7 @@
     "place": "Ginebra",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titular de ejemplo: elecciones en Perú · DW",
@@ -978,7 +978,7 @@
     "place": "Perú",
     "lat": -9.2,
     "lon": -75.0,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titular de ejemplo: cumbre en Bogotá · France 24",
@@ -990,7 +990,7 @@
     "place": "Bogotá",
     "lat": 4.7,
     "lon": -74.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titular de ejemplo: huelga en Argentina · France 24",
@@ -1002,7 +1002,7 @@
     "place": "Argentina",
     "lat": -38.4,
     "lon": -63.6,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titular de ejemplo: incendios en Grecia · France 24",
@@ -1014,7 +1014,7 @@
     "place": "Grecia",
     "lat": 39.1,
     "lon": 21.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titular de ejemplo: acuerdo en Ginebra · France 24",
@@ -1026,7 +1026,7 @@
     "place": "Ginebra",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titular de ejemplo: elecciones en Perú · France 24",
@@ -1038,7 +1038,7 @@
     "place": "Perú",
     "lat": -9.2,
     "lon": -75.0,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titular de ejemplo: cumbre en Bogotá · RFI",
@@ -1050,7 +1050,7 @@
     "place": "Bogotá",
     "lat": 4.7,
     "lon": -74.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titular de ejemplo: huelga en Argentina · RFI",
@@ -1062,7 +1062,7 @@
     "place": "Argentina",
     "lat": -38.4,
     "lon": -63.6,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titular de ejemplo: incendios en Grecia · RFI",
@@ -1074,7 +1074,7 @@
     "place": "Grecia",
     "lat": 39.1,
     "lon": 21.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titular de ejemplo: acuerdo en Ginebra · RFI",
@@ -1086,7 +1086,7 @@
     "place": "Ginebra",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titular de ejemplo: elecciones en Perú · RFI",
@@ -1098,7 +1098,7 @@
     "place": "Perú",
     "lat": -9.2,
     "lon": -75.0,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Titular de ejemplo: cumbre en Bogotá · Noticias ONU",
@@ -1110,7 +1110,7 @@
     "place": "Bogotá",
     "lat": 4.7,
     "lon": -74.1,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Titular de ejemplo: huelga en Argentina · Noticias ONU",
@@ -1122,7 +1122,7 @@
     "place": "Argentina",
     "lat": -38.4,
     "lon": -63.6,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Titular de ejemplo: incendios en Grecia · Noticias ONU",
@@ -1134,7 +1134,7 @@
     "place": "Grecia",
     "lat": 39.1,
     "lon": 21.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Titular de ejemplo: acuerdo en Ginebra · Noticias ONU",
@@ -1146,7 +1146,7 @@
     "place": "Ginebra",
     "lat": 46.2,
     "lon": 6.1,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Titular de ejemplo: elecciones en Perú · Noticias ONU",
@@ -1158,7 +1158,7 @@
     "place": "Perú",
     "lat": -9.2,
     "lon": -75.0,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gipfel in Wien · tagesschau",
@@ -1170,7 +1170,7 @@
     "place": "Wien",
     "lat": 48.2,
     "lon": 16.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Hochwasser in Polen · tagesschau",
@@ -1182,7 +1182,7 @@
     "place": "Polen",
     "lat": 51.9,
     "lon": 19.1,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Wahl in Südkorea · tagesschau",
@@ -1194,7 +1194,7 @@
     "place": "Südkorea",
     "lat": 35.9,
     "lon": 127.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Streik in Frankreich · tagesschau",
@@ -1206,7 +1206,7 @@
     "place": "Frankreich",
     "lat": 46.2,
     "lon": 2.2,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gespräche in Kairo · tagesschau",
@@ -1218,7 +1218,7 @@
     "place": "Kairo",
     "lat": 30.0,
     "lon": 31.2,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gipfel in Wien · Deutschlandfunk",
@@ -1230,7 +1230,7 @@
     "place": "Wien",
     "lat": 48.2,
     "lon": 16.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Hochwasser in Polen · Deutschlandfunk",
@@ -1242,7 +1242,7 @@
     "place": "Polen",
     "lat": 51.9,
     "lon": 19.1,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Wahl in Südkorea · Deutschlandfunk",
@@ -1254,7 +1254,7 @@
     "place": "Südkorea",
     "lat": 35.9,
     "lon": 127.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Streik in Frankreich · Deutschlandfunk",
@@ -1266,7 +1266,7 @@
     "place": "Frankreich",
     "lat": 46.2,
     "lon": 2.2,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gespräche in Kairo · Deutschlandfunk",
@@ -1278,7 +1278,7 @@
     "place": "Kairo",
     "lat": 30.0,
     "lon": 31.2,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gipfel in Wien · DW",
@@ -1290,7 +1290,7 @@
     "place": "Wien",
     "lat": 48.2,
     "lon": 16.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Hochwasser in Polen · DW",
@@ -1302,7 +1302,7 @@
     "place": "Polen",
     "lat": 51.9,
     "lon": 19.1,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Wahl in Südkorea · DW",
@@ -1314,7 +1314,7 @@
     "place": "Südkorea",
     "lat": 35.9,
     "lon": 127.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Streik in Frankreich · DW",
@@ -1326,7 +1326,7 @@
     "place": "Frankreich",
     "lat": 46.2,
     "lon": 2.2,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gespräche in Kairo · DW",
@@ -1338,7 +1338,7 @@
     "place": "Kairo",
     "lat": 30.0,
     "lon": 31.2,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gipfel in Wien · ORF",
@@ -1350,7 +1350,7 @@
     "place": "Wien",
     "lat": 48.2,
     "lon": 16.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Hochwasser in Polen · ORF",
@@ -1362,7 +1362,7 @@
     "place": "Polen",
     "lat": 51.9,
     "lon": 19.1,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Wahl in Südkorea · ORF",
@@ -1374,7 +1374,7 @@
     "place": "Südkorea",
     "lat": 35.9,
     "lon": 127.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Streik in Frankreich · ORF",
@@ -1386,7 +1386,7 @@
     "place": "Frankreich",
     "lat": 46.2,
     "lon": 2.2,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gespräche in Kairo · ORF",
@@ -1398,7 +1398,7 @@
     "place": "Kairo",
     "lat": 30.0,
     "lon": 31.2,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gipfel in Wien · SRF",
@@ -1410,7 +1410,7 @@
     "place": "Wien",
     "lat": 48.2,
     "lon": 16.4,
-    "ts": "2026-09-25T00:04:19+00:00"
+    "ts": "2026-09-25T00:32:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Hochwasser in Polen · SRF",
@@ -1422,7 +1422,7 @@
     "place": "Polen",
     "lat": 51.9,
     "lon": 19.1,
-    "ts": "2026-09-24T23:27:19+00:00"
+    "ts": "2026-09-24T23:55:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Wahl in Südkorea · SRF",
@@ -1434,7 +1434,7 @@
     "place": "Südkorea",
     "lat": 35.9,
     "lon": 127.8,
-    "ts": "2026-09-24T22:50:19+00:00"
+    "ts": "2026-09-24T23:18:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Streik in Frankreich · SRF",
@@ -1446,7 +1446,7 @@
     "place": "Frankreich",
     "lat": 46.2,
     "lon": 2.2,
-    "ts": "2026-09-24T22:13:19+00:00"
+    "ts": "2026-09-24T22:41:25+00:00"
    },
    {
     "title": "Beispiel-Schlagzeile: Gespräche in Kairo · SRF",
@@ -1458,7 +1458,7 @@
     "place": "Kairo",
     "lat": 30.0,
     "lon": 31.2,
-    "ts": "2026-09-24T21:36:19+00:00"
+    "ts": "2026-09-24T22:04:25+00:00"
    },
    {
     "title": "Sample headline: Parliament returns in Ottawa · CBC",
@@ -1470,7 +1470,7 @@
     "place": "Ottawa",
     "lat": 45.4,
     "lon": -75.7,
-    "ts": "2026-09-25T00:04:19+00:00",
+    "ts": "2026-09-25T00:32:25+00:00",
     "region": "canada"
    },
    {
@@ -1483,7 +1483,7 @@
     "place": "Alberta",
     "lat": 54.5,
     "lon": -115.0,
-    "ts": "2026-09-24T23:27:19+00:00",
+    "ts": "2026-09-24T23:55:25+00:00",
     "region": "canada"
    },
    {
@@ -1496,7 +1496,7 @@
     "place": "Ottawa",
     "lat": 45.4,
     "lon": -75.7,
-    "ts": "2026-09-25T00:04:19+00:00",
+    "ts": "2026-09-25T00:32:25+00:00",
     "region": "canada"
    },
    {
@@ -1509,7 +1509,7 @@
     "place": "Alberta",
     "lat": 54.5,
     "lon": -115.0,
-    "ts": "2026-09-24T23:27:19+00:00",
+    "ts": "2026-09-24T23:55:25+00:00",
     "region": "canada"
    },
    {
@@ -1522,7 +1522,7 @@
     "place": "Gatineau",
     "lat": 45.48,
     "lon": -75.7,
-    "ts": "2026-09-25T00:04:19+00:00",
+    "ts": "2026-09-25T00:32:25+00:00",
     "region": "ottawa-gatineau"
    },
    {
@@ -1535,7 +1535,7 @@
     "place": "Ottawa",
     "lat": 45.4,
     "lon": -75.7,
-    "ts": "2026-09-24T23:27:19+00:00",
+    "ts": "2026-09-24T23:55:25+00:00",
     "region": "ottawa-gatineau"
    },
    {
@@ -1548,7 +1548,7 @@
     "place": "Gatineau",
     "lat": 45.48,
     "lon": -75.7,
-    "ts": "2026-09-25T00:04:19+00:00",
+    "ts": "2026-09-25T00:32:25+00:00",
     "region": "ottawa-gatineau"
    },
    {
@@ -1561,7 +1561,7 @@
     "place": "Ottawa",
     "lat": 45.4,
     "lon": -75.7,
-    "ts": "2026-09-24T23:27:19+00:00",
+    "ts": "2026-09-24T23:55:25+00:00",
     "region": "ottawa-gatineau"
    }
   ],
@@ -1664,17 +1664,6 @@
     "default": false,
     "n": 5,
     "ok": true
-   },
-   {
-    "id": "gdelt",
-    "name": "GDELT",
-    "lang": "en",
-    "kind": "aggregator",
-    "country": null,
-    "region": null,
-    "default": false,
-    "n": 0,
-    "ok": false
    },
    {
     "id": "f24-fr",

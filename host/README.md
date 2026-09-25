@@ -60,8 +60,9 @@ How a change reaches the screen:
 
 World headlines come from news agencies and public broadcasters, several per language and from several
 countries: AP and Reuters (via Google News search feeds, the only keyless source of either wire), BBC, DW, France 24,
-RFI, NPR, CBC, ORF, SRF, tagesschau, Deutschlandfunk and UN News. State-funded outlets (Al Jazeera) and unvetted
-aggregators (GDELT) are listed but start switched off.
+RFI, NPR, CBC, ORF, SRF, tagesschau, Deutschlandfunk and UN News. State-funded outlets (Al Jazeera) are listed but
+start switched off. A source can list several feed URLs; the first that answers wins, and CBC falls back to a Google
+News feed limited to its own section when cbc.ca doesn't respond.
 
 Balance comes from rotation, not from judging stories. The TV picks the next headline card from whichever enabled
 source has had the fewest cards so far. The ticker takes headlines one source at a time, newest first. Every
@@ -88,7 +89,7 @@ both.
 ## Data flow
 
 Actions job (slow / keyed / no-CORS sources) → `data.json`:
-news feeds (above, fetched in parallel, geocoded by keyword), GDELT GEO, Wikipedia on-this-day in each language,
+news feeds (above, fetched in parallel, geocoded by keyword), Wikipedia on-this-day in each language,
 Celestrak GEO group propagated with sgp4, CoinGecko + Frankfurter.
 If a source fails, its last-good block is carried over and flagged `stale`.
 
