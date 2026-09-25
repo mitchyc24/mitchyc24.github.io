@@ -340,7 +340,8 @@ let state = {
   farEvents: [],
   lastFetchedAt: null,
   visibleNearCount: 0,
-  visibleFarCount: 0
+  visibleFarCount: 0,
+  settingsOpener: null
 };
 
 const $ = (s) => document.querySelector(s);
@@ -533,13 +534,14 @@ async function loadEvents() {
   const nearCutoff = now + 1000 * 60 * 60 * 24 * 14;
   const farStart = now + 1000 * 60 * 60 * 24 * 15;
 
-  const merged = [...wikidata, ...holidays].sort((a, b) => new Date(a.start) - new Date(b.start));
-  state.nearEvents = merged.filter((e) => {
+  const localEvents = [...wikidata].sort((a, b) => new Date(a.start) - new Date(b.start));
+  state.nearEvents = localEvents.filter((e) => {
     const ts = new Date(e.start).getTime();
     return ts >= now - 86400000 && ts <= nearCutoff;
   }).slice(0, 24);
 
-  state.farEvents = merged.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
+  const farLocal = localEvents.filter((e) => new Date(e.start).getTime() >= farStart);
+  state.farEvents = [...farLocal, ...holidays].sort((a, b) => new Date(a.start) - new Date(b.start)).slice(0, 24);
   state.lastFetchedAt = new Date().toISOString();
 
   if (!state.farEvents.length && (holidaysFailed || wikidataFailed)) {
@@ -572,9 +574,11 @@ function buildSettings() {
 }
 
 function openSettings() {
+  state.settingsOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   buildSettings();
   if (typeof els.settings.showModal === "function") {
     els.settings.showModal();
+    requestAnimationFrame(() => els.langSelect.focus());
     return;
   }
   const main = document.querySelector("main");
@@ -589,12 +593,15 @@ function openSettings() {
 function closeSettings() {
   if (typeof els.settings.close === "function") {
     els.settings.close();
-    return;
+  } else {
+    const main = document.querySelector("main");
+    if (main) main.removeAttribute("inert");
+    document.body.style.overflow = "";
+    els.settings.removeAttribute("open");
   }
-  const main = document.querySelector("main");
-  if (main) main.removeAttribute("inert");
-  document.body.style.overflow = "";
-  els.settings.removeAttribute("open");
+  if (state.settingsOpener && typeof state.settingsOpener.focus === "function") {
+    state.settingsOpener.focus();
+  }
 }
 
 function saveSettings() {
@@ -623,9 +630,23 @@ els.cancelBtn.addEventListener("click", (event) => {
   closeSettings();
 });
 els.settings.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && typeof els.settings.showModal !== "function") {
+  const fallback = typeof els.settings.showModal !== "function";
+  if (event.key === "Escape" && fallback) {
     event.preventDefault();
     closeSettings();
+  }
+  if (!fallback || event.key !== "Tab") return;
+
+  const focusables = els.settings.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])");
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
   }
 });
 els.saveBtn.addEventListener("click", saveSettings);
