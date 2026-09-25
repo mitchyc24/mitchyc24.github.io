@@ -249,10 +249,10 @@ const APP_ID = "local-events";
 const STORAGE_KEY = `${APP_ID}.settings`;
 
 const CITIES = [
-  { id: "ottawa", qid: "Q1933", en: "Ottawa", fr: "Ottawa", nagerCountry: "CA" },
-  { id: "gatineau", qid: "Q1931", en: "Gatineau", fr: "Gatineau", nagerCountry: "CA" },
-  { id: "montreal", qid: "Q340", en: "Montreal", fr: "Montréal", nagerCountry: "CA" },
-  { id: "toronto", qid: "Q172", en: "Toronto", fr: "Toronto", nagerCountry: "CA" }
+  { id: "ottawa", qid: "Q1933", en: "Ottawa", fr: "Ottawa" },
+  { id: "gatineau", qid: "Q1931", en: "Gatineau", fr: "Gatineau" },
+  { id: "montreal", qid: "Q340", en: "Montreal", fr: "Montréal" },
+  { id: "toronto", qid: "Q172", en: "Toronto", fr: "Toronto" }
 ];
 
 const TYPE_DEFS = [
@@ -284,8 +284,7 @@ const TEXT = {
     fetchError: "Couldn't load event data right now.",
     updated: "Updated",
     summary: (city, nearCount, farCount) => `${nearCount} nearby and ${farCount} larger upcoming events in ${city}.`,
-    source: "Source",
-    holidayType: "Public holiday"
+    source: "Source"
   },
   fr: {
     title: "Événements locaux",
@@ -307,8 +306,7 @@ const TEXT = {
     fetchError: "Impossible de charger les données d'événements pour le moment.",
     updated: "Mis à jour",
     summary: (city, nearCount, farCount) => `${nearCount} événements proches et ${farCount} grands événements à venir à ${city}.`,
-    source: "Source",
-    holidayType: "Jour férié"
+    source: "Source"
   }
 };
 
@@ -483,22 +481,6 @@ LIMIT 120`;
   }).filter((e) => e.start);
 }
 
-async function fetchHolidays(city) {
-  const lang = state.settings.lang;
-  const t = TEXT[lang] || TEXT.en;
-  const r = await fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${city.nagerCountry}`);
-  if (!r.ok) throw new Error(`nager-${r.status}`);
-  const data = await r.json();
-  return (Array.isArray(data) ? data : []).slice(0, 8).map((h) => ({
-    title: lang === "fr" && h.localName ? h.localName : h.name,
-    type: t.holidayType,
-    place: lang === "fr" ? "Canada (pays entier)" : "Canada (nationwide)",
-    start: `${h.date}T12:00:00`,
-    category: "community",
-    source: "Nager.Date"
-  }));
-}
-
 async function loadEvents() {
   const seq = ++state.loadSeq;
   const t = TEXT[state.settings.lang] || TEXT.en;
@@ -510,14 +492,9 @@ async function loadEvents() {
   els.farError.hidden = true;
 
   let wikidata = [];
-  let holidays = [];
   let wikidataFailed = false;
-  let holidaysFailed = false;
 
-  const [wikidataResult, holidaysResult] = await Promise.allSettled([
-    fetchWikidataEvents(city.qid),
-    fetchHolidays(city)
-  ]);
+  const [wikidataResult] = await Promise.allSettled([fetchWikidataEvents(city.qid)]);
   if (seq !== state.loadSeq) return;
 
   if (wikidataResult.status === "fulfilled") {
@@ -526,12 +503,6 @@ async function loadEvents() {
     wikidataFailed = true;
     els.nearError.hidden = false;
     els.nearError.textContent = t.fetchError;
-  }
-
-  if (holidaysResult.status === "fulfilled") {
-    holidays = holidaysResult.value;
-  } else {
-    holidaysFailed = true;
   }
 
   const now = Date.now();
@@ -544,11 +515,10 @@ async function loadEvents() {
     return ts >= now - 86400000 && ts <= nearCutoff;
   }).slice(0, 24);
 
-  const farLocal = localEvents.filter((e) => new Date(e.start).getTime() >= farStart);
-  state.farEvents = [...farLocal, ...holidays].sort((a, b) => new Date(a.start) - new Date(b.start)).slice(0, 24);
+  state.farEvents = localEvents.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
   state.lastFetchedAt = new Date().toISOString();
 
-  if (!state.farEvents.length && (holidaysFailed || wikidataFailed)) {
+  if (!state.farEvents.length && wikidataFailed) {
     els.farError.hidden = false;
     els.farError.textContent = t.fetchError;
   }
@@ -620,12 +590,12 @@ function saveSettings() {
     enabledTypes: selectedTypes.length ? selectedTypes : TYPE_DEFS.map((t) => t.id)
   };
   store.set(state.settings);
-  state.visibleNearCount = renderList(els.nearList, state.nearEvents, els.nearEmpty);
-  state.visibleFarCount = renderList(els.farList, state.farEvents, els.farEmpty);
-  ui();
-
   if (prev.cityId !== state.settings.cityId || prev.lang !== state.settings.lang) {
     loadEvents();
+  } else {
+    state.visibleNearCount = renderList(els.nearList, state.nearEvents, els.nearEmpty);
+    state.visibleFarCount = renderList(els.farList, state.farEvents, els.farEmpty);
+    ui();
   }
 
   closeSettings();
