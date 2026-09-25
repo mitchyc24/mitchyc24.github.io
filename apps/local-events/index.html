@@ -467,8 +467,7 @@ LIMIT 120`;
   const url = "https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(query);
   const r = await fetch(url, {
     headers: {
-      "Accept": "application/sparql-results+json",
-      "Api-User-Agent": "miApps-LocalEvents/1.0 (https://mitchyc24.github.io/apps/local-events/)"
+      "Accept": "application/sparql-results+json"
     }
   });
   if (!r.ok) throw new Error(`wikidata-${r.status}`);
@@ -505,6 +504,8 @@ async function loadEvents() {
     wikidataFailed = true;
     els.nearError.hidden = false;
     els.nearError.textContent = t.fetchError;
+    els.farError.hidden = false;
+    els.farError.textContent = t.fetchError;
   }
   if (seq !== state.loadSeq) return;
 
@@ -534,11 +535,6 @@ async function loadEvents() {
 
   state.farEvents = localEvents.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
   state.lastFetchedAt = new Date().toISOString();
-
-  if (!state.farEvents.length && wikidataFailed) {
-    els.farError.hidden = false;
-    els.farError.textContent = t.fetchError;
-  }
 
   els.nearLoading.hidden = true;
   els.farLoading.hidden = true;
@@ -572,8 +568,7 @@ function openSettings() {
     requestAnimationFrame(() => els.langSelect.focus());
     return;
   }
-  const main = document.querySelector("main");
-  if (main) main.setAttribute("inert", "");
+  setFallbackBackgroundDisabled(true);
   document.body.style.overflow = "hidden";
   els.settings.setAttribute("role", "dialog");
   els.settings.setAttribute("aria-modal", "true");
@@ -587,14 +582,26 @@ function closeSettings() {
     els.settings.close();
   }
   if (state.fallbackDialogActive) {
-    const main = document.querySelector("main");
-    if (main) main.removeAttribute("inert");
+    setFallbackBackgroundDisabled(false);
     document.body.style.overflow = "";
     els.settings.removeAttribute("open");
     state.fallbackDialogActive = false;
   }
   if (state.settingsOpener && typeof state.settingsOpener.focus === "function") {
     state.settingsOpener.focus();
+  }
+}
+
+function setFallbackBackgroundDisabled(disabled) {
+  for (const child of document.body.children) {
+    if (child === els.settings) continue;
+    if (disabled) {
+      child.setAttribute("inert", "");
+      child.setAttribute("aria-hidden", "true");
+    } else {
+      child.removeAttribute("inert");
+      child.removeAttribute("aria-hidden");
+    }
   }
 }
 
