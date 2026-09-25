@@ -337,7 +337,8 @@ const defaultSettings = () => ({
 let state = {
   settings: Object.assign(defaultSettings(), store.get() || {}),
   nearEvents: [],
-  farEvents: []
+  farEvents: [],
+  lastFetchedAt: null
 };
 
 const $ = (s) => document.querySelector(s);
@@ -362,6 +363,9 @@ function cityLabel(cityId, lang) {
 
 function ui() {
   const t = TEXT[state.settings.lang] || TEXT.en;
+  const updatedStamp = state.lastFetchedAt
+    ? new Intl.DateTimeFormat(state.settings.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(state.lastFetchedAt))
+    : "—";
   document.documentElement.lang = state.settings.lang;
   els.title.textContent = t.title;
   els.subtitle.textContent = t.subtitle;
@@ -380,7 +384,7 @@ function ui() {
   els.typesLegend.textContent = t.eventTypes;
   els.cancelBtn.textContent = t.cancel;
   els.saveBtn.textContent = t.save;
-  els.updatedBadge.textContent = `${t.updated}: ${new Intl.DateTimeFormat(state.settings.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date())}`;
+  els.updatedBadge.textContent = `${t.updated}: ${updatedStamp}`;
   els.locationBadge.textContent = cityLabel(state.settings.cityId, state.settings.lang);
   els.summary.textContent = t.summary(cityLabel(state.settings.cityId, state.settings.lang), state.nearEvents.length, state.farEvents.length);
 }
@@ -526,6 +530,7 @@ async function loadEvents() {
   }).slice(0, 24);
 
   state.farEvents = merged.filter((e) => new Date(e.start).getTime() >= farStart).slice(0, 24);
+  state.lastFetchedAt = new Date().toISOString();
 
   if (!state.farEvents.length && (holidaysFailed || wikidataFailed)) {
     els.farError.hidden = false;
@@ -556,6 +561,23 @@ function buildSettings() {
   }
 }
 
+function openSettings() {
+  buildSettings();
+  if (typeof els.settings.showModal === "function") {
+    els.settings.showModal();
+    return;
+  }
+  els.settings.setAttribute("open", "open");
+}
+
+function closeSettings() {
+  if (typeof els.settings.close === "function") {
+    els.settings.close();
+    return;
+  }
+  els.settings.removeAttribute("open");
+}
+
 function saveSettings() {
   const prev = { ...state.settings };
   const selectedTypes = [...els.typeChecks.querySelectorAll("input:checked")].map((i) => i.value);
@@ -573,22 +595,15 @@ function saveSettings() {
     loadEvents();
   }
 
-  els.settings.close();
+  closeSettings();
 }
 
-els.openSettings.addEventListener("click", () => {
-  buildSettings();
-  els.settings.showModal();
+els.openSettings.addEventListener("click", openSettings);
+els.cancelBtn.addEventListener("click", (event) => {
+  event.preventDefault();
+  closeSettings();
 });
 els.saveBtn.addEventListener("click", saveSettings);
-els.langSelect.addEventListener("change", () => {
-  const nextLang = els.langSelect.value === "fr" ? "fr" : "en";
-  const original = state.settings.lang;
-  state.settings.lang = nextLang;
-  ui();
-  buildSettings();
-  state.settings.lang = original;
-});
 
 ui();
 loadEvents();
