@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Waveguide Modes</title>
+<meta name="description" content="An interactive lab for rectangular waveguide modes: field patterns, cutoff, dispersion and the bouncing-plane-wave picture.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main>
+  <header class="top">
+    <a class="home" href="../../">&larr; miApps</a>
+    <h1>Waveguide Modes</h1>
+    <p class="lede">A hollow metal pipe can carry microwaves, but only in certain field patterns called <em>modes</em>,
+      and only above each mode's <em>cutoff frequency</em>. Change the guide, the frequency and the mode, and watch the fields.</p>
+  </header>
+
+  <!-- Guided tour -->
+  <section class="card tour" aria-labelledby="tour-h">
+    <div class="tour-head">
+      <h2 id="tour-h">Guided tour</h2>
+      <ol class="steps" id="steps" aria-label="Tour steps"></ol>
+    </div>
+    <div class="tour-body" id="tour-body" aria-live="polite"></div>
+    <div class="tour-nav">
+      <button type="button" class="btn ghost" id="tour-prev">Back</button>
+      <button type="button" class="btn" id="tour-next">Next</button>
+    </div>
+  </section>
+
+  <div class="layout">
+    <!-- Controls -->
+    <aside class="controls card" aria-label="Waveguide and mode">
+      <h2>Guide</h2>
+      <label class="field">
+        <span>Standard size</span>
+        <select id="preset"></select>
+      </label>
+      <div class="row2">
+        <label class="field"><span>Width <i>a</i> (mm)</span><input id="dim-a" type="number" inputmode="decimal" min="0.5" max="500" step="0.01"></label>
+        <label class="field"><span>Height <i>b</i> (mm)</span><input id="dim-b" type="number" inputmode="decimal" min="0.5" max="500" step="0.01"></label>
+      </div>
+      <label class="field">
+        <span class="split"><span>Filling <i>ε</i><sub>r</sub></span> <small id="er-name"></small></span>
+        <input id="er" type="range" min="1" max="10" step="0.01">
+      </label>
+
+      <h2>Mode</h2>
+      <div class="seg" role="radiogroup" aria-label="Mode family">
+        <button type="button" role="radio" data-type="TE" aria-checked="true">TE <small>(no E<sub>z</sub>)</small></button>
+        <button type="button" role="radio" data-type="TM" aria-checked="false">TM <small>(no H<sub>z</sub>)</small></button>
+      </div>
+      <div class="row2">
+        <div class="stepper" aria-label="m">
+          <span class="stepper-label"><i>m</i> <small>half-waves across <i>a</i></small></span>
+          <div class="stepper-ctl">
+            <button type="button" data-step="m" data-d="-1" aria-label="Decrease m">−</button>
+            <output id="m-out">1</output>
+            <button type="button" data-step="m" data-d="1" aria-label="Increase m">+</button>
+          </div>
+        </div>
+        <div class="stepper" aria-label="n">
+          <span class="stepper-label"><i>n</i> <small>half-waves across <i>b</i></small></span>
+          <div class="stepper-ctl">
+            <button type="button" data-step="n" data-d="-1" aria-label="Decrease n">−</button>
+            <output id="n-out">0</output>
+            <button type="button" data-step="n" data-d="1" aria-label="Increase n">+</button>
+          </div>
+        </div>
+      </div>
+      <p class="hint" id="mode-hint"></p>
+
+      <h2>At this frequency</h2>
+      <div class="status" id="status"></div>
+      <dl class="readout" id="readout"></dl>
+    </aside>
+
+    <div class="views">
+      <section class="card view" aria-labelledby="xs-h">
+        <div class="view-head">
+          <h2 id="xs-h">Cross-section <small>looking down the guide, wave coming toward you</small></h2>
+        </div>
+        <div class="canvas-wrap"><canvas id="cv-xs" role="img" aria-label="Cross-section field pattern"></canvas></div>
+        <div class="legend">
+          <label class="chk"><input type="checkbox" id="show-e" checked> <span class="sw e"></span> Electric field E</label>
+          <label class="chk"><input type="checkbox" id="show-h" checked> <span class="sw h"></span> Magnetic field H</label>
+          <label class="field inline"><span>Shading</span>
+            <select id="shade"><option value="E">|E| strength</option><option value="H">|H| strength</option><option value="none">None</option></select>
+          </label>
+        </div>
+        <p class="key"><span class="glyph">⊙</span> points out of the screen, <span class="glyph">⊗</span> points into it. Arrows and symbols grow with field strength.</p>
+      </section>
+
+      <section class="card view" aria-labelledby="lg-h">
+        <div class="view-head">
+          <h2 id="lg-h">Along the guide <small id="lg-sub"></small></h2>
+          <div class="seg small" role="radiogroup" aria-label="Viewing plane">
+            <button type="button" role="radio" data-plane="top" aria-checked="true">Top</button>
+            <button type="button" role="radio" data-plane="side" aria-checked="false">Side</button>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="cv-lg" role="img" aria-label="Fields along the waveguide"></canvas></div>
+        <label class="field inline slice"><span id="slice-label">Slice</span><input id="slice" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+      </section>
+
+      <section class="card view" aria-labelledby="ray-h">
+        <div class="view-head"><h2 id="ray-h">Bouncing plane waves <small id="ray-sub"></small></h2></div>
+        <div class="canvas-wrap"><canvas id="cv-ray" role="img" aria-label="Plane waves bouncing between the walls"></canvas></div>
+        <p class="key" id="ray-key"></p>
+      </section>
+
+      <section class="card view" aria-labelledby="disp-h">
+        <div class="view-head"><h2 id="disp-h">Dispersion and cutoff <small>drag across the chart to change frequency</small></h2></div>
+        <div class="canvas-wrap chart"><canvas id="cv-disp" role="img" aria-label="Dispersion diagram: phase constant against frequency for each mode"></canvas>
+          <div class="tip" id="tip" hidden></div></div>
+        <h3>Mode ladder <small>every mode up to the chart's top frequency; tap one to select it</small></h3>
+        <div class="ladder" id="ladder"></div>
+      </section>
+
+      <!-- Sticky frequency dock: stays at the bottom of the screen while the views are in sight. -->
+      <div class="dock" role="group" aria-label="Frequency and playback">
+        <button type="button" class="play" id="play" aria-label="Pause animation">❚❚</button>
+        <label class="freq">
+          <span class="freq-top"><span class="freq-label">Frequency</span><span><input id="f-num" type="number" inputmode="decimal" step="0.01" aria-label="Frequency in GHz"> GHz</span></span>
+          <input id="f" type="range" min="0" max="1" step="0.0001" aria-label="Frequency">
+        </label>
+        <select id="mode-quick" aria-label="Mode"></select>
+      </div>
+    </div>
+  </div>
+
+  <section class="learn" aria-labelledby="learn-h">
+    <h2 id="learn-h">Background</h2>
+
+    <details open>
+      <summary>What a waveguide is, and why it has a cutoff</summary>
+      <p>A waveguide is a metal pipe, usually rectangular, that carries electromagnetic energy from a radio or radar to an antenna
+        with very low loss. It has no centre conductor, so it cannot carry DC or low frequencies the way coax can.</p>
+      <p>The walls are (nearly) perfect conductors, which forces a <strong>boundary condition</strong>: the electric field
+        cannot run <em>along</em> a metal wall, only straight into it. So the field across the pipe has to fit whole
+        numbers of half-waves between the walls, like a guitar string pinned at both ends.</p>
+      <p>A wave only fits if half its wavelength is shorter than the pipe is wide. Below that point the pattern cannot form,
+        the field dies away exponentially within a short distance (<em>evanescent</em>) and no power travels. That boundary is the
+        <strong>cutoff frequency</strong>:</p>
+      <p class="eq">f<sub>c</sub> = <span class="frac"><span>c</span><span>2√ε<sub>r</sub></span></span> √( (m/a)² + (n/b)² )</p>
+      <p>For the common TE<sub>10</sub> mode this is simply f<sub>c</sub> = c / 2a: the broad wall must be at least half a wavelength wide.</p>
+    </details>
+
+    <details>
+      <summary>Mode names: TE, TM, and the numbers m and n</summary>
+      <p><strong>TE</strong> (transverse electric) modes have no electric field pointing along the guide; E lies entirely in the
+        cross-section and there is a magnetic component H<sub>z</sub> along the axis. <strong>TM</strong> (transverse magnetic) modes are the
+        reverse: H is entirely in the cross-section and E has a component E<sub>z</sub>.</p>
+      <p>The subscripts count half-wave variations: <i>m</i> across the broad wall <i>a</i> and <i>n</i> across the narrow wall <i>b</i>.
+        TE<sub>10</sub> has one half-wave hump across <i>a</i> and no variation across <i>b</i>.</p>
+      <p>TM modes need both <i>m</i> and <i>n</i> to be at least 1, because E<sub>z</sub> is a product of sines and vanishes if either is zero.
+        That is why there is no TM<sub>10</sub>. When both are at least 1, TE<sub>mn</sub> and TM<sub>mn</sub> share a cutoff frequency:
+        they are <em>degenerate</em>.</p>
+      <p><strong>Why no TEM?</strong> Coax and twin-lead carry a TEM mode (no field along the axis at all) that works down to DC.
+        A TEM wave needs two separate conductors to hold the voltage between, and a hollow pipe has only one, so every
+        waveguide mode has a cutoff.</p>
+    </details>
+
+    <details>
+      <summary>The dominant mode and single-mode operation</summary>
+      <p>The mode with the lowest cutoff is the <strong>dominant mode</strong>: TE<sub>10</sub> whenever <i>a</i> &gt; <i>b</i>. Between its
+        cutoff and the next one, it is the only mode that can travel, so the energy arrives in one predictable pattern. That
+        is the range designers use.</p>
+      <p>Standard guides make <i>b</i> about half of <i>a</i>. Then TE<sub>20</sub> (at 2f<sub>c10</sub>) and TE<sub>01</sub> (at about the same place)
+        both switch on near twice the dominant cutoff, giving the widest possible single-mode band. A taller guide would
+        let TE<sub>01</sub> in earlier; a flatter one handles less power before the air breaks down and has more loss.</p>
+      <p>In practice the recommended band is about 1.25 to 1.9 × f<sub>c10</sub>: close to cutoff the loss and dispersion rise steeply,
+        and close to the next mode stray energy can leak into it at bends and joints.</p>
+    </details>
+
+    <details>
+      <summary>Phase velocity, group velocity and dispersion</summary>
+      <p>Inside the guide the wavelength along the axis, the <strong>guide wavelength</strong> λ<sub>g</sub>, is longer than in free space:</p>
+      <p class="eq">λ<sub>g</sub> = λ / √(1 − (f<sub>c</sub>/f)²)</p>
+      <p>The wave crests therefore sweep along faster than light: the <strong>phase velocity</strong> v<sub>p</sub> = c / √(1 − (f<sub>c</sub>/f)²) is
+        greater than c. Nothing physical travels at that speed. Energy and information move at the <strong>group velocity</strong>
+        v<sub>g</sub> = c √(1 − (f<sub>c</sub>/f)²), which is always slower than c, and v<sub>p</sub> · v<sub>g</sub> = c².</p>
+      <p>Because both depend on frequency, a waveguide is <strong>dispersive</strong>: different frequencies in a pulse travel at
+        different speeds, so short pulses spread out, especially near cutoff. The curves in the dispersion chart show this:
+        v<sub>p</sub> is ω/β (the slope of a line from the origin to the point) and v<sub>g</sub> is dω/dβ (the slope of the curve itself).</p>
+      <p>The <em>bouncing plane waves</em> view shows where this comes from. Any mode can be built from plane waves travelling at
+        c and zig-zagging between the walls at angle θ, with sin θ = f<sub>c</sub>/f. The energy's forward progress is c cos θ (the
+        group velocity), while the point where a crest meets the wall slides along at c / cos θ (the phase velocity). At cutoff
+        the waves bounce straight across and make no forward progress at all.</p>
+    </details>
+
+    <details>
+      <summary>Waveguides and antennas</summary>
+      <p>Waveguides feed most microwave antennas: radar dishes, satellite ground stations, point-to-point links, and the
+        feeds of radio telescopes. A few common ways a waveguide becomes an antenna:</p>
+      <ul>
+        <li><strong>Horn antenna:</strong> the guide flares out so the TE<sub>10</sub> field spreads over a larger aperture and matches
+          smoothly into free space. The larger the mouth, the narrower the beam.</li>
+        <li><strong>Open-ended waveguide:</strong> the simplest radiator, often used as a probe for measurements.</li>
+        <li><strong>Slotted waveguide array:</strong> slots cut in the wall interrupt the wall currents and each slot radiates.
+          Spaced every half guide wavelength, they add up into a narrow fan beam. Marine and aircraft radars use them.</li>
+        <li><strong>Feed horns for dishes:</strong> often circular guides, whose symmetric modes handle two polarisations at once.</li>
+      </ul>
+      <p>The guide size sets the band: a 3 GHz radar uses WR-284 (72 mm wide), a 10 GHz X-band system WR-90 (23 mm), and
+        a 60 GHz link WR-15 (under 4 mm).</p>
+    </details>
+
+    <details>
+      <summary>Other shapes: circular guides</summary>
+      <p>Circular guides work the same way, but the patterns follow Bessel functions instead of sines. Their dominant mode is
+        TE<sub>11</sub>, with cutoff f<sub>c</sub> = 1.841 c / (2π r). The TE<sub>01</sub> circular mode is unusual: its loss <em>falls</em> as frequency
+        rises, which once made it a candidate for long-haul millimetre-wave trunk lines before optical fibre won.
+        An optical fibre is itself a dielectric waveguide with its own family of modes.</p>
+    </details>
+
+    <details>
+      <summary>Formula sheet (rectangular guide, TE and TM)</summary>
+      <table class="formulas">
+        <tbody>
+          <tr><th>Cutoff wavenumber</th><td>k<sub>c</sub> = √((mπ/a)² + (nπ/b)²)</td></tr>
+          <tr><th>Wavenumber in the filling</th><td>k = 2πf √ε<sub>r</sub> / c</td></tr>
+          <tr><th>Phase constant</th><td>β = √(k² − k<sub>c</sub>²) above cutoff</td></tr>
+          <tr><th>Attenuation below cutoff</th><td>α = √(k<sub>c</sub>² − k²), fields ∝ e<sup>−αz</sup></td></tr>
+          <tr><th>TE<sub>mn</sub> axial field</th><td>H<sub>z</sub> = cos(mπx/a) cos(nπy/b) e<sup>−jβz</sup></td></tr>
+          <tr><th>TM<sub>mn</sub> axial field</th><td>E<sub>z</sub> = sin(mπx/a) sin(nπy/b) e<sup>−jβz</sup></td></tr>
+          <tr><th>Wave impedance</th><td>Z<sub>TE</sub> = ηk/β, &nbsp; Z<sub>TM</sub> = ηβ/k, &nbsp; η = 377 Ω / √ε<sub>r</sub></td></tr>
+          <tr><th>TE<sub>10</sub> fields</th><td>E<sub>y</sub> ∝ sin(πx/a), H<sub>x</sub> ∝ −sin(πx/a), H<sub>z</sub> ∝ cos(πx/a), 90° apart in time</td></tr>
+        </tbody>
+      </table>
+      <p class="small-print">The fields drawn here are the textbook lossless solutions (Pozar, <em>Microwave Engineering</em>, ch. 3).
+        E and H are scaled separately so both stay visible; their true ratio is the wave impedance.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
