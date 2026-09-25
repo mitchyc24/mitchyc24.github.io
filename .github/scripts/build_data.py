@@ -93,8 +93,7 @@ NEWS_SOURCES = [
     # world, French
     source("f24-fr", "France 24", "fr", "public", "FR", ["https://www.france24.com/fr/rss"]),
     source("rfi-fr", "RFI", "fr", "public", "FR", ["https://www.rfi.fr/fr/rss"]),
-    source("dw-fr", "DW", "fr", "public", "DE", ["https://rss.dw.com/rdf/rss-fr-all", "https://rss.dw.com/xml/rss-fr-all",
-                                                 "https://rss.dw.com/rdf/rss-fr-afr", "https://rss.dw.com/rdf/rss-fr-top"]),
+    source("dw-fr", "DW", "fr", "public", "DE", [gnews("dw.com/fr", "fr", "FR", "FR:fr")]),   # DW has no French RSS feed
     source("bbc-afrique", "BBC Afrique", "fr", "public", "GB", ["https://feeds.bbci.co.uk/afrique/rss.xml"]),
     source("un-fr", "ONU Info", "fr", "un", "UN", ["https://news.un.org/feed/subscribe/fr/news/all/rss.xml"]),
     # world, Spanish
