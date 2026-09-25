@@ -490,7 +490,7 @@ async function fetchHolidays(city) {
     title: lang === "fr" && h.localName ? h.localName : h.name,
     type: t.holidayType,
     place: lang === "fr" ? "Canada (pays entier)" : "Canada (nationwide)",
-    start: `${h.date}T10:00:00Z`,
+    start: `${h.date}T12:00:00`,
     category: "community",
     source: "Nager.Date"
   }));
@@ -577,7 +577,13 @@ function openSettings() {
     els.settings.showModal();
     return;
   }
+  const main = document.querySelector("main");
+  if (main) main.setAttribute("inert", "");
+  document.body.style.overflow = "hidden";
+  els.settings.setAttribute("role", "dialog");
+  els.settings.setAttribute("aria-modal", "true");
   els.settings.setAttribute("open", "open");
+  els.langSelect.focus();
 }
 
 function closeSettings() {
@@ -585,6 +591,9 @@ function closeSettings() {
     els.settings.close();
     return;
   }
+  const main = document.querySelector("main");
+  if (main) main.removeAttribute("inert");
+  document.body.style.overflow = "";
   els.settings.removeAttribute("open");
 }
 
@@ -612,6 +621,12 @@ els.openSettings.addEventListener("click", openSettings);
 els.cancelBtn.addEventListener("click", (event) => {
   event.preventDefault();
   closeSettings();
+});
+els.settings.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && typeof els.settings.showModal !== "function") {
+    event.preventDefault();
+    closeSettings();
+  }
 });
 els.saveBtn.addEventListener("click", saveSettings);
 
