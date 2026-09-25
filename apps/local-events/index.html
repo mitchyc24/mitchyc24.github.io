@@ -465,7 +465,12 @@ ORDER BY ?start
 LIMIT 120`;
 
   const url = "https://query.wikidata.org/sparql?format=json&query=" + encodeURIComponent(query);
-  const r = await fetch(url, { headers: { "Accept": "application/sparql-results+json" } });
+  const r = await fetch(url, {
+    headers: {
+      "Accept": "application/sparql-results+json",
+      "Api-User-Agent": "miApps-LocalEvents/1.0 (https://mitchyc24.github.io/apps/local-events/)"
+    }
+  });
   if (!r.ok) throw new Error(`wikidata-${r.status}`);
   const data = await r.json();
   return (data.results?.bindings || []).map((b) => {
@@ -506,6 +511,20 @@ async function loadEvents() {
   const now = Date.now();
   const nearCutoff = now + 1000 * 60 * 60 * 24 * 14;
   const farStart = now + 1000 * 60 * 60 * 24 * 15;
+
+  if (wikidataFailed) {
+    state.nearEvents = [];
+    state.farEvents = [];
+    state.visibleNearCount = 0;
+    state.visibleFarCount = 0;
+    state.lastFetchedAt = null;
+    els.nearLoading.hidden = true;
+    els.farLoading.hidden = true;
+    renderList(els.nearList, state.nearEvents, els.nearEmpty);
+    renderList(els.farList, state.farEvents, els.farEmpty);
+    ui();
+    return;
+  }
 
   const localEvents = [...wikidata].sort((a, b) => new Date(a.start) - new Date(b.start));
   state.nearEvents = localEvents.filter((e) => {
