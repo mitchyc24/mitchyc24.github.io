@@ -51,6 +51,21 @@
       "status": "prototype",
       "added": "2026-09-25",
       "updated": "2026-09-25"
+    },
+    {
+      "id": "waveguide-modes",
+      "name": "Waveguide Modes",
+      "tagline": "Learn how microwaves travel down a metal pipe. Watch TE and TM field patterns move, see why each mode has a cutoff frequency, and explore dispersion.",
+      "path": "apps/waveguide-modes/",
+      "action": "Explore",
+      "icon": "📡",
+      "color": "#4B4BC8",
+      "category": "Science & Engineering",
+      "tags": ["learn", "electromagnetics", "rf", "microwave", "antenna", "physics", "te10", "cutoff", "dispersion"],
+      "platforms": ["phone", "tablet", "desktop"],
+      "status": "beta",
+      "added": "2026-09-25",
+      "updated": "2026-09-25"
     }
   ]
 }
