@@ -338,7 +338,9 @@ let state = {
   settings: Object.assign(defaultSettings(), store.get() || {}),
   nearEvents: [],
   farEvents: [],
-  lastFetchedAt: null
+  lastFetchedAt: null,
+  visibleNearCount: 0,
+  visibleFarCount: 0
 };
 
 const $ = (s) => document.querySelector(s);
@@ -386,7 +388,7 @@ function ui() {
   els.saveBtn.textContent = t.save;
   els.updatedBadge.textContent = `${t.updated}: ${updatedStamp}`;
   els.locationBadge.textContent = cityLabel(state.settings.cityId, state.settings.lang);
-  els.summary.textContent = t.summary(cityLabel(state.settings.cityId, state.settings.lang), state.nearEvents.length, state.farEvents.length);
+  els.summary.textContent = t.summary(cityLabel(state.settings.cityId, state.settings.lang), state.visibleNearCount, state.visibleFarCount);
 }
 
 function classifyType(event) {
@@ -422,6 +424,7 @@ function renderList(el, items, emptyEl) {
       </div>`;
     el.appendChild(li);
   }
+  return filtered.length;
 }
 
 function escapeHtml(v) {
@@ -484,7 +487,7 @@ async function fetchHolidays(city) {
   return (Array.isArray(data) ? data : []).slice(0, 8).map((h) => ({
     title: lang === "fr" && h.localName ? h.localName : h.name,
     type: t.holidayType,
-    place: lang === "fr" ? "Canada (national)" : "Canada (national)",
+    place: lang === "fr" ? "Canada (pays entier)" : "Canada (nationwide)",
     start: `${h.date}T10:00:00Z`,
     category: "community",
     source: "Nager.Date"
@@ -505,17 +508,22 @@ async function loadEvents() {
   let wikidataFailed = false;
   let holidaysFailed = false;
 
-  try {
-    wikidata = await fetchWikidataEvents(city.qid);
-  } catch {
+  const [wikidataResult, holidaysResult] = await Promise.allSettled([
+    fetchWikidataEvents(city.qid),
+    fetchHolidays(city)
+  ]);
+
+  if (wikidataResult.status === "fulfilled") {
+    wikidata = wikidataResult.value;
+  } else {
     wikidataFailed = true;
     els.nearError.hidden = false;
     els.nearError.textContent = t.fetchError;
   }
 
-  try {
-    holidays = await fetchHolidays(city);
-  } catch {
+  if (holidaysResult.status === "fulfilled") {
+    holidays = holidaysResult.value;
+  } else {
     holidaysFailed = true;
   }
 
@@ -540,8 +548,8 @@ async function loadEvents() {
   els.nearLoading.hidden = true;
   els.farLoading.hidden = true;
 
-  renderList(els.nearList, state.nearEvents, els.nearEmpty);
-  renderList(els.farList, state.farEvents, els.farEmpty);
+  state.visibleNearCount = renderList(els.nearList, state.nearEvents, els.nearEmpty);
+  state.visibleFarCount = renderList(els.farList, state.farEvents, els.farEmpty);
   ui();
 }
 
@@ -587,9 +595,9 @@ function saveSettings() {
     enabledTypes: selectedTypes.length ? selectedTypes : TYPE_DEFS.map((t) => t.id)
   };
   store.set(state.settings);
+  state.visibleNearCount = renderList(els.nearList, state.nearEvents, els.nearEmpty);
+  state.visibleFarCount = renderList(els.farList, state.farEvents, els.farEmpty);
   ui();
-  renderList(els.nearList, state.nearEvents, els.nearEmpty);
-  renderList(els.farList, state.farEvents, els.farEmpty);
 
   if (prev.cityId !== state.settings.cityId || prev.lang !== state.settings.lang) {
     loadEvents();
