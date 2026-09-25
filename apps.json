@@ -22,18 +22,18 @@
     {
       "id": "observatory",
       "name": "Observatory",
-      "tagline": "Ambient world dashboard for the TV: a live globe with news, quakes, the ISS, space weather and markets.",
+      "tagline": "Ambient world dashboard for the TV: a live globe with news, quakes, the ISS and space weather. Pick its language, local news and stats from your phone.",
       "path": "host/",
-      "entry": "cast.html",
-      "action": "Cast to TV",
+      "entry": "remote.html",
+      "action": "Cast & control",
       "icon": "🌍",
       "color": "#F0B45A",
       "category": "Dashboards",
-      "tags": ["chromecast", "globe", "news", "live data"],
+      "tags": ["chromecast", "globe", "news", "live data", "remote", "français", "español", "deutsch"],
       "platforms": ["tv", "desktop"],
       "status": "beta",
       "added": "2026-09-11",
-      "updated": "2026-09-11",
+      "updated": "2026-09-25",
       "links": [
         { "label": "Preview", "href": "host/?dev" }
       ]
