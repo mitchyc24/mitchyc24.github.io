@@ -341,7 +341,9 @@ let state = {
   lastFetchedAt: null,
   visibleNearCount: 0,
   visibleFarCount: 0,
-  settingsOpener: null
+  settingsOpener: null,
+  fallbackDialogActive: false,
+  loadSeq: 0
 };
 
 const $ = (s) => document.querySelector(s);
@@ -498,6 +500,7 @@ async function fetchHolidays(city) {
 }
 
 async function loadEvents() {
+  const seq = ++state.loadSeq;
   const t = TEXT[state.settings.lang] || TEXT.en;
   const city = CITIES.find((c) => c.id === state.settings.cityId) || CITIES[0];
 
@@ -515,6 +518,7 @@ async function loadEvents() {
     fetchWikidataEvents(city.qid),
     fetchHolidays(city)
   ]);
+  if (seq !== state.loadSeq) return;
 
   if (wikidataResult.status === "fulfilled") {
     wikidata = wikidataResult.value;
@@ -587,17 +591,20 @@ function openSettings() {
   els.settings.setAttribute("role", "dialog");
   els.settings.setAttribute("aria-modal", "true");
   els.settings.setAttribute("open", "open");
+  state.fallbackDialogActive = true;
   els.langSelect.focus();
 }
 
 function closeSettings() {
   if (typeof els.settings.close === "function") {
     els.settings.close();
-  } else {
+  }
+  if (state.fallbackDialogActive) {
     const main = document.querySelector("main");
     if (main) main.removeAttribute("inert");
     document.body.style.overflow = "";
     els.settings.removeAttribute("open");
+    state.fallbackDialogActive = false;
   }
   if (state.settingsOpener && typeof state.settingsOpener.focus === "function") {
     state.settingsOpener.focus();
