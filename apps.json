@@ -33,7 +33,7 @@
       "platforms": ["tv", "desktop"],
       "status": "beta",
       "added": "2026-09-11",
-      "updated": "2026-09-25",
+      "updated": "2026-09-29",
       "links": [
         { "label": "Preview", "href": "host/?dev" }
       ]

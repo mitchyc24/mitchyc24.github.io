@@ -8,7 +8,10 @@
   let SET = OBS.load(navLang).settings;
   let data = null;                   // data.json, for the list of news sources
   let session = null;                // the Cast session, while connected
-  let castState = "pending";         // pending | none | idle | connecting | on
+  let castState = "pending";         // pending | none | ready | connecting | on
+  let castAvail = null;              // cast.framework.CastState once the sender library is up
+  let castError = "";                // why the last attempt to cast failed, until the next one
+  const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
   const T = (key, vars) => OBS.t(SET.lang, key, vars);
   const $ = (id) => document.getElementById(id);
@@ -102,14 +105,37 @@
     box.replaceChildren(...out);
   }
 
+  // What the Cast panel shows. "nodevices" is Chrome saying it can see no Chromecast able to run
+  // this app; the library's own cast icon simply disappears then, so the panel spells it out.
+  function castView() {
+    if (castState !== "ready") return castState;
+    const CS = cast.framework.CastState;
+    if (castAvail === CS.CONNECTING) return "connecting";
+    if (castAvail === CS.NO_DEVICES_AVAILABLE) return "nodevices";
+    return "idle";
+  }
   function renderCast() {
-    const el = $("castStatus");
-    el.dataset.state = castState;
-    el.textContent =
-      castState === "on" ? T("ui.cast.on", { device: deviceName() }) :
-      castState === "connecting" ? T("ui.cast.connecting") :
-      castState === "idle" ? T("ui.cast.idle") :
-      castState === "none" ? T("ui.cast.none") : "";
+    const view = castView();
+    $("castCard").dataset.state = view;
+    $("castTitle").textContent = {
+      pending: T("ui.cast.pending"), none: T("ui.cast.none.title"), nodevices: T("ui.cast.nodev.title"),
+      idle: T("ui.cast.idle.title"), connecting: T("ui.cast.connecting"), on: T("ui.cast.on.title", { device: deviceName() }),
+    }[view];
+    $("castDetail").textContent = castError || {
+      pending: "", none: T(IOS ? "ui.cast.none.ios" : "ui.cast.none.other"), nodevices: T("ui.cast.nodev"),
+      idle: T("ui.cast.idle"), connecting: "", on: T("ui.cast.on"),
+    }[view];
+    $("castGo").hidden = !["idle", "nodevices", "on"].includes(view);
+    $("castGoLabel").textContent = T(view === "on" ? "ui.cast.stop" : "ui.cast.go");
+    $("copyLink").hidden = view !== "none";
+    $("copyLink").textContent = T("ui.cast.copy");
+
+    const trouble = $("trouble");
+    trouble.hidden = !(view === "none" || view === "nodevices" || castError);
+    if (view === "nodevices" && !trouble.dataset.shown) { trouble.open = true; trouble.dataset.shown = "1"; }
+    $("tApp").textContent = T("ui.cast.t.app", { id: OBS.APP_ID });
+    const [before, after = ""] = T("ui.cast.t.mirror").split("{link}");
+    $("tMirror").replaceChildren(before, h("a", { href: "./?dev", target: "_blank", rel: "noopener" }, T("ui.cast.t.link")), after);
   }
   function deviceName() {
     try { return session.getCastDevice().friendlyName || "TV"; } catch { return "TV"; }
@@ -167,23 +193,48 @@
   });
 
   // ------------------------------------------------------------ Cast
-  // Chrome on Android and desktop has the Cast sender; other browsers call back with false.
+  // Chrome on Android and desktop has the Cast sender; other browsers call back with false,
+  // and a blocked or failed library load never calls back at all (hence the timeout).
   window.__onGCastApiAvailable = (ok) => {
     if (!ok || !window.cast || !cast.framework) { castState = "none"; renderCast(); return; }
     const ctx = cast.framework.CastContext.getInstance();
     ctx.setOptions({ receiverApplicationId: OBS.APP_ID, autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED });
+    ctx.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, (e) => {
+      castAvail = e.castState;
+      if (castAvail !== cast.framework.CastState.NO_DEVICES_AVAILABLE) castError = "";
+      renderCast();
+    });
     ctx.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, (e) => {
       const st = cast.framework.SessionState;
       if (e.sessionState === st.SESSION_STARTED || e.sessionState === st.SESSION_RESUMED) attach(ctx.getCurrentSession());
       else if (e.sessionState === st.SESSION_STARTING) { castState = "connecting"; renderCast(); }
-      else if (e.sessionState === st.SESSION_ENDED || e.sessionState === st.SESSION_START_FAILED) { session = null; castState = "idle"; renderCast(); }
+      else if (e.sessionState === st.SESSION_ENDED || e.sessionState === st.SESSION_START_FAILED) { session = null; castState = "ready"; renderCast(); }
     });
-    $("castbtn").hidden = false;
-    castState = "idle";
+    castState = "ready";
+    castAvail = ctx.getCastState();
     const current = ctx.getCurrentSession();
     if (current) attach(current); else renderCast();
   };
   setTimeout(() => { if (castState === "pending") { castState = "none"; renderCast(); } }, 8000);
+
+  // Our own button rather than the library's icon, which hides itself when Chrome sees no
+  // device. requestSession() opens Chrome's device picker either way, and says why it failed.
+  $("castGo").addEventListener("click", () => {
+    const ctx = cast.framework.CastContext.getInstance();
+    if (session) { ctx.endCurrentSession(true); return; }
+    castError = "";
+    const failed = (code) => {
+      if (!code || code === "cancel") return;
+      castError = code === "receiver_unavailable" ? T("ui.cast.unavailable") : T("ui.cast.failed", { code });
+      castState = "ready"; renderCast();
+    };
+    ctx.requestSession().then(failed, failed);   // resolves with an error code on some versions
+  });
+  $("copyLink").addEventListener("click", () => {
+    const url = location.href.split("#")[0];
+    (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+      .then(() => toast(T("ui.cast.copied")), () => window.prompt(T("ui.cast.copy"), url));
+  });
 
   function attach(s) {
     if (!s || s === session) return;

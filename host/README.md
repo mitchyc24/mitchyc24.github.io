@@ -33,7 +33,13 @@ host/data/data.json                    sample; overwritten at build time, never 
 
 ## Controls
 
-`remote.html` (the QR code on the TV, and the hub's *Cast & control* button) has four sections:
+`remote.html` (the QR code on the TV, and the hub's *Cast & control* button) opens with a Cast panel that always
+says where things stand: checking, this browser can't cast (iPhone, iPad, Firefox, in-app browsers), no Chromecast
+found, ready, or casting to a named TV. Its *Cast to TV* button opens Chrome's device picker directly, because the Cast
+library's own icon silently hides itself whenever Chrome sees no device that can run the app; a picker failure is
+spelled out, and a *Not working?* list covers Wi-Fi, in-app browsers, the Cast console (publish app `FB21C379` or
+register the Chromecast as a test device), and casting the preview tab as a last resort. Below the panel are four
+sections:
 
 - **Language**: English, Français, Español or Deutsch, for the TV and the controls page.
 - **News**: which languages headlines may be in, local news (off, Canada, or Ottawa–Gatineau, which also
