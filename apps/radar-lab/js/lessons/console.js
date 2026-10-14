@@ -335,7 +335,7 @@ export default {
         t.ev = ev; t.lastAny = simT;
         if (ev.det) {
           t.lastDet = simT; t.appR = ev.ra;
-          paintArc(az, ev.ra, Math.max(D.dR / 1000, 0.4), clamp(0.65 + ev.sinr / 40, 0.65, 1), 4, null, 1.2);
+          paintArc(az, ev.ra, Math.max(D.dR / 1000, 0.4), clamp(0.65 + ev.sinr / 40, 0.65, 1), 6, null, 1.6);
           if (t.id === "msl" && !ev.folded && ev.r > 28) flags.skimmer = true;
           if (t.id === "helo" && S.mti && ev.rawGround > 10) flags.helo = true;
           if (t.id === "far" && !ev.folded) flags.folded = true;
@@ -411,6 +411,7 @@ export default {
       const c = persCtx(), g = geom(), T = theme();
       const half = Math.max(rad(minHalfDeg), D.thAz / 2), ang = rad(az) - Math.PI / 2;
       c.strokeStyle = alpha(color || T.scopeFg, a); c.lineWidth = Math.max(minW, dRkm * g.k);
+      c.lineCap = minW >= 6 ? "round" : "butt";
       c.beginPath(); c.arc(g.cx, g.cy, Math.max(0.5, rKm * g.k), ang - half, ang + half); c.stroke();
     }
 

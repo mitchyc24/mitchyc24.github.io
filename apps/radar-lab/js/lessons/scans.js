@@ -44,7 +44,7 @@ export default {
       pattern: "circular", rate: 72, beam: 1, prf: 300, sector: 120, rows: 6, spacing: 3, fan: true, speed: 1,
       npd: 8, tracks: 4, trackRate: 2,
       // conical scan
-      sq: 0.4, track: false, tgt: [0.55, 0.3], bore: [0, 0], lockedFor: 0,
+      sq: 0.4, track: false, tgt: [0.3, 0.15], bore: [0, 0], lockedFor: 0,
       sawRevisit: 0,
     };
     let t = 0;                          // scan clock (s)
@@ -75,7 +75,7 @@ export default {
         apply: () => set({ pattern: "helical", rows: 6, spacing: 3, beam: 3, rate: 120, fan: false }) },
       { title: "5 · Conical scan: tracking", html: "<p>To track one target precisely, the beam is <b>squinted</b> slightly off the antenna axis and spun around it. A target exactly on the axis sees a steady echo. Off-axis, the echo rises when the beam swings toward it and falls when it swings away: the <b>depth</b> of that wobble gives the error size, its <b>phase</b> gives the direction.</p>",
         look: "the conical-scan panel. Drag the target off-axis, then tick <b>Close the tracking loop</b>.",
-        apply: () => { S.tgt = [0.6, -0.35]; S.bore = [0, 0]; setC({ track: false, sq: 0.4 }); } },
+        apply: () => { S.tgt = [0.35, -0.2]; S.bore = [0, 0]; setC({ track: false, sq: 0.4 }); } },
       { title: "6 · Electronic agility", html: "<p>A phased array has no inertia: it can put the beam anywhere in a few microseconds. So an <b>ESA</b> doesn't scan in a pattern at all; a scheduler hands out dwells: a run of search positions, then a quick look at each target being tracked, then more search. Every track update steals time from search.</p>",
         look: "the scheduler timeline and the revisit-time curve. Add tracks and watch the search frame time grow.",
         apply: () => set({ pattern: "esa", beam: 3, spacing: 3, rows: 4, sector: 120, npd: 10, prf: 1000, tracks: 10, trackRate: 2, fan: false }) },

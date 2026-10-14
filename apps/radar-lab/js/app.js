@@ -84,6 +84,8 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(fa
 
 let cleanups = [];
 let routeToken = 0;
+// True while a guided-tour step sets up the simulation: challenges only count what the reader does themselves.
+let touring = false;
 
 function unmount() {
   for (const c of cleanups.splice(0)) {
@@ -189,7 +191,8 @@ function guidedSteps(parent, steps, o = {}) {
   function go(k) {
     i = Math.max(0, Math.min(steps.length - 1, k));
     seen.add(i);
-    steps[i].apply?.();
+    touring = true;
+    try { steps[i].apply?.(); } finally { touring = false; }
     paint();
   }
   prev.addEventListener("click", () => go(i - 1));
@@ -219,6 +222,7 @@ function challenges(parent, lessonId, items) {
   return {
     el,
     update(state) {
+      if (touring) return;
       let changed = false;
       for (const [it, li] of rows) {
         if (done.has(it.id)) continue;
