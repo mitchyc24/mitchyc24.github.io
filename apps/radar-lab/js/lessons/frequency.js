@@ -233,7 +233,7 @@ export default {
         ["IEEE band", `${b.id}`],
         ["NATO/EU band", n ? n[0] : "above M"],
         ["Beamwidth 70λ/D", S.D > M.lam ? `${num(M.bw, 3)}°` : "no beam (D < λ)", M.bw < 2 ? "ok" : M.bw > 20 ? "warn" : null],
-        ["Gain 0.6(πD/λ)²", `${num(10 * Math.log10(gain), 3)} dBi`],
+        ["Gain 0.6(πD/λ)²", S.D > M.lam ? `${num(10 * Math.log10(gain), 3)} dBi` : "–"],
         ["Clear air", `${num(M.gas, 2)} dB/km`, M.gas > 1 ? "bad" : M.gas > 0.1 ? "warn" : null],
         ["Rain", S.rain ? `${num(M.rainA, 2)} dB/km` : "none"],
         ["50 km, one-way", fmtDb(M.loss50), M.loss50 > 10 ? "bad" : M.loss50 > 3 ? "warn" : "ok"],

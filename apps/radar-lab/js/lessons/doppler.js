@@ -14,8 +14,8 @@ const CLUT_SV = 0.15;     // clutter velocity spread (wind-blown trees and grass
 const PULSE_RATE = 1.1;   // phasor view: pulses per second of animation
 const V_MAX = 1000;       // m/s
 
-const sgn = (x, f) => `${x > 0 ? "+" : x < 0 ? "−" : ""}${f(Math.abs(x))}`;
-const hz = (x) => sgn(x, (a) => si(a, "Hz", 3));
+const sgn = (x, f, eps = 1e-3) => (Math.abs(x) < eps ? f(0) : `${x > 0 ? "+" : "−"}${f(Math.abs(x))}`);
+const hz = (x) => sgn(x, (a) => si(a, "Hz", 3), 0.05);
 const ms = (x, d = 3) => sgn(x, (a) => `${num(a, d)} m/s`);
 
 export default {

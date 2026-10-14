@@ -528,7 +528,7 @@ export default {
         "<p>Air's refractive index <i>n</i> is about 1.0003, so radio engineers use the <b>refractivity</b> <i>N</i> = (<i>n</i> − 1) × 10⁶, given by the Smith–Weintraub formula</p>" +
         "<p class=\"eq\"><i>N</i> = 77.6 <span class=\"frac\"><span><i>P</i></span><span><i>T</i></span></span> + 3.73 × 10⁵ <span class=\"frac\"><span><i>e</i></span><span><i>T</i>²</span></span></p>" +
         "<p>with pressure <i>P</i> and water-vapour pressure <i>e</i> in hPa and temperature <i>T</i> in kelvin. At sea level <i>N</i> ≈ 315. Because pressure and humidity fall with height, so does <i>N</i>, and a ray bends with curvature −d<i>n</i>/d<i>h</i> toward the denser air below. Treating the ray as straight over an Earth of radius <i>kR</i><sub>e</sub> gives the same geometry, with</p>" +
-        "<p class=\"eq\"><i>k</i> = <span class=\"frac\"><span>1</span><span>1 + <i>R</i><sub>e</sub> · d<i>n</i>/d<i>h</i></span></span> = <span class=\"frac\"><span>157</span><span>157 + d<i>N</i>/d<i>h</i></span></span> &nbsp;(d<i>N</i>/d<i>h</i> in N/km)</p>" +
+        "<p class=\"eq\"><i>k</i> = 1 / (1 + <i>R</i><sub>e</sub> d<i>n</i>/d<i>h</i>) = 157 / (157 + d<i>N</i>/d<i>h</i>) &nbsp; (d<i>N</i>/d<i>h</i> in N/km)</p>" +
         "<div class=\"tbl-wrap\"><table class=\"data\"><tr><th>Condition</th><th>d<i>N</i>/d<i>h</i> (N/km)</th><th><i>k</i></th><th>Effect</th></tr>" +
         "<tr><td>Sub-refraction</td><td class=\"num\">&gt; 0</td><td class=\"num\">&lt; 1</td><td>rays bend up; horizon shrinks (cold moist air over warm ground, fog)</td></tr>" +
         "<tr><td>Normal</td><td class=\"num\">0 to −79</td><td class=\"num\">1 to 2</td><td>standard is −40, <i>k</i> = 4/3</td></tr>" +
