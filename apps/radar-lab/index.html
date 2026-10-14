@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar Lab</title>
+<meta name="description" content="An interactive radar course: echoes and range, pulse width and PRI, the radar equation, frequency bands, Doppler, pulse compression, frequency hopping, propagation, dishes, phased arrays and scan patterns.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F3F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C0E0F" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="bar">
+  <a class="home" href="../../">&larr; miApps</a>
+  <a class="brand" href="#"><img src="./icon.svg" alt="">Radar Lab</a>
+  <span class="spacer"></span>
+  <button type="button" class="btn ghost small menu-btn" id="menu-btn" aria-controls="nav" aria-expanded="false">☰ Lessons</button>
+</header>
+<div class="shell">
+  <nav class="nav" id="nav" aria-label="Lessons"></nav>
+  <main class="view" id="view" tabindex="-1">
+    <noscript><p>Radar Lab is a set of interactive simulations and needs JavaScript.</p></noscript>
+  </main>
+</div>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
