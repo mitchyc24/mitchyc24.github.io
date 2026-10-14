@@ -118,7 +118,6 @@ select { min-height: 44px; width: 100%; padding: 0 10px; border: 1px solid var(-
 .lab-side { min-width: 0; display: grid; gap: 16px; align-content: start; }
 @media (min-width: 1100px) {
   .lab { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
-  .lab-side { position: sticky; top: 70px; max-height: calc(100vh - 82px); overflow: auto; overscroll-behavior: contain; border-radius: 14px; }
 }
 .lab-main .card + .card, .lab-side .card + .card { margin-top: 0; }
 .cols2 { display: grid; gap: 16px; }
