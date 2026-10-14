@@ -66,6 +66,21 @@
       "status": "beta",
       "added": "2026-09-25",
       "updated": "2026-09-25"
+    },
+    {
+      "id": "radar-lab",
+      "name": "Radar Lab",
+      "tagline": "Learn how radar works by playing with it. Thirteen live simulations, from a single echo to chirps, frequency hopping, phased arrays and scan patterns.",
+      "path": "apps/radar-lab/",
+      "action": "Learn",
+      "icon": "apps/radar-lab/icon.svg",
+      "color": "#0B7A55",
+      "category": "Science & Engineering",
+      "tags": ["learn", "radar", "rf", "microwave", "antenna", "phased array", "doppler", "pulse compression", "radar equation", "physics", "simulation"],
+      "platforms": ["phone", "tablet", "desktop"],
+      "status": "beta",
+      "added": "2026-10-14",
+      "updated": "2026-10-14"
     }
   ]
 }
