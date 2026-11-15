@@ -81,6 +81,36 @@
       "status": "beta",
       "added": "2026-10-14",
       "updated": "2026-10-14"
+    },
+    {
+      "id": "joint-command",
+      "name": "Joint Command",
+      "tagline": "A two-player co-op command game. One of you fights a mechanized brigade on the ground, the other runs the air task force, and neither can take the objectives alone. Play solo or share a room code.",
+      "path": "apps/joint-command/",
+      "action": "Play",
+      "icon": "🎖️",
+      "color": "#F0B63A",
+      "category": "Games",
+      "tags": ["game", "multiplayer", "co-op", "two player", "strategy", "wargame", "army", "air force", "online"],
+      "platforms": ["phone", "tablet", "desktop"],
+      "status": "beta",
+      "added": "2026-11-15",
+      "updated": "2026-11-15"
+    },
+    {
+      "id": "rook-and-raider",
+      "name": "Rook & Raider",
+      "tagline": "A tabletop siege for two. One player builds and defends the board with chess pieces, the other breaks in as the Raider. Play online with a room code, or practise against a bot.",
+      "path": "apps/rook-and-raider/",
+      "action": "Play",
+      "icon": "♜",
+      "color": "#8A6F30",
+      "category": "Games",
+      "tags": ["game", "multiplayer", "two player", "versus", "siege", "chess", "strategy", "action", "online", "bot"],
+      "platforms": ["desktop"],
+      "status": "beta",
+      "added": "2026-11-15",
+      "updated": "2026-11-15"
     }
   ]
 }
