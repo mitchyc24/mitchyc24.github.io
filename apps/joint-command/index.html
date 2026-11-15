@@ -379,7 +379,7 @@ details p{margin:6px 0!important}
         <ul>
           <li>Click a unit on the map or in the order of battle. Click a battalion name to select all of it. Shift-click adds; Shift + drag boxes a group.</li>
           <li>Right-click the ground to move. Shift + right-click, or right-click an enemy, to attack. Attacking units stop and fight when the enemy is in range. With a unit selected, the corner of the map shows the distance and driving time to wherever you point.</li>
-          <li>Artillery supports on its own once it has been stationary for five minutes. Select an enemy to give the batteries a priority fire mission.</li>
+          <li>Artillery supports on its own once it has been stationary for five minutes. Select an enemy to give the batteries a priority fire mission. To shell a fixed position, select a battery and Shift + right-click the ground (or use its Fire mission button): it stays put and fires on that grid for 15 minutes, whether or not anything has been spotted there. Unobserved fire does half damage.</li>
           <li>Transport platoons resupply on their own from the brigade support area. Move the support area forward as you advance.</li>
           <li>You have no aircraft. Ask the CAOC: close air support, strike, ISR, combat air patrol, medevac, air resupply, airlift for 3 PPCLI. Units send their own medevac request once they have eight casualties waiting.</li>
           <li>Close air support is far more effective when a company with a JTAC is within 5 km of the target.</li>
@@ -630,7 +630,7 @@ function addU(S, s, k, n, sh, par, x, y, o) {
     id: S.u.length, s, k, n, sh, par, x: p[0], y: p[1], str: 100, mor: s === 0 ? 85 : 72, fuel: 100, ammo: 100, wia: 0, wiaT: 0,
     o: 'def', path: null, pi: 0, dx: p[0], dy: p[1], tgt: -1, dug: s === 1 ? 3 : 1, digT: s === 1 ? 90 : 25, seen: -99999, sx: 0, sy: 0,
     supp: 0, ct: -99999, dead: 0, jt: 0, emb: 0, setT: -99999, hold: 0, rT: -99999, lr: 3, wT: -99999, mT: -99999, pri: 0, grp: '', fb: '',
-    work: 0, bi: -1, ls: '', lt: -1, load: 0, t0: 0,
+    work: 0, bi: -1, ls: '', lt: -1, load: 0, t0: 0, fx: -1, fy: -1, fn: 0,
   };
   if (o) for (const key in o) u[key] = o[key];
   S.u.push(u); return u;
@@ -761,7 +761,14 @@ function applyCmd(S, c, who) {
       let n = 0;
       for (const id of c.u || []) {
         const u = S.u[id]; if (!u || u.dead || u.s !== 0 || u.emb || u.k === 'log') continue;
+        if (c.o !== 'pri') u.fn = 0;
         if (c.o === 'halt' || c.o === 'def') { halt(S, u); u.work = 0; }
+        else if (c.o === 'atk' && K[u.k].ind) {
+          const d = dist(u.x, u.y, c.x, c.y), kd = K[u.k];
+          if (!(c.x >= 0 && c.y >= 0 && c.x < MAPW && c.y < MAPH)) continue;
+          if (d > kd.rng || d < 2) rep(S, 'ops', u.sh + ': cannot fire on GR ' + gr(c.x, c.y) + ', ' + (d < 2 ? 'too close' : d.toFixed(1) + ' km away, range is ' + kd.rng + ' km') + '. Move the battery first.', u.x, u.y);
+          else { u.fx = c.x; u.fy = c.y; u.fn = FM_VOLLEYS; u.tgt = c.t >= 0 && S.u[c.t] && S.u[c.t].s !== u.s ? c.t : -1; rep(S, 'cbt', u.sh + ': fire mission, GR ' + gr(c.x, c.y) + ', ' + FM_VOLLEYS + ' minutes' + (u.path ? ' once in position' : S.t - u.setT < 5 * MIN ? ' once laid' : '') + '.', c.x, c.y); }
+        }
         else if (c.o === 'atk' && u.mor < 25) rep(S, 'ops', u.sh + ': morale too low to attack. Rest it out of contact, or evacuate its casualties.', u.x, u.y);
         else if (c.o === 'move' || c.o === 'atk') { const sp = SPREAD[n % SPREAD.length]; orderMove(S, u, c.o, c.x + sp[0], c.y + sp[1]); n++; }
         else if (c.o === 'fire') { if (K[u.k].ind) { u.tgt = c.t; const t = S.u[c.t]; if (t) rep(S, 'cbt', u.sh + ': fire mission, priority target enemy ' + KN[t.k] + ' GR ' + gr(t.sx, t.sy) + '.', t.sx, t.sy); } }
@@ -956,9 +963,26 @@ function combat(S, T) {
     if (K[a.k].ind && !b.dead) b.supp = Math.min(60, b.supp + 12);
   }
 }
+const FM_VOLLEYS = 15, FM_R = 1.5;   // a fire mission on a grid: one volley a minute, everything within FM_R km is hit
+function artyArea(S, T, a, pend) {
+  const kd = K[a.k];
+  for (const b of S.u) {
+    if (b.dead || b.emb || b.s === a.s || dist(b.x, b.y, a.fx, a.fy) > FM_R) continue;
+    const ct = T.type[cellOf(b.x, b.y)], cv = (ct === T_URBAN ? 1.6 : ct === T_FOREST ? 1.3 : 1) * (1 + 0.25 * b.dug);
+    pend.push(b, 0.3 * (kd.fp / K[b.k].pr) * (a.str / 100) * eff(S, a) * (0.6 + 0.8 * rnd(S)) / cv * (isDet(S, b) ? 1 : 0.5), a);
+  }
+  a.ammo = Math.max(0, a.ammo - 0.6); a.ct = S.t; a.fn--;
+  if (rnd(S) < 0.2) mark(S, a, 'Counter-battery radar');
+  if (a.fn <= 0 || a.ammo <= 0) { a.fn = 0; if (a.s === 0) rep(S, 'cbt', a.sh + ': fire mission GR ' + gr(a.fx, a.fy) + (a.ammo <= 0 ? ' stopped, out of ammunition.' : ' complete, rounds expended.'), a.fx, a.fy); }
+}
 function artyFire(S, T, a, pend) {
   const kd = K[a.k];
   if (a.path || S.t - a.setT < 5 * MIN || a.ammo <= 0 || a.supp >= 50) return;
+  if (a.fn > 0) {   // ordered onto a grid: shell it, unless the unit it was called on is in sight and can be followed
+    const t = a.tgt >= 0 ? S.u[a.tgt] : null, d = t ? du(a, t) : 0;
+    if (!(t && !t.dead && !t.emb && isDet(S, t) && d <= kd.rng && d >= 2)) { artyArea(S, T, a, pend); return; }
+    a.fn--; if (a.fn <= 0 && a.s === 0) rep(S, 'cbt', a.sh + ': fire mission on enemy ' + KN[t.k] + ' complete, rounds expended.', t.x, t.y);
+  }
   let best = null, bs = -1e9;
   for (const b of S.u) {
     if (b.dead || b.emb || b.s === a.s || !isDet(S, b)) continue; const d = du(a, b); if (d > kd.rng || d < 2) continue;
@@ -1458,6 +1482,7 @@ function unitStatus(u) {
   if (u.k === 'log') return { t: ({ idle: 'ready', out: 'to ' + (S.u[u.lt] ? S.u[u.lt].sh : 'unit'), xfer: 'replenishing', back: 'returning', load: 'loading' })[u.ls] || '', c: u.path ? 'mv' : '' };
   if (S.t - u.ct <= 2 * MIN) return { t: 'in contact', c: 'hot' };
   if (u.o === 'brg') return { t: u.path ? 'to crossing' : 'bridging ' + Math.round(u.work / 1.5) + '%', c: 'mv' };
+  if (u.fn > 0 && !u.path) return { t: 'fire mission', c: 'mv' };
   if (u.path) return { t: u.fuel <= 0 ? 'no fuel' : u.o === 'atk' ? 'attacking' : 'moving', c: u.fuel <= 0 ? 'hot' : 'mv' };
   return { t: 'firm', c: '' };
 }
@@ -1483,7 +1508,8 @@ function hoverInfo() {   // planning readout for the point under the cursor
   const m = UI.mode, us = selUnits().filter(u => u.k !== 'log' && !u.emb && !K[u.k].stat);
   if (ROLE === 'army' && us.length && (!m || m.k === 'ord')) {
     const u = us[0], atk = !!(m && m.o === 'atk'), key = u.id + ':' + ci + ':' + atk + ':' + S.br.join('') + ':' + cellOf(u.x, u.y);
-    if (UI.hovKey !== key) { UI.hovKey = key; const p = findPath(T, S, u.k, u.x, u.y, h.x, h.y); if (!p) UI.hovTxt = u.sh + ': no route'; else { const r = pathTime(u, p, 0, atk); UI.hovTxt = u.sh + ': ' + Math.round(r.km) + ' km, about ' + fmtMin(r.min) + (atk ? ' advancing' : '') + (K[u.k].fb * r.km > u.fuel ? ', not enough fuel' : ''); } }
+    if (atk && K[u.k].ind) { const d = dist(u.x, u.y, h.x, h.y); UI.hovKey = ''; UI.hovTxt = u.sh + ': ' + Math.round(d) + ' km, ' + (d > K[u.k].rng ? 'out of range (' + K[u.k].rng + ' km)' : d < 2 ? 'too close' : 'in range'); }
+    else if (UI.hovKey !== key) { UI.hovKey = key; const p = findPath(T, S, u.k, u.x, u.y, h.x, h.y); if (!p) UI.hovTxt = u.sh + ': no route'; else { const r = pathTime(u, p, 0, atk); UI.hovTxt = u.sh + ': ' + Math.round(r.km) + ' km, about ' + fmtMin(r.min) + (atk ? ' advancing' : '') + (K[u.k].fb * r.km > u.fuel ? ', not enough fuel' : ''); } }
     out.b = UI.hovTxt;
   } else if (ROLE === 'air') {
     const ms = UI.selM ? msnOf(S, UI.selM) : null, sq = m && m.k === 'msn' ? S.sq[m.sq] : UI.selSq >= 0 ? S.sq[UI.selSq] : null;
@@ -1564,6 +1590,7 @@ function drawMap() {
   for (const u of S.u) if (u.k === 'sam' && !u.dead && u.seen > -90000) ring(X(u.x), Y(u.y), SAM_R * z, 'rgba(255,123,114,.75)', 'rgba(255,60,48,.07)', [2, 3]);
   for (const m of S.m) if (m.ph === 'STN') { const ac = AC[S.sq[m.sq].ac]; if (m.k === 'ISR') ring(X(m.tx), Y(m.ty), ac.isr * (curWx(S) === 2 ? 0.5 : 1) * z, 'rgba(127,214,255,.7)', 'rgba(127,214,255,.05)', [5, 4]); else if (m.k === 'CAP') ring(X(m.tx), Y(m.ty), CAP_R * z, 'rgba(127,214,255,.45)', null, [10, 6]); else if (m.k === 'CAS') ring(X(m.tx), Y(m.ty), 6 * z, 'rgba(240,182,58,.7)', null, [3, 3]); }
   for (const id of UI.sel) { const u = S.u[id]; if (u && !u.dead && K[u.k].ind) ring(X(u.x), Y(u.y), K[u.k].rng * z, 'rgba(240,182,58,.5)', null, [8, 5]); }
+  for (const u of S.u) if (u.s === 0 && !u.dead && u.fn > 0) { const tx = X(u.fx), ty = Y(u.fy), on = UI.sel.indexOf(u.id) >= 0; ring(tx, ty, FM_R * z, 'rgba(240,182,58,' + (on ? '.95' : '.6') + ')', 'rgba(240,182,58,.08)', [3, 3]); c.strokeStyle = 'rgba(240,182,58,.9)'; c.lineWidth = 1.3; c.beginPath(); c.moveTo(tx - 5, ty); c.lineTo(tx + 5, ty); c.moveTo(tx, ty - 5); c.lineTo(tx, ty + 5); c.stroke(); if (on) { c.setLineDash([2, 5]); c.beginPath(); c.moveTo(X(u.x), Y(u.y)); c.lineTo(tx, ty); c.stroke(); c.setLineDash([]); } }
   // open requests
   for (const r of S.req) if (r.st === 'PEND' || r.st === 'ACPT' || r.st === 'ONSTN') { const x = X(r.x), y = Y(r.y); c.beginPath(); c.moveTo(x, y - 8); c.lineTo(x + 7, y + 5); c.lineTo(x - 7, y + 5); c.closePath(); c.fillStyle = r.st === 'PEND' ? 'rgba(240,182,58,.9)' : 'rgba(127,214,255,.8)'; c.fill(); c.strokeStyle = COL.ink; c.lineWidth = 1; c.stroke(); text('R' + r.id + ' ' + r.k, x, y - 11, r.st === 'PEND' ? COL.amber : COL.blue, '10px ' + FONT); picks.push({ t: 'r', id: r.id, x, y, pr: 0 }); }
   // paths of selected units
@@ -1640,6 +1667,7 @@ const kvRow = (k, v, cls) => '<dt>' + k + '</dt><dd' + (cls ? ' class="' + cls +
 const lvl = v => v < 30 ? 'bad' : v < 60 ? 'warn' : '';
 function modeText() {
   const m = UI.mode; if (!m) return UI.boxMode ? 'Box select: drag across the units you want.' : UI.markMode ? 'Marker: ' + (COARSE ? 'tap' : 'click') + ' the map to drop a marker your partner sees.' : '';
+  if (m.k === 'ord' && m.o === 'atk' && atkWord() === 'Fire mission') return 'Fire mission: ' + TAPW + ' an enemy or any point on the map inside the range ring. The battery shells it for ' + FM_VOLLEYS + ' minutes.';
   if (m.k === 'ord') return m.o === 'atk' ? 'Attack: ' + TAPW + ' where the advance should go. Units halt to fight when the enemy is in range.' : 'Move: ' + TAPW + ' the destination.';
   if (m.k === 'req') return m.ty === 'LIFT' ? 'Airlift request: ' + TAPW + ' the landing zone.' : m.ty === 'CAS' ? 'CAS request: ' + TAPW + ' the enemy, or the area that needs support.' : m.ty === 'STRIKE' ? 'Strike request: ' + TAPW + ' the target.' : MSN_NAME[m.ty] + ' request: ' + TAPW + ' the centre of the area to cover.';
   if (m.k === 'retask') return 'Retask: ' + TAPW + ' the new target or orbit point.';
@@ -1677,6 +1705,7 @@ function detailHTML() {
     h += kvRow('Strength', Math.round(u.str) + '% (' + Math.round(kd.pers * u.str / 100) + ' pers)', lvl(u.str)) + kvRow('Morale', Math.round(u.mor) + (u.mor < 25 ? ', will not attack' : ''), lvl(u.mor));
     if (u.k === 'log') h += kvRow('Load', Math.round(u.load / 4) + '%');
     else { if (kd.fb > 0) h += kvRow('Fuel', Math.round(u.fuel) + '%', lvl(u.fuel)); h += kvRow('Ammunition', Math.round(u.ammo) + '%', lvl(u.ammo)); }
+    if (u.fn > 0) h += kvRow('Fire mission', 'GR ' + gr(u.fx, u.fy) + ', ' + u.fn + ' min left' + (u.path ? ', moving' : S.t - u.setT < 5 * MIN ? ', laying the guns' : ''));
     if (u.wia >= 1) h += kvRow('Awaiting evacuation', Math.round(u.wia) + ' casualties', 'bad');
     if (u.supp > 20) h += kvRow('Suppressed', Math.round(u.supp) + '%', 'warn');
     h += '</dl>';
@@ -1687,7 +1716,7 @@ function detailHTML() {
     h += '<div class="card"><h3>' + sel.length + ' units selected</h3><p class="kind">' + esc(sel.map(u => u.sh).join(', ')) + '</p></div>';
   }
   if (sel.length && army && sel.some(u => u.k !== 'log')) {
-    h += '<div class="btns"><span class="lab">Orders</span><button data-a="ord" data-v="move"' + (m && m.k === 'ord' && m.o === 'move' ? ' class="on"' : '') + '>Move</button><button data-a="ord" data-v="atk"' + (m && m.k === 'ord' && m.o === 'atk' ? ' class="on"' : '') + '>Attack</button><button data-a="ord" data-v="def">Go firm</button>';
+    h += '<div class="btns"><span class="lab">Orders</span><button data-a="ord" data-v="move"' + (m && m.k === 'ord' && m.o === 'move' ? ' class="on"' : '') + '>Move</button><button data-a="ord" data-v="atk"' + (m && m.k === 'ord' && m.o === 'atk' ? ' class="on"' : '') + (sel.some(u => K[u.k].ind) ? ' title="Batteries stay where they are and shell the point you pick"' : '') + '>' + atkWord() + '</button><button data-a="ord" data-v="def">Go firm</button>';
     if (sel.some(u => u.k === 'eng') && S.br.indexOf(0) >= 0) h += '<button data-a="ord" data-v="brg">Bridge the river</button>';
     h += '</div><div class="btns"><span class="lab">Ask the CAOC for</span><button data-a="req" data-v="CAS">CAS</button><button data-a="req" data-v="MEDEVAC">Medevac</button><button data-a="req" data-v="RESUP">Air resupply</button>';
     if (sel.length === 1 && sel[0].k === 'inf') h += '<button data-a="req" data-v="LIFT">Airlift</button>';
@@ -1803,6 +1832,7 @@ function showEnd() {
 
 // ---- actions -------------------------------------------------------------------------------------------------
 function centre(x, y) { if (x >= 0) { UI.cam.x = x; UI.cam.y = y; if (UI.cam.z < 10) UI.cam.z = 12; } }
+function atkWord() { const us = selUnits().filter(u => u.k !== 'log'); return us.length && us.every(u => K[u.k].ind) ? 'Fire mission' : 'Attack'; }
 function selUnits() { return UI.sel.map(id => S.u[id]).filter(u => u && !u.dead); }
 function act(a, v, e) {
   switch (a) {
@@ -1944,7 +1974,7 @@ function mapClick(e) {
   if (e.altKey || UI.markMode) { issue({ c: 'ping', x: w.x, y: w.y, r: ROLE }); UI.markMode = false; renderPanels(); return; }
   const m = UI.mode, pc = pickAt(w.sx, w.sy, ['c']), cn = pc ? { u: S.u[pc.id], v: vis(S.u[pc.id]) } : null;
   if (m) {
-    if (m.k === 'ord') { const ids = selUnits().filter(u => u.k !== 'log').map(u => u.id); if (ids.length) { issue({ c: 'ord', u: ids, o: m.o, x: w.x, y: w.y }); fx(w.x, w.y, m.o === 'atk' ? 'Attack' : 'Move'); } UI.mode = null; }
+    if (m.k === 'ord') { const ids = selUnits().filter(u => u.k !== 'log').map(u => u.id); if (ids.length) { const hit = m.o === 'atk' && cn && cn.v; issue({ c: 'ord', u: ids, o: m.o, x: hit ? cn.v.x : w.x, y: hit ? cn.v.y : w.y, t: hit ? cn.u.id : -1 }); fx(hit ? cn.v.x : w.x, hit ? cn.v.y : w.y, m.o === 'atk' ? atkWord() : 'Move'); } UI.mode = null; }
     else if (m.k === 'req') { const c = (m.ty === 'CAS' || m.ty === 'STRIKE') ? (cn && cn.v ? cn : contactNear(w, 2.5)) : null; issue({ c: 'req', k: m.ty, from: m.from, x: c ? c.v.x : w.x, y: c ? c.v.y : w.y, tgt: c ? c.u.id : -1, pr: UI.prio }); UI.mode = null; }
     else if (m.k === 'retask') { const c = cn && cn.v ? cn : contactNear(w, 2.5); issue({ c: 'retask', m: m.m, x: c ? c.v.x : w.x, y: c ? c.v.y : w.y, tgt: c ? c.u.id : -1 }); UI.mode = null; }
     else if (m.k === 'msn') {
@@ -1968,7 +1998,7 @@ function mapClick(e) {
 function mapRight(e) {   // right-click, or press and hold on touch; returns true if it issued an order
   const w = toWorld(e); if (!inMap(w)) return false; if (UI.mode) { UI.mode = null; renderPanels(); return false; }
   const pc = pickAt(w.sx, w.sy, ['c']), cn = pc ? vis(S.u[pc.id]) : null, x = cn ? cn.x : w.x, y = cn ? cn.y : w.y;
-  if (ROLE === 'army') { const ids = selUnits().filter(u => u.k !== 'log').map(u => u.id); if (!ids.length) return false; const o = (cn || e.shiftKey) ? 'atk' : 'move'; issue({ c: 'ord', u: ids, o, x, y }); fx(x, y, o === 'atk' ? 'Attack' : 'Move'); return true; }
+  if (ROLE === 'army') { const ids = selUnits().filter(u => u.k !== 'log').map(u => u.id); if (!ids.length) return false; const o = (cn || e.shiftKey) ? 'atk' : 'move'; issue({ c: 'ord', u: ids, o, x, y, t: pc && cn ? pc.id : -1 }); fx(x, y, o === 'atk' ? atkWord() : 'Move'); return true; }
   const m = UI.selM ? msnOf(S, UI.selM) : null;
   if (m && (m.ph === 'OUT' || m.ph === 'STN') && (m.k === 'CAS' || m.k === 'CAP' || m.k === 'ISR' || m.k === 'AAR')) { issue({ c: 'retask', m: m.id, x, y, tgt: pc && cn ? pc.id : -1 }); fx(x, y, 'Retask'); return true; }
   return false;
