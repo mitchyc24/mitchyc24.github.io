@@ -9,6 +9,7 @@
   let data = null;                   // data.json, for the list of news sources
   let session = null;                // the Cast session, while connected
   let castState = "pending";         // pending | none | idle | connecting | on
+  let noDevices = false;             // Chrome has looked and found no Chromecast on this network
 
   const T = (key, vars) => OBS.t(SET.lang, key, vars);
   const $ = (id) => document.getElementById(id);
@@ -112,8 +113,10 @@
     el.textContent =
       castState === "on" ? T("ui.cast.on", { device: deviceName() }) :
       castState === "connecting" ? T("ui.cast.connecting") :
-      castState === "idle" ? T("ui.cast.idle") :
+      castState === "idle" ? T(noDevices ? "ui.cast.nodevices" : "ui.cast.idle") :
       castState === "none" ? T("ui.cast.none") : "";
+    $("castbtn").dataset.state = castState;
+    $("castLabel").textContent = T(castState === "on" ? "ui.cast.stop" : "ui.cast.start");
   }
   function deviceName() {
     try { return session.getCastDevice().friendlyName || "TV"; } catch { return "TV"; }
@@ -184,7 +187,16 @@
       else if (e.sessionState === st.SESSION_STARTING) { castState = "connecting"; renderCast(); }
       else if (e.sessionState === st.SESSION_ENDED || e.sessionState === st.SESSION_START_FAILED) { session = null; castState = "idle"; renderCast(); }
     });
+    ctx.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, (e) => {
+      noDevices = e.castState === cast.framework.CastState.NO_DEVICES_AVAILABLE;
+      renderCast();
+    });
+    noDevices = ctx.getCastState() === cast.framework.CastState.NO_DEVICES_AVAILABLE;
+    // Always offer the button: Chrome's own picker keeps searching, and when connected it offers "stop casting".
     $("castbtn").hidden = false;
+    $("castbtn").addEventListener("click", () => {
+      ctx.requestSession().catch((err) => { if (err !== "cancel") console.warn("cast request", err); });
+    });
     castState = "idle";
     const current = ctx.getCurrentSession();
     if (current) attach(current); else renderCast();

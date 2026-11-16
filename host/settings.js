@@ -138,7 +138,8 @@
       "epic.when": "{when} UTC", "epic.dist": "from {km} km away", "epic.wait": "waiting for NASA’s latest photo",
 
       "ui.title": "Observatory controls",
-      "ui.cast.idle": "Not on a TV yet. Tap the Cast icon to put the Observatory on one.",
+      "ui.cast.idle": "Not on a TV yet. Tap Cast to put the Observatory on one.",
+      "ui.cast.start": "Cast", "ui.cast.stop": "Casting", "ui.cast.nodevices": "No Chromecast found yet. Check that this device is on the same Wi-Fi as the TV, then tap Cast to search again.",
       "ui.cast.connecting": "Connecting…",
       "ui.cast.on": "On {device}. Changes show up right away.",
       "ui.cast.none": "This browser can’t reach a TV. Open this page in Chrome on Android or a computer to control one. Your choices are still saved here.",
@@ -222,7 +223,8 @@
       "epic.when": "{when} UTC", "epic.dist": "à {km} km de distance", "epic.wait": "en attente de la dernière photo de la NASA",
 
       "ui.title": "Commandes d’Observatory",
-      "ui.cast.idle": "Pas encore sur une télé. Touchez l’icône Cast pour y afficher Observatory.",
+      "ui.cast.idle": "Pas encore sur une télé. Touchez Caster pour y afficher Observatory.",
+      "ui.cast.start": "Caster", "ui.cast.stop": "En cours", "ui.cast.nodevices": "Aucun Chromecast trouvé pour l’instant. Vérifiez que cet appareil est sur le même Wi-Fi que la télé, puis touchez Caster pour chercher de nouveau.",
       "ui.cast.connecting": "Connexion…",
       "ui.cast.on": "Sur {device}. Les changements s’affichent tout de suite.",
       "ui.cast.none": "Ce navigateur ne peut pas joindre de télé. Ouvrez cette page dans Chrome sur Android ou sur un ordinateur pour en commander une. Vos choix sont quand même enregistrés ici.",
@@ -306,7 +308,8 @@
       "epic.when": "{when} UTC", "epic.dist": "a {km} km de distancia", "epic.wait": "esperando la última foto de la NASA",
 
       "ui.title": "Controles de Observatory",
-      "ui.cast.idle": "Todavía no está en una tele. Toca el icono de Cast para mostrar Observatory.",
+      "ui.cast.idle": "Todavía no está en una tele. Toca Enviar para mostrar Observatory.",
+      "ui.cast.start": "Enviar", "ui.cast.stop": "Enviando", "ui.cast.nodevices": "Aún no se ha encontrado ningún Chromecast. Comprueba que este dispositivo está en la misma wifi que la tele y toca Enviar para buscar de nuevo.",
       "ui.cast.connecting": "Conectando…",
       "ui.cast.on": "En {device}. Los cambios se ven al instante.",
       "ui.cast.none": "Este navegador no puede conectar con una tele. Abre esta página en Chrome en Android o en un ordenador para controlarla. Tus elecciones se guardan aquí de todos modos.",
@@ -390,7 +393,8 @@
       "epic.when": "{when} UTC", "epic.dist": "aus {km} km Entfernung", "epic.wait": "warte auf das neueste NASA-Foto",
 
       "ui.title": "Observatory-Steuerung",
-      "ui.cast.idle": "Noch auf keinem Fernseher. Tippe auf das Cast-Symbol, um Observatory dort zu zeigen.",
+      "ui.cast.idle": "Noch auf keinem Fernseher. Tippe auf Streamen, um Observatory dort zu zeigen.",
+      "ui.cast.start": "Streamen", "ui.cast.stop": "Streamt", "ui.cast.nodevices": "Noch kein Chromecast gefunden. Prüfe, ob dieses Gerät im selben WLAN wie der Fernseher ist, und tippe dann auf Streamen, um erneut zu suchen.",
       "ui.cast.connecting": "Verbinde…",
       "ui.cast.on": "Auf {device}. Änderungen erscheinen sofort.",
       "ui.cast.none": "Dieser Browser erreicht keinen Fernseher. Öffne die Seite in Chrome auf Android oder am Computer, um einen zu steuern. Deine Auswahl wird trotzdem hier gespeichert.",

@@ -34,7 +34,14 @@ a { color: inherit; }
 .home:hover { color: var(--ink); }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
 h1 { margin: 0; font-size: 26px; font-weight: 400; letter-spacing: -0.015em; line-height: 1.2; }
-google-cast-launcher { width: 44px; height: 44px; flex: none; cursor: pointer; --connected-color: var(--amber); --disconnected-color: var(--ink); }
+/* Our own Cast button: Google's <google-cast-launcher> hides itself whenever no Chromecast has been discovered. */
+.cast-btn {
+  display: inline-flex; align-items: center; gap: 8px; flex: none; min-height: 44px; padding: 0 16px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink);
+  font: inherit; font-size: 15px; font-weight: 500; cursor: pointer;
+}
+.cast-btn svg { width: 22px; height: 22px; fill: currentColor; }
+.cast-btn[data-state="on"] { color: var(--amber); border-color: var(--amber); }
 .cast-status { display: flex; gap: 10px; align-items: baseline; margin: 10px 0 20px; color: var(--ink-2); font-size: 15px; min-height: 1.5em; }
 .cast-status::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); transform: translateY(-1px); }
 .cast-status[data-state="on"]::before { background: var(--live); box-shadow: 0 0 0 4px color-mix(in srgb, var(--live) 22%, transparent); }
@@ -102,7 +109,10 @@ footer a { min-height: 44px; display: inline-flex; align-items: center; }
     <a class="home" href="../" data-t="ui.home">miApps</a>
     <div class="title-row">
       <h1 data-t="ui.title">Observatory controls</h1>
-      <google-cast-launcher id="castbtn" hidden></google-cast-launcher>
+      <button class="cast-btn" id="castbtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 18v3h3a3 3 0 0 0-3-3zm0-4v2a5 5 0 0 1 5 5h2a7 7 0 0 0-7-7zm0-4v2a9 9 0 0 1 9 9h2A11 11 0 0 0 1 10zm20-7H3a2 2 0 0 0-2 2v3h2V5h18v14h-7v2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>
+        <span id="castLabel"></span>
+      </button>
     </div>
     <p class="cast-status" id="castStatus" role="status" aria-live="polite"></p>
   </header>
