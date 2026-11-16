@@ -40,6 +40,25 @@ body {
 #stage { position: absolute; inset: 0; }
 #globe { position: absolute; display: block; }
 #lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ---------- EPIC view: NASA's real photos of the whole Earth, in place of the globe ---------- */
+#epic { position: absolute; display: none; }
+html.epic #epic { display: block; }
+html.epic #globe, html.epic #lines, html.epic #cards { display: none; }
+#epic img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 2.5s ease; }
+#epic img.on { opacity: 1; }
+#epic-cap { position: absolute; display: none; width: 46vh; line-height: 1.35; font-size: 1.6vh; color: var(--ink-2); }
+html.epic #epic-cap { display: block; }
+#epic-cap .k { color: var(--amber); }
+
+/* ---------- how much is on screen (Display > On screen in the controls) ----------
+   simple: the Earth, centred, with the clock, the weather and the photo's caption.
+   zen:    the Earth and nothing else. */
+html.simple #stats, html.simple #ticker, html.simple #foot, html.simple #qr,
+html.simple #cards, html.simple #lines { display: none; }
+html.zen #drift { display: none; }
+html.zen #epic img { transition-duration: 6s; }
+#epic-cap .w { color: var(--ink); font-size: 1.9vh; font-weight: 400; margin: 0.4vh 0; }
 .layer { position: absolute; inset: 0; pointer-events: none; }
 
 /* ---------- top band ---------- */
@@ -104,7 +123,7 @@ html.light #qr img { filter: none; mix-blend-mode: multiply; }
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="globe"></canvas></div>
+<div id="stage"><canvas id="globe"></canvas><div id="epic"><img alt=""><img alt=""></div></div>
 <div id="drift">
 <svg id="lines"></svg>
   <div class="layer" id="cards"></div>
@@ -112,6 +131,7 @@ html.light #qr img { filter: none; mix-blend-mode: multiply; }
     <div id="clock"><div class="t">--:--</div><div class="d"></div></div>
     <div id="wx"><div class="temp">—</div><div class="cond"></div><div class="sun"></div></div>
     <div id="stats"></div>
+    <div id="epic-cap"></div>
     <div id="ticker"></div>
     <div id="foot"></div>
     <div id="qr"></div>
@@ -141,6 +161,10 @@ const CFG = {
   geoBelt: true,
   autoTheme: true,             // light during the day, dark from dusk to dawn (home sunrise/sunset)
   twilightMin: 35,             // switch this many minutes after sunrise / before sunset
+  epicApi: "https://epic.gsfc.nasa.gov/api/natural",          // newest day of natural-colour photos; keyless, CORS-enabled
+  epicArchive: "https://epic.gsfc.nasa.gov/archive/natural",  // /YYYY/MM/DD/png/<image>.png is the full 2048 px original
+  epicHoldSec: 30,             // each photo of the day stays up this long
+  epicEveryMin: 30,            // how often to ask for a newer day
 };
 const DEV = /[?&]dev/.test(location.search);
 
@@ -154,6 +178,11 @@ let { settings: SET, stored: SET_STORED } = OBS.load();
 let LOCALE = OBS.LANGS[SET.lang].locale;
 const T = (key, vars) => OBS.t(SET.lang, key, vars);
 document.documentElement.lang = SET.lang;
+// ?view= and ?detail= in the URL beat the settings, for previews.
+const forcedView = (location.search.match(/[?&]view=(epic|globe)/) || [])[1];
+const viewNow = () => forcedView || SET.view;
+const forcedDetail = (location.search.match(/[?&]detail=(zen|simple|full)/) || [])[1];
+function detailNow() { return forcedDetail || SET.detail; }
 
 function applySettings(raw, from) {
   SET = OBS.normalize(raw);
@@ -163,7 +192,8 @@ function applySettings(raw, from) {
   if (from !== "storage") OBS.save(SET);
   S.shown.clear();
   rebuildNews();
-  renderStats(); renderWeather(); renderFoot(); renderClock(); renderQR(); updateTheme();
+  renderStats(); renderWeather(); renderClock(); renderQR();
+  applyView();                    // also redraws the footer and the theme
   castSend();                     // every connected phone sees the new state
 }
 addEventListener("storage", (e) => {
@@ -323,10 +353,17 @@ function flick(lat, lon) {
 let size = 0, canvasLeft = 0, canvasTop = 0;
 function layout() {
   const W = innerWidth, H = innerHeight;
-  size = Math.round(H * 0.98);
-  canvasLeft = Math.round(W * 0.64 - size / 2); canvasTop = Math.round((H - size) / 2);
+  const detail = detailNow(), full = detail === "full", zen = detail === "zen";
+  size = Math.round(H * (zen ? 1 : 0.98));
+  canvasLeft = Math.round(W * (full ? 0.64 : 0.5) - size / 2);   // off-centre only when the stats column needs the room canvasTop = Math.round((H - size) / 2);
   canvas.style.left = canvasLeft + "px"; canvas.style.top = canvasTop + "px";
   canvas.style.width = canvas.style.height = size + "px";
+  // The photo sits where the globe does, a little smaller; its caption goes in the black corner above the disc.
+  const e = Math.round(size * (zen ? 0.98 : 0.94)), ex = canvasLeft + (size - e) / 2, ey = canvasTop + (size - e) / 2;
+  const box = $("#epic").style, capBox = $("#epic-cap").style;
+  box.left = ex + "px"; box.top = ey + "px"; box.width = box.height = e + "px";
+  if (full) { capBox.left = ex + "px"; capBox.top = "4.2vh"; capBox.bottom = "auto"; }
+  else { capBox.left = "4vw"; capBox.top = "auto"; capBox.bottom = "4.2vh"; }
   renderer.setSize(size, size, false);
   camera.aspect = 1; camera.updateProjectionMatrix();
 }
@@ -753,7 +790,7 @@ function nextTicker() {
 function renderFoot() {
   const d = S.data; if (!d) { $("#foot").textContent = T("foot.waiting"); return; }
   const parts = [T("foot.news", { n: agoMin(d.news ? d.news.fetched_at : d.meta.built_at) })];
-  if (d.geo_belt) parts.push(T("foot.geo", { n: fmt(d.geo_belt.count) }));
+  if (viewNow() !== "epic" && d.geo_belt) parts.push(T("foot.geo", { n: fmt(d.geo_belt.count) }));
   if (d.meta.failed && d.meta.failed.length) parts.push(T("foot.stale", { list: esc(d.meta.failed.join(", ")) }));
   $("#foot").innerHTML = parts.map(p => `<span>${p}</span>`).join("");
 }
@@ -782,6 +819,7 @@ function applyTheme(light) {
   renderer.setClearColor(0x000000, 0);
 }
 function updateTheme() {
+  if (viewNow() === "epic") return applyTheme(false);   // the photos are of Earth in black space
   const fixed = forcedTheme || (SET.theme !== "auto" ? SET.theme : null);   // ?theme= beats the setting
   if (fixed) return applyTheme(fixed === "light");
   if (!CFG.autoTheme || !S.weather) return;
@@ -789,6 +827,73 @@ function updateTheme() {
   const local = now.toLocaleString("sv-SE", { timeZone: CFG.home.tz }).replace(" ", "T");   // YYYY-MM-DDTHH:MM:SS in home tz
   const m = mins(local), rise = mins(d.sunrise[i]) + CFG.twilightMin, set = mins(d.sunset[i]) - CFG.twilightMin;
   applyTheme(m > rise && m < set);
+}
+
+// =====================================================================
+//  EPIC VIEW
+// =====================================================================
+// DSCOVR sits 1.5 million km sunward of Earth and its EPIC camera photographs the whole sunlit
+// disc about every one to two hours. The API lists the newest day's photos; the screen starts on
+// the latest one and then steps through that day, so the Earth turns once per cycle.
+const EPIC = { frames: [], i: -1, front: 0, token: 0, shown: null };
+
+function epicUrl(f, ext) {
+  const [y, m, d] = f.date.slice(0, 10).split("-");
+  return `${CFG.epicArchive}/${y}/${m}/${d}/${ext}/${f.image}.${ext}`;
+}
+function epicCaption() {
+  const f = EPIC.shown, el = $("#epic-cap");
+  if (!f) { el.innerHTML = `<div class="k">${T("epic.wait")}</div>`; return; }
+  const when = new Date(f.date.replace(" ", "T") + "Z").toLocaleString(LOCALE,
+    { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
+  const p = f.dscovr_j2000_position, km = p ? Math.hypot(p.x, p.y, p.z) : 0;
+  const latest = f === EPIC.frames[EPIC.frames.length - 1];
+  el.innerHTML = `<div class="k">${T("epic.name")}${latest ? " · " + T("epic.latest") : ""}</div>` +
+    `<div class="w">${esc(T("epic.when", { when }))}</div>` +
+    `<div>${km > 1e5 ? T("epic.dist", { km: fmt(Math.round(km / 1000) * 1000) }) + " · " : ""}${T("epic.credit")}</div>`;
+}
+function epicShow(i) {
+  const f = EPIC.frames[i]; if (!f) return;
+  EPIC.i = i;
+  const token = ++EPIC.token, imgs = document.querySelectorAll("#epic img");
+  const back = imgs[1 - EPIC.front], front = imgs[EPIC.front];
+  let ext = "png";
+  back.onload = () => {
+    if (token !== EPIC.token) return;
+    back.classList.add("on"); front.classList.remove("on");
+    EPIC.front = 1 - EPIC.front; EPIC.shown = f; epicCaption();
+  };
+  back.onerror = () => {             // no PNG yet for a brand-new photo: fall back to the JPEG, then skip it
+    if (token !== EPIC.token) return;
+    if (ext === "png") { ext = "jpg"; back.src = epicUrl(f, ext); }
+  };
+  back.src = epicUrl(f, ext);
+}
+function epicNext() {
+  if (viewNow() !== "epic" || !EPIC.frames.length) return;
+  epicShow((EPIC.i + 1) % EPIC.frames.length);
+}
+async function pollEpic() {
+  if (viewNow() !== "epic") return;
+  try {
+    const list = await fetchJSON(CFG.epicApi, 20000);
+    const frames = (Array.isArray(list) ? list : [])
+      .filter(f => f && /^epic_[A-Za-z0-9_]+$/.test(f.image || "") && /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/.test(f.date || ""))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (!frames.length) return;
+    const newest = frames[frames.length - 1].image, had = EPIC.frames.length && EPIC.frames[EPIC.frames.length - 1].image;
+    EPIC.frames = frames;
+    if (newest !== had) epicShow(frames.length - 1);   // a newer photo arrived: show it straight away
+  } catch (e) { console.warn("epic", e); }
+}
+function applyView() {
+  const epic = viewNow() === "epic";
+  document.documentElement.classList.toggle("epic", epic);
+  document.documentElement.classList.toggle("zen", detailNow() === "zen");
+  document.documentElement.classList.toggle("simple", detailNow() !== "full");   // zen hides everything simple does, and more
+  layout();
+  if (epic) { epicCaption(); if (!EPIC.frames.length) pollEpic(); }
+  updateTheme(); renderFoot();
 }
 
 // =====================================================================
@@ -801,6 +906,10 @@ function frame(now) {
   requestAnimationFrame(frame);
   if (document.hidden || now - lastFrame < frameMs) return;
   lastFrame = now;
+  if (viewNow() === "epic") {      // nothing to draw in 3D; keep the stats ticking
+    if (now - lastStats > 1000) { renderStats(); lastStats = now; }
+    return;
+  }
   globe.rotation.y = (now / 1000 / CFG.rotationPeriodSec) * 2 * Math.PI;
   tilt.updateMatrixWorld(true);
   if (now - lastSun > 200) { const s = subsolar(new Date()); sunVec.copy(latLonToVec(s.lat, s.lon)); lastSun = now; }
@@ -816,7 +925,9 @@ function frame(now) {
 //  BOOT
 // =====================================================================
 renderClock(); setInterval(renderClock, 1000);
-updateTheme(); setInterval(updateTheme, 60000);
+applyView(); setInterval(updateTheme, 60000);
+setInterval(epicNext, CFG.epicHoldSec * 1000);
+setInterval(pollEpic, CFG.epicEveryMin * 60000);
 renderQR();
 loadData(); setInterval(loadData, CFG.dataEveryMin * 60000);
 pollWeather(); setInterval(pollWeather, 15 * 60000);

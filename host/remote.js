@@ -73,6 +73,10 @@
       return row("checkbox", "stat", id, T("name." + id), T("desc." + id), on, full && !on);
     }));
 
+    $("views").replaceChildren(...OBS.VIEWS.map((v) =>
+      row("radio", "view", v, T("ui.view." + v), T("ui.view." + v + ".help"), SET.view === v)));
+    $("details").replaceChildren(...OBS.DETAILS.map((d) =>
+      row("radio", "detail", d, T("ui.detail." + d), T("ui.detail." + d + ".help"), SET.detail === d)));
     $("themes").replaceChildren(...OBS.THEMES.map((th) =>
       row("radio", "theme", th, T("ui.theme." + th), th === "auto" ? T("ui.theme.auto.help") : null, SET.theme === th)));
 
@@ -158,6 +162,8 @@
       update((s) => { s.stats = checked ? [...s.stats, value] : s.stats.filter((x) => x !== value); });
     }
     else if (name === "theme") update((s) => { s.theme = value; });
+    else if (name === "view") update((s) => { s.view = value; });
+    else if (name === "detail") update((s) => { s.detail = value; });
   });
 
   // Another tab (or a second controls page) changed the settings.

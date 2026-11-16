@@ -21,12 +21,16 @@
   const REGIONS = ["canada", "ottawa-gatineau"];                 // keep in step with REGIONS in build_data.py
   const LOCAL_SHARES = [25, 50, 75];                             // % of headlines that are local
   const THEMES = ["auto", "light", "dark"];
+  const VIEWS = ["epic", "globe"];
+  const DETAILS = ["zen", "simple", "full"];                     // how much is on screen around the Earth                               // epic: NASA's latest photos of the whole Earth
 
   const DEFAULTS = {
     lang: "en",
     news: { langs: ["en"], region: "ottawa-gatineau", local: 25, sources: {} },
     stats: ["population", "births", "co2", "iss", "quakes", "kp", "btc"],
     theme: "auto",
+    view: "epic",
+    detail: "simple",
   };
 
   function defaults(lang) {
@@ -64,6 +68,8 @@
       },
       stats,
       theme: THEMES.includes(r.theme) ? r.theme : d.theme,
+      view: VIEWS.includes(r.view) ? r.view : d.view,
+      detail: DETAILS.includes(r.detail) ? r.detail : d.detail,
     };
   }
 
@@ -128,6 +134,8 @@
       "foot.news": "news {n} min ago", "foot.geo": "{n} satellites in the GEO belt · not to scale",
       "foot.stale": "stale: {list}", "foot.waiting": "waiting for data",
       "qr": "scan to<br>take the controls",
+      "epic.credit": "NASA EPIC · DSCOVR", "epic.name": "Earth, photographed from space", "epic.latest": "latest photo",
+      "epic.when": "{when} UTC", "epic.dist": "from {km} km away", "epic.wait": "waiting for NASA’s latest photo",
 
       "ui.title": "Observatory controls",
       "ui.cast.idle": "Not on a TV yet. Tap the Cast icon to put the Observatory on one.",
@@ -153,6 +161,12 @@
       "ui.display": "Display", "ui.theme": "Theme",
       "ui.theme.auto": "Day and night", "ui.theme.auto.help": "Light from sunrise to sunset at home, dark otherwise.",
       "ui.theme.light": "Always light", "ui.theme.dark": "Always dark",
+      "ui.view": "Earth", "ui.view.epic": "Real photos", "ui.view.globe": "Live globe",
+      "ui.view.epic.help": "NASA’s latest full-resolution photos of the whole Earth, taken from 1.5 million km away. The screen stays dark.",
+      "ui.view.globe.help": "A turning globe with headlines pinned to places, quakes, the ISS and satellites.",
+      "ui.detail": "On screen", "ui.detail.zen": "Zen", "ui.detail.simple": "Simple", "ui.detail.full": "Everything",
+      "ui.detail.zen.help": "Only the Earth. Nothing else.", "ui.detail.simple.help": "The Earth with the time and the weather.",
+      "ui.detail.full.help": "Adds the stats, the headlines and the news ticker.",
       "ui.preview": "Preview in this browser", "ui.home": "miApps",
       "region.canada": "Canada", "region.ottawa-gatineau": "Ottawa–Gatineau",
       "name.population": "People on Earth", "desc.population": "Estimated world population, counting up.",
@@ -204,6 +218,8 @@
       "foot.news": "actualités il y a {n} min", "foot.geo": "{n} satellites géostationnaires · pas à l’échelle",
       "foot.stale": "en retard : {list}", "foot.waiting": "en attente des données",
       "qr": "scannez pour<br>prendre les commandes",
+      "epic.credit": "NASA EPIC · DSCOVR", "epic.name": "La Terre, photographiée depuis l’espace", "epic.latest": "dernière photo",
+      "epic.when": "{when} UTC", "epic.dist": "à {km} km de distance", "epic.wait": "en attente de la dernière photo de la NASA",
 
       "ui.title": "Commandes d’Observatory",
       "ui.cast.idle": "Pas encore sur une télé. Touchez l’icône Cast pour y afficher Observatory.",
@@ -229,6 +245,12 @@
       "ui.display": "Affichage", "ui.theme": "Thème",
       "ui.theme.auto": "Jour et nuit", "ui.theme.auto.help": "Clair du lever au coucher du soleil à la maison, sombre le reste du temps.",
       "ui.theme.light": "Toujours clair", "ui.theme.dark": "Toujours sombre",
+      "ui.view": "Terre", "ui.view.epic": "Vraies photos", "ui.view.globe": "Globe en direct",
+      "ui.view.epic.help": "Les dernières photos de la Terre entière en pleine résolution, prises par la NASA à 1,5 million de km. L’écran reste sombre.",
+      "ui.view.globe.help": "Un globe qui tourne, avec les titres épinglés sur les lieux, les séismes, l’ISS et les satellites.",
+      "ui.detail": "À l’écran", "ui.detail.zen": "Zen", "ui.detail.simple": "Simple", "ui.detail.full": "Tout",
+      "ui.detail.zen.help": "Seulement la Terre. Rien d’autre.", "ui.detail.simple.help": "La Terre avec l’heure et la météo.",
+      "ui.detail.full.help": "Ajoute les statistiques, les titres et le bandeau d’actualités.",
       "ui.preview": "Aperçu dans ce navigateur", "ui.home": "miApps",
       "region.canada": "Canada", "region.ottawa-gatineau": "Ottawa–Gatineau",
       "name.population": "Population mondiale", "desc.population": "Estimation qui augmente en temps réel.",
@@ -280,6 +302,8 @@
       "foot.news": "noticias de hace {n} min", "foot.geo": "{n} satélites geoestacionarios · no a escala",
       "foot.stale": "desactualizado: {list}", "foot.waiting": "esperando datos",
       "qr": "escanea para<br>tomar el control",
+      "epic.credit": "NASA EPIC · DSCOVR", "epic.name": "La Tierra, fotografiada desde el espacio", "epic.latest": "última foto",
+      "epic.when": "{when} UTC", "epic.dist": "a {km} km de distancia", "epic.wait": "esperando la última foto de la NASA",
 
       "ui.title": "Controles de Observatory",
       "ui.cast.idle": "Todavía no está en una tele. Toca el icono de Cast para mostrar Observatory.",
@@ -305,6 +329,12 @@
       "ui.display": "Pantalla", "ui.theme": "Tema",
       "ui.theme.auto": "Día y noche", "ui.theme.auto.help": "Claro desde el amanecer hasta el atardecer en casa y oscuro el resto del tiempo.",
       "ui.theme.light": "Siempre claro", "ui.theme.dark": "Siempre oscuro",
+      "ui.view": "Tierra", "ui.view.epic": "Fotos reales", "ui.view.globe": "Globo en vivo",
+      "ui.view.epic.help": "Las últimas fotos de la Tierra entera a máxima resolución, tomadas por la NASA a 1,5 millones de km. La pantalla permanece oscura.",
+      "ui.view.globe.help": "Un globo que gira, con titulares situados en su lugar, terremotos, la ISS y satélites.",
+      "ui.detail": "En pantalla", "ui.detail.zen": "Zen", "ui.detail.simple": "Sencillo", "ui.detail.full": "Todo",
+      "ui.detail.zen.help": "Solo la Tierra. Nada más.", "ui.detail.simple.help": "La Tierra con la hora y el tiempo.",
+      "ui.detail.full.help": "Añade las estadísticas, los titulares y la cinta de noticias.",
       "ui.preview": "Vista previa en este navegador", "ui.home": "miApps",
       "region.canada": "Canadá", "region.ottawa-gatineau": "Ottawa–Gatineau",
       "name.population": "Población mundial", "desc.population": "Estimación que sube en tiempo real.",
@@ -356,6 +386,8 @@
       "foot.news": "Nachrichten von vor {n} Min.", "foot.geo": "{n} geostationäre Satelliten · nicht maßstabsgetreu",
       "foot.stale": "veraltet: {list}", "foot.waiting": "warte auf Daten",
       "qr": "scannen, um<br>zu steuern",
+      "epic.credit": "NASA EPIC · DSCOVR", "epic.name": "Die Erde, aus dem All fotografiert", "epic.latest": "neuestes Foto",
+      "epic.when": "{when} UTC", "epic.dist": "aus {km} km Entfernung", "epic.wait": "warte auf das neueste NASA-Foto",
 
       "ui.title": "Observatory-Steuerung",
       "ui.cast.idle": "Noch auf keinem Fernseher. Tippe auf das Cast-Symbol, um Observatory dort zu zeigen.",
@@ -381,6 +413,12 @@
       "ui.display": "Anzeige", "ui.theme": "Design",
       "ui.theme.auto": "Tag und Nacht", "ui.theme.auto.help": "Hell von Sonnenauf- bis Sonnenuntergang zu Hause, sonst dunkel.",
       "ui.theme.light": "Immer hell", "ui.theme.dark": "Immer dunkel",
+      "ui.view": "Erde", "ui.view.epic": "Echte Fotos", "ui.view.globe": "Live-Globus",
+      "ui.view.epic.help": "Die neuesten Fotos der ganzen Erde in voller Auflösung, von der NASA aus 1,5 Millionen km Entfernung aufgenommen. Der Bildschirm bleibt dunkel.",
+      "ui.view.globe.help": "Ein drehender Globus mit Schlagzeilen an ihren Orten, Erdbeben, der ISS und Satelliten.",
+      "ui.detail": "Auf dem Bildschirm", "ui.detail.zen": "Zen", "ui.detail.simple": "Einfach", "ui.detail.full": "Alles",
+      "ui.detail.zen.help": "Nur die Erde. Sonst nichts.", "ui.detail.simple.help": "Die Erde mit Uhrzeit und Wetter.",
+      "ui.detail.full.help": "Dazu Statistiken, Schlagzeilen und der Nachrichtenticker.",
       "ui.preview": "Vorschau in diesem Browser", "ui.home": "miApps",
       "region.canada": "Kanada", "region.ottawa-gatineau": "Ottawa–Gatineau",
       "name.population": "Weltbevölkerung", "desc.population": "Schätzung, zählt live mit.",
@@ -409,7 +447,7 @@
   }
 
   window.OBS = {
-    APP_ID, NS, KEY, MAX_STATS, LANGS, STATS, REGIONS, LOCAL_SHARES, THEMES, DEFAULTS,
+    APP_ID, NS, KEY, MAX_STATS, LANGS, STATS, REGIONS, LOCAL_SHARES, THEMES, VIEWS, DETAILS, DEFAULTS,
     defaults, normalize, load, save, sourceOn, regionScope, t,
   };
 })();

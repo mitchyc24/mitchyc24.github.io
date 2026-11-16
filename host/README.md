@@ -39,7 +39,10 @@ host/data/data.json                    sample; overwritten at build time, never 
 - **News**: which languages headlines may be in, local news (off, Canada, or Ottawa–Gatineau, which also
   includes the Canada sources), the share of local headlines (25, 50 or 75 %), and every source with an on/off switch.
 - **Stats**: 16 to choose from, up to 8 on at once. The TV shows them in the order listed.
-- **Display**: day-and-night theme (light between sunrise and sunset at home), always light, or always dark.
+- **Display**: what stands in for the Earth, how much is on screen, and the theme. *On screen* is *Zen* (only the
+  Earth, nothing else), *Simple* (the default: the Earth centred, with the clock, the weather and the photo's
+  caption) or *Everything* (adds the stats column, headline cards, ticker and QR code). *Real photos* (the default) shows NASA's EPIC camera
+  images; *Live globe* is the turning 3D globe with headline cards. Then the day-and-night theme (light between sunrise and sunset at home), always light, or always dark.
 
 How a change reaches the screen:
 
@@ -55,6 +58,16 @@ How a change reaches the screen:
   reach the TV; the page says so.
 
 `?theme=light|dark` in the receiver URL still overrides the theme setting.
+
+## EPIC view (real photos of Earth)
+
+This is the EPIC Earth project folded into Observatory. The TV asks `https://epic.gsfc.nasa.gov/api/natural`
+(keyless, CORS-enabled) for the newest day of natural-colour photos from the EPIC camera on DSCOVR, and loads each
+one from the archive as the full 2048 × 2048 PNG, the highest resolution NASA publishes. It shows the latest photo
+first, then steps through that day's photos every 30 seconds, so the Earth turns once per cycle. Each photo is
+captioned with its capture time (UTC) and the spacecraft's distance. NASA publishes with a delay of a day or two,
+so "latest" is usually the day before yesterday. The view is always dark, because the photos are of Earth against
+black space. The headline cards and their leader lines belong to the globe and are hidden. `?view=epic|globe` in the receiver URL overrides the setting, like `?theme=`; so does `?detail=zen|simple|full`.
 
 ## News sources and balance
 

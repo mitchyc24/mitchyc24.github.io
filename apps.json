@@ -22,18 +22,18 @@
     {
       "id": "observatory",
       "name": "Observatory",
-      "tagline": "Ambient world dashboard for the TV: a live globe with news, quakes, the ISS and space weather. Pick its language, local news and stats from your phone.",
+      "tagline": "Ambient world dashboard for the TV: NASA’s latest full-resolution photos of the whole Earth, or a live globe. Keep it zen with only the Earth, or add the time, weather, news and live stats from your phone.",
       "path": "host/",
       "entry": "remote.html",
       "action": "Cast & control",
       "icon": "🌍",
       "color": "#F0B45A",
       "category": "Dashboards",
-      "tags": ["chromecast", "globe", "news", "live data", "remote", "français", "español", "deutsch"],
+      "tags": ["chromecast", "globe", "earth", "epic", "nasa", "dscovr", "news", "live data", "remote", "français", "español", "deutsch"],
       "platforms": ["tv", "desktop"],
       "status": "beta",
       "added": "2026-09-11",
-      "updated": "2026-09-25",
+      "updated": "2026-11-15",
       "links": [
         { "label": "Preview", "href": "host/?dev" }
       ]
