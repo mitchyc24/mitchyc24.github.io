@@ -1,0 +1,59 @@
+{
+  "subjects": [
+    {
+      "id": "earth-space",
+      "name": "Earth & Space",
+      "blurb": "The planet seen live: headlines pinned to a globe, earthquakes as they happen, the ISS overhead and the weather coming off the Sun.",
+      "model": "globe",
+      "icon": "🌍",
+      "color": "#2F7FD0",
+      "apps": ["observatory"]
+    },
+    {
+      "id": "radio-radar",
+      "name": "Radio & Radar",
+      "blurb": "How invisible waves find things and carry signals. Interactive lessons on radar, antennas and microwaves that you learn by playing with them.",
+      "model": "dish",
+      "icon": "📡",
+      "color": "#0B9A6B",
+      "apps": ["radar-lab", "waveguide-modes"]
+    },
+    {
+      "id": "running-music",
+      "name": "Running & Music",
+      "blurb": "Moving to a beat. Tools that match music to the rhythm of your feet.",
+      "model": "metronome",
+      "icon": "🏃",
+      "color": "#D7262E",
+      "apps": ["stride-roulette"]
+    },
+    {
+      "id": "around-town",
+      "name": "Around Town",
+      "blurb": "What is happening nearby, now and soon.",
+      "model": "pin",
+      "icon": "📍",
+      "color": "#B05C8C",
+      "apps": ["local-events"]
+    },
+    {
+      "id": "station",
+      "name": "Command Station",
+      "blurb": "Public information gathered in one place: headlines, local conditions, quakes, orbit, markets.",
+      "model": "console",
+      "icon": "🖥️",
+      "color": "#E0A030",
+      "target": "#station",
+      "note": "Live data"
+    },
+    {
+      "id": "toolbox",
+      "name": "Toolbox",
+      "blurb": "Every tool and app in the collection.",
+      "model": "gears",
+      "icon": "🧰",
+      "color": "#5B5BD6",
+      "target": "#tools"
+    }
+  ]
+}

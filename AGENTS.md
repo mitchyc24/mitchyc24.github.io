@@ -13,6 +13,7 @@ https://mitchyc24.github.io/. The root page is a hub that reads `apps.json` and 
 
 ```
 index.html, hub/, 404.html, manifest.webmanifest   the hub (leave alone unless the task is about the hub)
+hub/subjects.json                                   the subjects on the landing page's 3D rack (see "The landing page")
 apps.json                                           the registry
 apps/<id>/                                          one folder per app; index.html is its entry
 apps/_template/                                     starter to copy for a new app (not listed on the hub)
@@ -106,6 +107,21 @@ Renaming or moving an app: move the folder, update `path`, and add the old path 
 - `host/data/data.json` is rebuilt every 15 minutes by `.github/workflows/dashboard-data.yml`. The committed copy
   is a sample; never commit live data.
 - The hub is `index.html`, `hub/`, `404.html` and `manifest.webmanifest`.
+
+## The landing page
+
+The hub is a landing page with three parts, all in `index.html` and `hub/`:
+
+- **The rack** (`hub/rack.js`, `hub/subjects.json`): a 3D shelf with one model per subject. Each subject in
+  `subjects.json` has an `id`, `name`, `blurb`, `icon` (emoji for the no-WebGL fallback), `color` and `model`
+  (`globe`, `dish`, `metronome`, `pin`, `console` or `gears`; add a builder to `MODELS` in `rack.js` for a new
+  one). It either lists `apps` (ids from `apps.json`, shown in a panel when the subject is picked), optional
+  `links` (`[{ "label", "href", "note" }]` for things that are not apps), or a `target` (`#station`, `#tools`)
+  to jump to a section. When a new app belongs to a subject, add its id to that subject's `apps`. three.js is
+  loaded from a pinned CDN URL; without it the subjects show as a plain grid.
+- **The command station** (`hub/station.js`): live public information. It reads `host/data/data.json` (the file
+  built for Observatory) and calls keyless public APIs from the browser. Its storage keys start with `miapps.`.
+- **Tools & apps** (`hub/hub.js`): the card grid from `apps.json`.
 
 ## Data built by GitHub Actions
 

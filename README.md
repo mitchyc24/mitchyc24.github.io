@@ -56,7 +56,7 @@ keys are prefixed with the app id), are in [`AGENTS.md`](AGENTS.md).
 ## Layout
 
 ```
-index.html  hub/  404.html  manifest.webmanifest   the hub
+index.html  hub/  404.html  manifest.webmanifest   the hub: 3D subject rack, command station, app grid
 apps.json                                           the registry, the list of every app
 apps/<id>/                                          one app per folder, index.html is its entry
 apps/_template/                                     starter for new apps (not listed on the hub)

@@ -1,8 +1,10 @@
-// miApps hub: reads apps.json and renders the launcher. No build step, no dependencies.
+// miApps hub: reads apps.json and hub/subjects.json, then renders the subject nodes and the launcher.
+// No build step, no dependencies. rack.js (the 3D rack) and station.js build on window.miHub.
 (() => {
   "use strict";
 
   const REGISTRY = "apps.json";
+  const SUBJECTS = "hub/subjects.json";
   const RECENT_KEY = "miapps.recent";
   const RECENT_MIN_APPS = 6;   // the "Recently opened" row only earns its space once the grid is long
   const PLATFORMS = { phone: "Phone", tablet: "Tablet", desktop: "Desktop", tv: "TV" };
@@ -18,8 +20,10 @@
     q: $("q"), chips: $("chips"), grid: $("grid"), status: $("status"), count: $("count"),
     request: $("request"), recentWrap: $("recent-wrap"), recent: $("recent"),
     archiveWrap: $("archive-wrap"), archive: $("archive"),
+    nodes: $("rack-nodes"), subject: $("subject"), subjectName: $("subject-name"),
+    subjectBlurb: $("subject-blurb"), subjectGrid: $("subject-grid"), subjectClose: $("subject-close"),
   };
-  const state = { hub: {}, apps: [], q: "", cat: "" };
+  const state = { hub: {}, apps: [], subjects: [], subject: "", q: "", cat: "" };
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -137,6 +141,67 @@
           "Describe it in a GitHub issue. It gets built in its own folder in this repo and shows up here.")));
   }
 
+  // ------------------------------------------------------------ subjects
+  // A subject either groups apps ("apps": [ids]) and opens a panel under the rack,
+  // or points at a section of this page ("target": "#station").
+  function normalizeSubject(raw) {
+    if (!raw || typeof raw !== "object" || !raw.id || !raw.name) return null;
+    const byId = new Map(state.apps.map((a) => [a.id, a]));
+    const s = {
+      ...raw,
+      blurb: raw.blurb || "",
+      color: /^#[0-9a-f]{6}$/i.test(raw.color || "") ? raw.color : null,
+      target: /^#[\w-]+$/.test(raw.target || "") ? raw.target : null,
+      links: Array.isArray(raw.links) ? raw.links.filter((l) => l && l.href && l.label) : [],
+    };
+    s._apps = (Array.isArray(raw.apps) ? raw.apps : []).map((id) => byId.get(id)).filter(Boolean);
+    return s;
+  }
+
+  function nodeNote(s) {
+    if (s.note) return s.note;
+    if (s.target === "#tools") {
+      const n = state.apps.filter((a) => a.status !== "archived").length;
+      return `${n} app${n === 1 ? "" : "s"}`;
+    }
+    const n = s._apps.length + s.links.length;
+    return n ? `${n} project${n === 1 ? "" : "s"}` : "";
+  }
+
+  function renderNodes() {
+    els.nodes.replaceChildren(...state.subjects.map((s) =>
+      h("a", {
+        class: "node", "data-subject": s.id, title: s.blurb,
+        href: s.target || `?subject=${encodeURIComponent(s.id)}#subject`,
+        vars: s.color ? { "--app": s.color } : null,
+      },
+        h("span", { class: "node-ico", "aria-hidden": "true" }, s.icon || s.name.slice(0, 1)),
+        h("span", { class: "node-label" }, h("b", null, s.name), nodeNote(s) && h("small", null, nodeNote(s))))));
+  }
+
+  function selectSubject(id, { scroll = false } = {}) {
+    const s = state.subjects.find((x) => x.id === id && !x.target);
+    state.subject = s ? s.id : "";
+    for (const n of els.nodes.querySelectorAll(".node")) {
+      n.dataset.subject === state.subject ? n.setAttribute("aria-current", "true") : n.removeAttribute("aria-current");
+    }
+    els.subject.hidden = !s;
+    if (s) {
+      els.subject.style.setProperty("--app", s.color || "");
+      els.subjectName.textContent = s.name;
+      els.subjectBlurb.textContent = s.blurb;
+      els.subjectGrid.replaceChildren(
+        ...s._apps.map(card),
+        ...s.links.map((l) => h("article", { class: "card card-link" },
+          h("div", { class: "tile", "aria-hidden": "true" }, icon("arrow")),
+          h("div", { class: "body" },
+            h("div", { class: "name-row" }, h("h3", { class: "name" }, h("a", { class: "launch", href: l.href }, l.label))),
+            l.note && h("p", { class: "tagline" }, l.note)))));
+      if (scroll) els.subject.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+    }
+    window.dispatchEvent(new CustomEvent("mihub:select", { detail: state.subject }));
+  }
+
   function chip(label, value, n) {
     return h("button", { class: "chip", type: "button", "data-cat": value, "aria-pressed": String(state.cat === value) },
       label, h("span", { class: "n" }, String(n)));
@@ -192,6 +257,8 @@
     const u = new URL(location.href);
     state.q.trim() ? u.searchParams.set("q", state.q.trim()) : u.searchParams.delete("q");
     state.cat ? u.searchParams.set("category", state.cat) : u.searchParams.delete("category");
+    state.subject ? u.searchParams.set("subject", state.subject) : u.searchParams.delete("subject");
+    if (u.hash === "#subject") u.hash = "";
     history.replaceState(null, "", u);
   }
 
@@ -205,6 +272,20 @@
     if (!b) return;
     state.cat = b.dataset.cat === state.cat ? "" : b.dataset.cat;
     render(); syncUrl();
+  });
+  els.nodes.addEventListener("click", (e) => {
+    const n = e.target.closest(".node");
+    if (!n || n.getAttribute("href").startsWith("#")) return;   // section links scroll natively
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault();
+    selectSubject(n.dataset.subject === state.subject ? "" : n.dataset.subject, { scroll: true });
+    syncUrl();
+  });
+  els.subjectClose.addEventListener("click", () => {
+    const id = state.subject;
+    selectSubject(""); syncUrl();
+    const n = els.nodes.querySelector(`[data-subject="${CSS.escape(id)}"]`);
+    if (n) n.focus();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -227,6 +308,11 @@
     state.q = els.q.value = params.get("q") || "";
     state.cat = params.get("category") || "";
 
+    // Subjects are decoration on top of the registry: if they fail to load, the launcher still works.
+    const subjectsReq = fetch(SUBJECTS, { cache: "no-cache" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .catch((err) => { console.warn("miApps: could not load", SUBJECTS, err); return {}; });
+
     try {
       const res = await fetch(REGISTRY, { cache: "no-cache" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -241,14 +327,21 @@
           ? h("span", null, "Browsers block that from a file:// page. Serve the folder instead: ", h("code", null, "python3 -m http.server"), ".")
           : "Try reloading the page.");
       els.grid.replaceChildren(requestCard());
-      return;
+      return [];
     }
+
+    const raw = (await subjectsReq).subjects;
+    state.subjects = (Array.isArray(raw) ? raw : []).map(normalizeSubject).filter(Boolean);
+    renderNodes();
+    selectSubject(params.get("subject") || "");
 
     const live = state.apps.filter((a) => a.status !== "archived").length;
     els.count.textContent = `${live} app${live === 1 ? "" : "s"}`;
     renderChips();
     render();
+    return state.subjects;
   }
 
-  boot();
+  // ready resolves with the subjects once their nodes are in the page; rack.js waits on it.
+  window.miHub = { h, ready: boot() };
 })();

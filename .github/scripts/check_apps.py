@@ -174,7 +174,40 @@ def main():
             if not (d / "index.html").is_file():
                 error(f"apps/{d.name}/ has no index.html")
 
+    check_subjects(seen_ids)
     return report(len(data["apps"]))
+
+
+def check_subjects(app_ids):
+    """hub/subjects.json: the landing page's rack. Each subject groups apps or points at a page section."""
+    path = ROOT / "hub" / "subjects.json"
+    if not path.is_file():
+        return
+    try:
+        subjects = json.loads(path.read_text(encoding="utf-8")).get("subjects")
+    except (json.JSONDecodeError, AttributeError) as e:
+        return error(f"hub/subjects.json is not valid: {e}")
+    if not isinstance(subjects, list):
+        return error('hub/subjects.json must be an object with a "subjects" list')
+    seen = set()
+    for i, s in enumerate(subjects):
+        label = f"hub/subjects.json subjects[{i}]"
+        if not (isinstance(s, dict) and isinstance(s.get("id"), str) and isinstance(s.get("name"), str)):
+            error(f"{label}: needs an id and a name")
+            continue
+        label += f" ({s['id']})"
+        if not ID_RE.match(s["id"]) or s["id"] in seen:
+            error(f"{label}: id must be unique, lowercase words joined by hyphens")
+        seen.add(s["id"])
+        if "color" in s and not (isinstance(s["color"], str) and re.fullmatch(r"#[0-9a-fA-F]{6}", s["color"])):
+            error(f"{label}: color must be a six-digit hex colour like #D7262E")
+        apps = s.get("apps", [])
+        if not isinstance(apps, list):
+            error(f"{label}: apps must be a list of app ids")
+        else:
+            for app_id in apps:
+                if app_id not in app_ids:
+                    error(f"{label}: lists app {app_id!r}, which is not in apps.json")
 
 
 def report(count):
