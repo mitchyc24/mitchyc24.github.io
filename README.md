@@ -4,8 +4,9 @@ Small web apps by Mitchell, all in one place: **https://mitchyc24.github.io/**
 
 This repo is both the storage and the front door for a collection of independent single-page apps. Each app is
 plain HTML, CSS and JavaScript in its own folder, published as-is by GitHub Pages with no build step. The home
-page is a hub that reads the registry, `apps.json`, and shows a card for every app with search and category
-filters.
+root is an interactive 3D workshop that reads `apps.json` and gives every app an artefact. Use the directory
+button to browse without moving around, or visit the command station for the classic searchable app grid.
+If 3D is unavailable, the room opens the accessible directory instead.
 
 ## Adding an app
 
@@ -56,7 +57,8 @@ keys are prefixed with the app id), are in [`AGENTS.md`](AGENTS.md).
 ## Layout
 
 ```
-index.html  hub/  404.html  manifest.webmanifest   the hub: 3D subject rack, command station, app grid
+index.html  hub/  404.html  manifest.webmanifest   the 3D workshop and shared hub assets
+station.html                                       command station and classic app directory
 apps.json                                           the registry, the list of every app
 apps/<id>/                                          one app per folder, index.html is its entry
 apps/_template/                                     starter for new apps (not listed on the hub)

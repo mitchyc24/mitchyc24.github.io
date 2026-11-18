@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>miApps · Mitchell’s projects, live data and everyday tools</title>
+<meta name="description" content="Mitchell’s projects and passions, a command station of live public information, and small free tools that run in your browser.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F3EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="hub/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="hub/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="hub/hub.css">
+<script src="hub/hub.js" defer></script>
+<script src="hub/station.js" defer></script>
+<script src="hub/rack.js" type="module"></script>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-in">
+    <a class="wordmark wordmark-sm" href="./"><span>mi</span>Apps · Back to the room</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#rack">Subjects</a>
+      <a href="#station">Station</a>
+      <a href="#tools">Tools</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="eyebrow">Mitchell’s workshop</p>
+    <h1 class="headline">Projects, passions and useful little tools.</h1>
+    <p class="lede">Pick a subject off the rack, check the command station for what is happening in the world right now, or grab a tool. Everything here is free and runs in your browser.</p>
+  </section>
+
+  <section class="rack" id="rack" aria-label="Subjects">
+    <canvas id="rack-canvas" aria-hidden="true"></canvas>
+    <nav class="rack-nodes" id="rack-nodes" aria-label="Subjects"></nav>
+  </section>
+
+  <section class="subject" id="subject" aria-live="polite" hidden>
+    <div class="subject-head">
+      <div>
+        <p class="eyebrow" id="subject-kicker">Subject</p>
+        <h2 class="h2" id="subject-name"></h2>
+      </div>
+      <button class="icon-btn" id="subject-close" type="button" aria-label="Close subject">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <p class="subject-blurb" id="subject-blurb"></p>
+    <div class="grid" id="subject-grid"></div>
+  </section>
+
+  <section class="station" id="station" aria-labelledby="station-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Live public information</p>
+        <h2 class="h2" id="station-title">Command station</h2>
+      </div>
+      <div class="station-bar">
+        <span class="clock"><b id="st-utc">--:--:--</b> UTC</span>
+        <span class="clock"><b id="st-local">--:--:--</b> local</span>
+        <span class="st-built" id="st-built"></span>
+        <button class="btn btn-sm" id="st-refresh" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div class="st-grid">
+      <article class="panel panel-wide" id="p-news">
+        <header class="panel-head">
+          <h3>Headlines</h3>
+          <select id="news-lang" aria-label="Headline language" hidden></select>
+        </header>
+        <label class="panel-filter">
+          <input id="news-q" type="search" placeholder="Filter headlines, places or sources" autocomplete="off" aria-label="Filter headlines">
+        </label>
+        <ol class="news" id="news-list"><li class="empty">Loading headlines…</li></ol>
+        <footer class="panel-foot">
+          <button class="link-btn" id="news-more" type="button" hidden>Show more</button>
+          <span id="news-src"></span>
+        </footer>
+      </article>
+
+      <article class="panel" id="p-local">
+        <header class="panel-head">
+          <h3>Local conditions</h3>
+          <button class="link-btn" id="local-change" type="button" hidden>Change place</button>
+        </header>
+        <div id="local-body"></div>
+        <form class="place-form" id="place-form" hidden>
+          <input id="place-q" type="search" placeholder="City or town" autocomplete="off" aria-label="City or town">
+          <button class="btn btn-sm" type="submit">Find</button>
+          <button class="btn btn-sm" id="place-geo" type="button">Use my location</button>
+        </form>
+        <ul class="place-results" id="place-results"></ul>
+        <footer class="panel-foot"><span>Weather: Open-Meteo. Your place is saved in this browser and sent only to Open-Meteo.</span></footer>
+      </article>
+
+      <article class="panel" id="p-quakes">
+        <header class="panel-head"><h3>Earthquakes</h3><span class="tag">M4.5+ · 24 h</span></header>
+        <ol class="rows" id="quake-list"><li class="empty">Loading…</li></ol>
+        <footer class="panel-foot"><span>Source: USGS</span></footer>
+      </article>
+
+      <article class="panel" id="p-orbit">
+        <header class="panel-head"><h3>Orbit &amp; space weather</h3></header>
+        <dl class="stats" id="orbit-stats"><div class="empty">Loading…</div></dl>
+        <footer class="panel-foot"><span>Sources: wheretheiss.at, NOAA SWPC, CelesTrak</span></footer>
+      </article>
+
+      <article class="panel" id="p-markets" hidden>
+        <header class="panel-head"><h3>Markets</h3><span class="tag" id="markets-tag"></span></header>
+        <dl class="stats" id="markets-stats"></dl>
+        <footer class="panel-foot"><span>Sources: CoinGecko, Frankfurter (ECB rates)</span></footer>
+      </article>
+
+      <article class="panel" id="p-world" hidden>
+        <header class="panel-head"><h3>World right now</h3><span class="tag">Estimates</span></header>
+        <dl class="stats" id="world-stats"></dl>
+        <footer class="panel-foot"><span>Extrapolated from UN population estimates and yearly CO₂ totals</span></footer>
+      </article>
+
+      <article class="panel panel-wide" id="p-otd" hidden>
+        <header class="panel-head"><h3>On this day</h3><span class="tag" id="otd-tag"></span></header>
+        <ol class="rows otd" id="otd-list"></ol>
+        <footer class="panel-foot"><span>Source: Wikipedia</span></footer>
+      </article>
+    </div>
+  </section>
+
+  <section class="tools-section" id="tools" aria-labelledby="tools-title">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">For everyday use</p>
+        <h2 class="h2" id="tools-title">Tools &amp; apps</h2>
+        <p class="section-lede">No accounts and nothing to install. Open one and it works, on a phone or a desktop.</p>
+      </div>
+      <a class="btn btn-primary" id="request" href="https://github.com/mitchyc24/mitchyc24.github.io/issues/new?template=new-app.yml">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Request an app
+      </a>
+    </div>
+
+    <div class="tools">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+        <input id="q" type="search" placeholder="Search apps" autocomplete="off" spellcheck="false" aria-label="Search apps">
+        <kbd aria-hidden="true">/</kbd>
+      </label>
+      <div class="chips" id="chips" role="group" aria-label="Filter by category" hidden></div>
+    </div>
+
+    <section class="recent" id="recent-wrap" aria-labelledby="recent-label" hidden>
+      <h3 class="section-label" id="recent-label">Recently opened</h3>
+      <div class="recent-row" id="recent"></div>
+    </section>
+
+    <main>
+      <p class="status" id="status" role="status"></p>
+      <div class="grid" id="grid" aria-live="polite"></div>
+      <section id="archive-wrap" aria-labelledby="archive-label" hidden>
+        <h3 class="section-label" id="archive-label">Archive</h3>
+        <div class="grid" id="archive"></div>
+      </section>
+    </main>
+  </section>
+
+  <footer class="foot">
+    <span id="count"></span>
+    <nav aria-label="About this site">
+      <a href="https://github.com/mitchyc24/mitchyc24.github.io#adding-an-app">How apps get added</a>
+      <a href="apps.json">apps.json</a>
+      <a href="https://github.com/mitchyc24/mitchyc24.github.io">Source</a>
+    </nav>
+  </footer>
+</div>
+</body>
+</html>
