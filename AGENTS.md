@@ -5,14 +5,14 @@ Instructions for anyone, human or coding agent, who adds or changes an app in th
 ## What this repo is
 
 **miApps**: a collection of small, independent web apps published by GitHub Pages at
-https://mitchyc24.github.io/. The root page is a hub that reads `apps.json` and shows a card per app.
+https://mitchyc24.github.io/. The root is a 3D workshop that reads `apps.json` and gives each app an artefact.
 
 - There is no build step. Every file is served exactly as it is in the repo.
 - Every app is plain HTML, CSS and JavaScript in its own folder.
 - `apps.json` is the registry: if an app isn't listed there, the hub doesn't know it exists.
 
 ```
-index.html, hub/, 404.html, manifest.webmanifest   the hub (leave alone unless the task is about the hub)
+index.html, station.html, hub/, 404.html, manifest.webmanifest   the hub (leave alone unless the task is about the hub)
 hub/subjects.json                                   the subjects on the landing page's 3D rack (see "The landing page")
 apps.json                                           the registry
 apps/<id>/                                          one folder per app; index.html is its entry
@@ -106,11 +106,14 @@ Renaming or moving an app: move the folder, update `path`, and add the old path 
   changing that URL in the console first.
 - `host/data/data.json` is rebuilt every 15 minutes by `.github/workflows/dashboard-data.yml`. The committed copy
   is a sample; never commit live data.
-- The hub is `index.html`, `hub/`, `404.html` and `manifest.webmanifest`.
+- The hub is `index.html`, `station.html`, `hub/`, `404.html` and `manifest.webmanifest`.
 
 ## The landing page
 
-The hub is a landing page with three parts, all in `index.html` and `hub/`:
+The root is a first-person workshop (`index.html`, `hub/room.js`, `hub/room.css`).
+It creates an artefact for each entry in `apps.json`, using a generic model for new apps until a
+specific model is added. Its directory remains usable when WebGL or the pinned three.js CDN is unavailable.
+The command station artefact opens `station.html`, which retains the original hub's three parts:
 
 - **The rack** (`hub/rack.js`, `hub/subjects.json`): a 3D shelf with one model per subject. Each subject in
   `subjects.json` has an `id`, `name`, `blurb`, `icon` (emoji for the no-WebGL fallback), `color` and `model`
