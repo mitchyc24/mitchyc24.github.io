@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Snowflake</title>
+<meta name="description" content="Design a snowflake and print it on a Snapmaker A350T. The G-code is written directly, as one continuous line with no travel moves.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#EDF2F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0F15" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="bar">
+  <a class="home" href="../../">&larr; miApps</a>
+  <h1 class="brand"><img src="./icon.svg" alt="" width="24" height="24">Snowflake</h1>
+  <span class="spacer"></span>
+  <button type="button" class="btn quiet" id="share" title="Copy a link to this exact snowflake">Copy link</button>
+</header>
+
+<main class="shell">
+  <section class="stage" aria-label="Preview">
+    <div class="bed" id="bed">
+      <canvas id="view" role="img" aria-label="Top view of the snowflake's print path"></canvas>
+      <div class="hud hud-title" id="title"></div>
+      <div class="hud hud-swatches" id="swatches" role="group" aria-label="Filament colour in the preview"></div>
+      <div class="hud hud-busy" id="busy" hidden>Drawing…</div>
+      <div class="trace">
+        <button type="button" class="icon-btn" id="play" aria-label="Play the print path">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path id="play-icon" d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+        <input type="range" id="trace" min="0" max="1000" value="1000" aria-label="Scrub along the print path">
+        <button type="button" class="chip" id="layer-toggle" aria-pressed="false" title="Alternate layers put their joins in different places">Odd layers</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="roll">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>
+        Randomize
+      </button>
+      <button type="button" class="btn square" id="back" aria-label="Previous snowflake" disabled>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="btn square" id="fwd" aria-label="Next snowflake" disabled>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9.5 5.5 16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="btn strong" id="download">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 4v11m0 0 4.5-4.5M12 15l-4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        G-code
+      </button>
+    </div>
+
+    <p class="warn" id="warn" role="alert" hidden></p>
+    <dl class="stats" id="stats"></dl>
+  </section>
+
+  <section class="controls">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Shape</h2>
+        <p>Lock what you like, then roll the rest.</p>
+        <button type="button" class="link" id="lock-all">Lock all</button>
+        <button type="button" class="link" id="lock-none">Unlock all</button>
+      </div>
+      <div id="props"></div>
+      <div class="row plain">
+        <label class="switch"><input type="checkbox" id="hanger"><span>Hanging loop</span></label>
+        <label class="mini">Hole <input type="number" id="hangerHole" step="0.5" inputmode="decimal"> mm</label>
+      </div>
+    </div>
+
+    <details class="panel" id="print-panel">
+      <summary><h2>Print settings</h2><span id="print-summary"></span></summary>
+      <div class="fields">
+        <label>Material
+          <select id="material"><option>PLA</option><option>PETG</option><option>Custom</option></select>
+        </label>
+        <label>Nozzle <span class="u">°C</span><input type="number" id="nozzleTemp" step="5" inputmode="numeric"></label>
+        <label>Bed <span class="u">°C</span><input type="number" id="bedTemp" step="5" inputmode="numeric"></label>
+        <label>Fan <span class="u">%</span><input type="number" id="fan" step="10" inputmode="numeric"></label>
+        <label>Line width <span class="u">mm</span><input type="number" id="lineWidth" step="0.05" inputmode="decimal"></label>
+        <label>Layer height <span class="u">mm</span><input type="number" id="layerHeight" step="0.04" inputmode="decimal"></label>
+        <label>First layer <span class="u">mm</span><input type="number" id="firstLayerHeight" step="0.05" inputmode="decimal"></label>
+        <label>Thickness <span class="u">mm</span><input type="number" id="thickness" step="0.2" inputmode="decimal"></label>
+        <label>Speed <span class="u">mm/s</span><input type="number" id="speed" step="5" inputmode="numeric"></label>
+        <label>First layer speed <span class="u">mm/s</span><input type="number" id="firstSpeed" step="5" inputmode="numeric"></label>
+        <label>Flow <span class="u">%</span><input type="number" id="flow" step="1" inputmode="numeric"></label>
+        <label>Retraction <span class="u">mm</span><input type="number" id="retract" step="0.5" inputmode="decimal"></label>
+      </div>
+      <div class="place">
+        <canvas id="bedmap" width="128" height="140" role="img" aria-label="Where the snowflake sits on the bed"></canvas>
+        <div class="fields two">
+          <label>Centre X <span class="u">mm</span><input type="number" id="centerX" step="5" inputmode="numeric"></label>
+          <label>Centre Y <span class="u">mm</span><input type="number" id="centerY" step="5" inputmode="numeric"></label>
+          <button type="button" class="link" id="recentre">Centre on the bed</button>
+        </div>
+      </div>
+      <div class="row plain">
+        <label class="switch"><input type="checkbox" id="primeLine"><span>Prime line before the snowflake</span></label>
+      </div>
+      <div class="row plain">
+        <label class="switch"><input type="checkbox" id="thumbnail"><span>Picture for the touchscreen</span></label>
+      </div>
+      <button type="button" class="link" id="reset-print">Reset print settings</button>
+    </details>
+
+    <details class="panel" id="gcode-panel">
+      <summary><h2>G-code</h2><span id="gcode-summary"></span></summary>
+      <pre id="gcode-peek" tabindex="0"></pre>
+      <button type="button" class="btn quiet" id="copy-gcode">Copy all</button>
+    </details>
+
+    <details class="panel prose">
+      <summary><h2>How it works</h2></summary>
+      <p><strong>One line.</strong> A slicer treats a snowflake as dozens of little islands and hops between them. Here the
+        nozzle moves to the start once and then never stops extruding: the shape is filled with passes one line apart, and
+        every pass is spliced into its neighbour, so each layer is a single closed loop that ends where the next one begins.
+        Drag the slider under the preview to follow it.</p>
+      <p><strong>Strong joins.</strong> Odd and even layers use the same passes but splice them in different places, so no
+        join sits on top of another.</p>
+      <p><strong>Printing it.</strong> The file is for a Snapmaker 2.0 A350 or A350T with the single-extruder toolhead and a
+        0.4&nbsp;mm nozzle. Its warm-up and finish follow Snapmaker's own printer profile. Copy it to a USB stick or send it
+        from Luban, level the bed as usual, and watch the first layer go down before you leave it.</p>
+      <p><strong>Locks.</strong> A locked property keeps its value when you randomize. Lock the type to stay in one family,
+        or lock everything except the seed to get variations on one design (give it some irregularity first).</p>
+    </details>
+  </section>
+</main>
+
+<noscript><p class="noscript">Snowflake draws and writes G-code in your browser, so it needs JavaScript.</p></noscript>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

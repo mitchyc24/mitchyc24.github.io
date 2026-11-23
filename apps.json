@@ -81,6 +81,21 @@
       "status": "beta",
       "added": "2026-10-14",
       "updated": "2026-10-14"
+    },
+    {
+      "id": "snowflake",
+      "name": "Snowflake",
+      "tagline": "Design a snowflake to 3D print: lock the properties you like and re-roll the rest. Downloads G-code for a Snapmaker A350T that draws it as one continuous line, with no jumping around.",
+      "path": "apps/snowflake/",
+      "action": "Design",
+      "icon": "apps/snowflake/icon.svg",
+      "color": "#1B8FD0",
+      "category": "Making",
+      "tags": ["3d printing", "gcode", "g-code", "snapmaker", "a350", "a350t", "ornament", "christmas", "winter", "generator"],
+      "platforms": ["phone", "tablet", "desktop"],
+      "status": "beta",
+      "added": "2026-11-23",
+      "updated": "2026-11-23"
     }
   ]
 }
