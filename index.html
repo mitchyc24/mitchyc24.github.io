@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111a1c">
-  <meta name="description" content="Explore Mitchell's workshop and discover interactive tools and projects.">
-  <title>miApps · The workshop</title>
+  <meta name="theme-color" content="#131d1c">
+  <meta name="description" content="Step into Mitchell's living room: every app and site is an object somewhere in it. Wander around, or walk out onto the deck.">
+  <title>miApps · The living room</title>
   <link rel="icon" href="hub/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="hub/icon-180.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -13,23 +13,24 @@
   <script src="hub/room.js" type="module"></script>
 </head>
 <body>
-  <main class="room" aria-label="The miApps workshop">
-    <canvas id="room-canvas" aria-label="Interactive 3D workshop. Use the directory to browse with a keyboard or screen reader."></canvas>
+  <main class="room" aria-label="The miApps living room">
+    <canvas id="room-canvas" aria-label="Interactive 3D living room. Use the directory to browse with a keyboard or screen reader."></canvas>
     <div class="room-shade" aria-hidden="true"></div>
+    <div class="tags" id="tags" aria-hidden="true"></div>
     <header class="topbar">
-      <a class="brand" href="./" aria-label="miApps workshop"><span>mi</span>Apps <small>/ THE WORKSHOP</small></a>
+      <a class="brand" href="./" aria-label="miApps"><span>mi</span>Apps <small>/ THE LIVING ROOM</small></a>
       <button class="directory-button" id="directory-toggle" type="button" aria-expanded="false" aria-controls="directory">All artefacts <span aria-hidden="true">↗</span></button>
     </header>
 
     <div class="intro" id="intro">
       <p class="eyebrow"><span class="dot"></span> AN INTERACTIVE SPACE</p>
-      <h1>Welcome to<br><em>the workshop.</em></h1>
-      <p>A little room for ideas, experiments and useful things. Wander around and see what you find.</p>
+      <h1>Come in,<br><em>look around.</em></h1>
+      <p>Everything I have made is an object somewhere in this room: on the shelves, the walls, the piano. Pick one up, or step out onto the deck.</p>
       <button id="intro-close" class="enter" type="button">Start exploring <span aria-hidden="true">↓</span></button>
     </div>
 
-    <div class="room-status" id="room-status" role="status">Preparing the workshop…</div>
-    <div class="instructions" id="instructions"><span class="instruction-desktop">W A S D to move <i>·</i> drag to look <i>·</i> select an artefact</span><span class="instruction-touch">Use the controls to move <i>·</i> drag to look <i>·</i> tap an artefact</span></div>
+    <div class="room-status" id="room-status" role="status">Opening the house…</div>
+    <div class="instructions" id="instructions"><span class="instruction-desktop">W A S D or click the floor to walk <i>·</i> drag to look <i>·</i> click an object</span><span class="instruction-touch">Tap the floor to walk <i>·</i> drag to look <i>·</i> tap an object</span></div>
     <div class="controls" id="controls" aria-label="Room movement controls" hidden>
       <div class="control-group">
         <button type="button" data-move="left" aria-label="Turn left">↶</button>
@@ -41,7 +42,7 @@
 
     <aside class="panel directory" id="directory" aria-labelledby="directory-title" hidden>
       <div class="panel-heading"><div><p class="eyebrow">THE COLLECTION</p><h2 id="directory-title">All artefacts</h2></div><button class="close" type="button" data-close="directory" aria-label="Close directory">×</button></div>
-      <p class="panel-copy">Choose an object to discover what it does.</p>
+      <p class="panel-copy">Choose one and you will be walked over to it.</p>
       <div id="directory-list" class="directory-list"></div>
       <a class="text-link" href="station.html#tools">Open the classic directory ↗</a>
     </aside>
@@ -52,8 +53,9 @@
       <h2 id="detail-title"></h2>
       <p class="panel-copy" id="detail-description"></p>
       <div class="detail-links" id="detail-links"></div>
+      <p class="detail-where" id="detail-where" hidden></p>
     </aside>
-    <noscript><div class="no-script">The interactive workshop needs JavaScript. <a href="station.html#tools">Visit the app directory</a>.</div></noscript>
+    <noscript><div class="no-script">The interactive room needs JavaScript. <a href="station.html#tools">Visit the app directory</a>.</div></noscript>
   </main>
 </body>
 </html>
