@@ -175,7 +175,57 @@ def main():
                 error(f"apps/{d.name}/ has no index.html")
 
     check_subjects(seen_ids)
+    check_links(seen_ids)
     return report(len(data["apps"]))
+
+
+LINK_REQUIRED = {"id", "name", "tagline", "href"}
+LINK_OPTIONAL = {"icon", "color", "category", "action"}
+
+
+def check_links(app_ids):
+    """hub/links.json: sites that live elsewhere but get an artefact in the landing page's room."""
+    path = ROOT / "hub" / "links.json"
+    if not path.is_file():
+        return
+    try:
+        links = json.loads(path.read_text(encoding="utf-8")).get("links")
+    except (json.JSONDecodeError, AttributeError) as e:
+        return error(f"hub/links.json is not valid: {e}")
+    if not isinstance(links, list):
+        return error('hub/links.json must be an object with a "links" list')
+    seen = set()
+    for i, link in enumerate(links):
+        label = f"hub/links.json links[{i}]"
+        if not isinstance(link, dict):
+            error(f"{label}: must be an object")
+            continue
+        if isinstance(link.get("id"), str):
+            label += f" ({link['id']})"
+        missing = sorted(k for k in LINK_REQUIRED if not (isinstance(link.get(k), str) and link[k].strip()))
+        if missing:
+            error(f"{label}: missing or empty {', '.join(missing)}")
+        unknown = sorted(set(link) - LINK_REQUIRED - LINK_OPTIONAL)
+        if unknown:
+            error(f"{label}: unknown field(s) {', '.join(unknown)} (see \"The landing page\" in AGENTS.md)")
+        link_id = link.get("id") if isinstance(link.get("id"), str) else ""
+        if link_id:
+            if not ID_RE.match(link_id):
+                error(f"{label}: id must be lowercase words joined by hyphens")
+            if link_id in seen or link_id in app_ids or link_id == "command-station":
+                error(f"{label}: id is already used by an app or another link")
+            seen.add(link_id)
+        href = link.get("href")
+        if isinstance(href, str) and href and not re.match(r"^https://[^\s/]+", href):
+            error(f"{label}: href must be an https:// address; apps hosted in this repo belong in apps.json")
+        icon = link.get("icon")
+        if isinstance(icon, str) and IMAGE_RE.search(icon):
+            if not is_relative(icon) or not (ROOT / icon).is_file():
+                error(f"{label}: icon image {icon} does not exist (paths are relative to the site root)")
+        elif isinstance(icon, str) and len(icon) > 16:
+            error(f"{label}: icon should be an emoji or an image path")
+        if "color" in link and not (isinstance(link["color"], str) and COLOR_RE.match(link["color"])):
+            error(f"{label}: color must be a hex colour like #D7262E")
 
 
 def check_subjects(app_ids):

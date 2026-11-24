@@ -1,0 +1,64 @@
+{
+  "links": [
+    {
+      "id": "mitchell-carroll",
+      "name": "Mitchell Carroll",
+      "tagline": "Mitchell's personal site.",
+      "href": "https://mitchellcarroll.ca",
+      "icon": "🖼️",
+      "color": "#C9A15A",
+      "category": "Personal site",
+      "action": "Visit site"
+    },
+    {
+      "id": "carroll-compute",
+      "name": "Carroll Compute",
+      "tagline": "Carroll Compute's home on the web.",
+      "href": "https://carrollcompute.ca",
+      "icon": "💻",
+      "color": "#3FA7D6",
+      "category": "Business",
+      "action": "Visit site"
+    },
+    {
+      "id": "michess",
+      "name": "miChess",
+      "tagline": "Chess in the browser.",
+      "href": "https://michess-vikm.netlify.app/",
+      "icon": "♟️",
+      "color": "#8A6B4A",
+      "category": "Games",
+      "action": "Play"
+    },
+    {
+      "id": "iga-meal-planner",
+      "name": "IGA Meal Planner",
+      "tagline": "Plan the week's meals and the shopping that goes with them.",
+      "href": "https://iga-meal-planner.netlify.app/",
+      "icon": "🥗",
+      "color": "#D63A2F",
+      "category": "Home",
+      "action": "Plan meals"
+    },
+    {
+      "id": "micalendar",
+      "name": "miCalendar",
+      "tagline": "A calendar for what's coming up.",
+      "href": "https://micalendar.netlify.app/",
+      "icon": "📅",
+      "color": "#E0723C",
+      "category": "Home",
+      "action": "Open calendar"
+    },
+    {
+      "id": "kith",
+      "name": "Kith",
+      "tagline": "Keeping up with friends and family.",
+      "href": "https://kith-mc.netlify.app/",
+      "icon": "👥",
+      "color": "#7D9079",
+      "category": "People",
+      "action": "Open Kith"
+    }
+  ]
+}

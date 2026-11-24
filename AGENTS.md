@@ -5,7 +5,8 @@ Instructions for anyone, human or coding agent, who adds or changes an app in th
 ## What this repo is
 
 **miApps**: a collection of small, independent web apps published by GitHub Pages at
-https://mitchyc24.github.io/. The root is a 3D workshop that reads `apps.json` and gives each app an artefact.
+https://mitchyc24.github.io/. The root is a 3D living room that reads `apps.json` and gives each app an artefact
+somewhere in it: on a shelf, a wall, the piano, a counter.
 
 - There is no build step. Every file is served exactly as it is in the repo.
 - Every app is plain HTML, CSS and JavaScript in its own folder.
@@ -13,7 +14,9 @@ https://mitchyc24.github.io/. The root is a 3D workshop that reads `apps.json` a
 
 ```
 index.html, station.html, hub/, 404.html, manifest.webmanifest   the hub (leave alone unless the task is about the hub)
-hub/subjects.json                                   the subjects on the landing page's 3D rack (see "The landing page")
+hub/room.js, hub/room.css, hub/room/                the living room on the landing page (see "The landing page")
+hub/links.json                                      sites hosted elsewhere that also get an artefact in the room
+hub/subjects.json                                   the subjects on the command station's 3D rack
 apps.json                                           the registry
 apps/<id>/                                          one folder per app; index.html is its entry
 apps/_template/                                     starter to copy for a new app (not listed on the hub)
@@ -110,10 +113,42 @@ Renaming or moving an app: move the folder, update `path`, and add the old path 
 
 ## The landing page
 
-The root is a first-person workshop (`index.html`, `hub/room.js`, `hub/room.css`).
-It creates an artefact for each entry in `apps.json`, using a generic model for new apps until a
-specific model is added. Its directory remains usable when WebGL or the pinned three.js CDN is unavailable.
-The command station artefact opens `station.html`, which retains the original hub's three parts:
+The root is a first-person living room (`index.html`, `hub/room.js`, `hub/room.css` and the modules in
+`hub/room/`): a panelled room with a fireplace and built-in shelves, patio doors onto a deck you can walk out on,
+and a lake and hills beyond. Everything is built in code from three.js primitives and canvas textures, so there
+are no model or texture files to ship (the one exception is the globe, which borrows `host/assets/earth_day_2k.jpg`).
+three.js is loaded from a pinned CDN URL; when WebGL or the CDN is unavailable the page falls back to its
+directory, which lists the same things.
+
+| File | What it holds |
+|---|---|
+| `hub/room.js` | Page chrome: welcome card, directory, details panel. Loads the registry, `hub/links.json` and the scene. |
+| `hub/room/scene.js` | Renderer, lighting, the camera and its controls, the name tags over artefacts. |
+| `hub/room/kit.js` | Shared materials and textures, room dimensions, and the batcher that merges static parts into few meshes. |
+| `hub/room/house.js` | Walls, windows, patio doors, ceiling, fireplace, built-in shelves, deck. |
+| `hub/room/outdoors.js` | Sky, terrain, lake, mountains, trees, garden. |
+| `hub/room/furniture.js` | Sofas, piano, bar counter, desk, lamps, plants, books; also the list of things you cannot walk through. |
+| `hub/room/artefacts.js` | One builder per artefact, and where each one sits. |
+| `hub/room/ambience.js` | Fire, sun shafts, dust. |
+
+**Artefacts.** The room makes one for every non-archived entry in `apps.json`, one for the command station, and
+one for every entry in `hub/links.json`. An id with a builder in `builders` (in `hub/room/artefacts.js`) gets its
+own object: Observatory is the floor globe, Stride Roulette the metronome on the piano. Anything else gets a
+framed card showing its icon on a spare shelf of the built-ins, so **a new app appears in the room without
+touching the hub**. To give an app a proper object, add a builder keyed by its id: build the model with the kit
+(`box`, `cyl`, `lathe`, `at`…; use `k.mesh` and `k.anim` for parts that move), then call `register(item, …)` with
+the clickable volume, where its name tag floats, and where the visitor stands to look at it. If it stands on the
+floor, add its footprint to `k.obstacles`.
+
+**Links** (`hub/links.json`) are sites hosted somewhere else. Each has an `id` (unique across apps and links),
+`name`, `tagline` and an `https://` `href`, plus optional `icon`, `color`, `category` and `action` (the button
+label). They open in a new tab. Apps hosted in this repo belong in `apps.json`, not here.
+
+`/?at=<id>` opens the room already standing in front of that artefact, and `/?view=x,z,yaw,pitch` starts the
+camera at a given spot (metres and radians; useful for screenshots when you change the room).
+
+The command station artefact (the screen over the credenza) opens `station.html`, which retains the original
+hub's three parts:
 
 - **The rack** (`hub/rack.js`, `hub/subjects.json`): a 3D shelf with one model per subject. Each subject in
   `subjects.json` has an `id`, `name`, `blurb`, `icon` (emoji for the no-WebGL fallback), `color` and `model`
