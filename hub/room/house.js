@@ -30,10 +30,13 @@ export function buildHouse(k) {
     box(M.trim, w, 0.12, d, x, H - 0.06, z);
     box(M.trim, w === 16 ? 16 : 0.09, 0.07, d === 12 ? 12 : 0.09, x + (w === 16 ? 0 : Math.sign(x) * 0.035), H - 0.155, z + (d === 12 ? 0 : Math.sign(z) * 0.035));
   }
-  box(M.stucco, 18.6, 0.56, 13.8, 0.5, H + 0.28, 0);                 // roof slab, with an eave over the deck
+  // Roof slab, with an eave over the deck. It starts on top of the 0.1 m ceiling slab: an underside at exactly
+  // H would sit in the same plane as the ceiling and flicker against it.
+  box(M.stucco, 18.6, 0.46, 13.8, 0.5, H + 0.33, 0);
 
   // ------------------------------------------------------------ walls
   const solid = (wall, a, b, y0, y1) => {
+    if (y1 === H) y1 = H + 0.1;                                      // full-height walls rise to meet the roof slab
     const len = b - a, mid = (a + b) / 2, h = y1 - y0, y = (y0 + y1) / 2;
     if (wall === "n") box(M.wall, len, h, 0.3, mid, y, ROOM.z0 - 0.15);
     if (wall === "s") box(M.wall, len, h, 0.3, mid, y, ROOM.z1 + 0.15);
